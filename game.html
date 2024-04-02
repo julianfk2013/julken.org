@@ -58,14 +58,26 @@
             transform: translateX(-50%);
             animation: spacebarAnimation 1s infinite alternate; /* Added animation */
         }
-        
-        @keyframes spacebarAnimation {
-            0% {
-                transform: translateX(-50%) translateY(0);
-            }
-            100% {
-                transform: translateX(-50%) translateY(-10px);
-            }
+        #items-container {
+            position: fixed;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            text-align: left;
+        }
+        .item {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #20232a;
+            border-radius: 5px;
+            color: #61dafb;
+        }
+        .item-name {
+            font-size: 18px;
+            font-weight: 700;
+        }
+        .item-cost {
+            font-size: 14px;
         }
     </style>
 </head>
@@ -76,6 +88,49 @@
     </div>
     <div id="visual-spacebar">SPACEBAR</div>
     <div class="easter-egg-hint">Try to find the hidden easter egg!</div>
+    <div id="items-container">
+        <div class="item">
+            <p style="font-size: 15px;">Shop does not work yet please wait for the next update</p>
+            <div class="item-name">Item 1</div>
+            <div class="item-cost">Cost: 100 clicks</div>
+        </div>
+        <div class="item">
+            <div class="item-name">Item 2</div>
+            <div class="item-cost">Cost: 500 clicks</div>
+        </div>
+        <div class="item">
+            <div class="item-name">Item 3</div>
+            <div class="item-cost">Cost: 1,000 clicks</div>
+        </div>
+        <div class="item">
+            <div class="item-name">Item 4</div>
+            <div class="item-cost">Cost: 5,000 clicks</div>
+        </div>
+        <div class="item">
+            <div class="item-name">Item 5</div>
+            <div class="item-cost">Cost: 7,000 clicks</div>
+        </div>
+        <div class="item">
+            <div class="item-name">Item 6</div>
+            <div class="item-cost">Cost: 10,000 clicks</div>
+        </div>
+        <div class="item">
+            <div class="item-name">Item 7</div>
+            <div class="item-cost">Cost: 15,00 clicks</div>
+        </div>
+        <div class="item">
+            <div class="item-name">Item 8</div>
+            <div class="item-cost">Cost: 20,000 clicks</div>
+        </div>
+        <div class="item">
+            <div class="item-name">Item 9</div>
+            <div class="item-cost">Cost: 30,000 clicks</div>
+        </div>
+        <div class="item">
+            <div class="item-name">Item 10</div>
+            <div class="item-cost">Cost: 100,000 clicks</div>
+        </div>
+    </div>
     <script src="game.js"></script>
 </body>
 </html>

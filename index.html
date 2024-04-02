@@ -1,59 +1,93 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Julken Home</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
-            background-color: #f2f2f2;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e9ecef;
             margin: 0;
             padding: 0;
+            color: #212529;
+        }
+        
+        header {
+            background-color: #007bff;
+            color: #fff;
+            padding: 1rem 0;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0;
         }
         
         nav {
-            background-color: #333;
-            color: #fff;
-            padding: 10px;
+            background-color: #0062cc;
+            padding: 0.5rem;
         }
         
         nav ul {
             list-style-type: none;
-            margin: 0;
             padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
         }
         
         nav ul li {
-            display: inline;
-            margin-right: 10px;
+            margin: 0 10px;
         }
         
         nav ul li a {
             color: #fff;
             text-decoration: none;
+            transition: color 0.3s ease-in-out;
+        }
+
+        nav ul li a:hover, nav ul li a:focus {
+            color: #adb5bd;
         }
         
         .container {
-            max-width: 800px;
-            margin: 0 auto;
+            max-width: 960px;
+            margin: 20px auto;
             padding: 20px;
             background-color: #fff;
-            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        footer {
+            background-color: #343a40;
+            color: #adb5bd;
+            text-align: center;
+            padding: 1rem 0;
+            position: relative;
+            bottom: 0;
+            width: 100%;
         }
     </style>
 </head>
 <body>
+    <header>
+        <h1>Welcome to Julken's Website!</h1>
+    </header>
     <nav>
         <ul>
-            <li><a href="game.html">Space bar clicker game</a></li>
-            <li><a href="Jumper">COMING SOON</a></li>
+            <li><a href="game.html">Spacebar Clicker Game</a></li>
+            <li><a href="#">Coming Soon</a></li>
         </ul>
     </nav>
     
     <div class="container">
-        <h1>Welcome to My Website</h1>
-        <p>Insert text here</p>
-        <p>Insert text here</p>
-        <p>Insert text here</p>
+        <p>This website is in alpha, it was just made but this website is gonna be filled with a lot of games soon. So far I only have one not too good game, but it will get better. I am constantly working on this, and I hope you enjoy.</p>
+        <p>I will delete this after but hello my friends at school this is real</p>
     </div>
+
+    <footer>
+        <p>&copy; 2024 Julken's Gaming Hub.</p>
+    </footer>
 </body>
 </html>
-<!-- END: abpxx6d04wxr -->

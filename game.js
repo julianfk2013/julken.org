@@ -48,3 +48,40 @@ document.addEventListener('keyup', function(event) {
 
 // Initial update to set score display on load
 updateScoreDisplay();
+// Shop items
+const shopItems = [
+    { name: 'Item 1', cost: 10, cps: 100 },
+    { name: 'Item 2', cost: 50, cps: 500 },
+    // Add more shop items here
+];
+
+// Function to handle purchasing a shop item
+function purchaseItem(itemIndex) {
+    const item = shopItems[itemIndex];
+    if (score >= item.cost) {
+        score -= item.cost;
+        updateScoreDisplay();
+        increaseCps(item.cps);
+    }
+}
+
+// Function to increase clicks per second (cps)
+function increaseCps(cps) {
+    // TODO: Implement the logic to increase cps
+}
+
+// Function to update the cps display
+function updateCpsDisplay(cps) {
+    document.getElementById('cps').innerText = cps;
+}
+
+// Add event listener for shop item click event
+document.getElementById('shop').addEventListener('click', function(event) {
+    const itemIndex = parseInt(event.target.dataset.index);
+    if (!isNaN(itemIndex)) {
+        purchaseItem(itemIndex);
+    }
+});
+
+// Initial update to set cps display on load
+updateCpsDisplay(0);
