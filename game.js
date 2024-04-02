@@ -20,6 +20,8 @@ function updateScoreDisplay() {
 
 // Add event listener for keydown event
 document.addEventListener('keydown', function(event) {
+    console.log("Key pressed:", event.code); // Log the code of the pressed key
+
     // Check if the spacebar was pressed
     if (event.code === 'Space') {
         increaseScore();
@@ -32,4 +34,3 @@ document.addEventListener('keydown', function(event) {
 
 // Initial update to set score display on load
 updateScoreDisplay();
-
