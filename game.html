@@ -38,9 +38,34 @@
             position: absolute;
             bottom: 10px;
             right: 10px;
-            font-size: 7px;
+            font-size: 12px;
             font-family: 'Creepster', cursive;
             color: #ffffff;
+        }
+        #visual-spacebar {
+            width: 500px; /* Increased width */
+            height: 100px; /* Increased height */
+            background: linear-gradient(to right, #ff0000, #00ff00); /* Added gradient background */
+            margin: 20px auto; 
+            border-radius: 10px; /* Increased border radius */
+            text-align: center; 
+            line-height: 100px; /* Adjusted line-height */
+            font-family: 'Roboto', sans-serif;
+            font-size: 36px; /* Increased font size */
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: spacebarAnimation 1s infinite alternate; /* Added animation */
+        }
+        
+        @keyframes spacebarAnimation {
+            0% {
+                transform: translateX(-50%) translateY(0);
+            }
+            100% {
+                transform: translateX(-50%) translateY(-10px);
+            }
         }
     </style>
 </head>
@@ -49,6 +74,7 @@
         <div id="score">0</div>
         <p>Press the spacebar to increase your score!</p>
     </div>
+    <div id="visual-spacebar">SPACEBAR</div>
     <div class="easter-egg-hint">Try to find the hidden easter egg!</div>
     <script src="game.js"></script>
 </body>
