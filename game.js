@@ -7,7 +7,7 @@ function increaseScore() {
     updateScoreDisplay();
 }
 
-// Function to increase score by 100 (secret feature)
+// Function to increase score by 100 (for 'J' key)
 function increaseScoreBy100() {
     score += 100;
     updateScoreDisplay();
@@ -24,11 +24,12 @@ document.addEventListener('keydown', function(event) {
     if (event.code === 'Space') {
         increaseScore();
     }
-    // Check if the 'J' key was pressed (secret feature)
-    if (event.code === 'KeyJ') {
+    // Check if the 'J' key was pressed
+    else if (event.code === 'KeyJ') {
         increaseScoreBy100();
     }
 });
 
 // Initial update to set score display on load
 updateScoreDisplay();
+
