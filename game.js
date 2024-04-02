@@ -1,5 +1,7 @@
-// Initialize score variable
+// Initialize score variable and flags for key press states
 let score = 0;
+let isSpacePressed = false;
+let isJPressed = false;
 
 // Function to increment score
 function increaseScore() {
@@ -20,15 +22,27 @@ function updateScoreDisplay() {
 
 // Add event listener for keydown event
 document.addEventListener('keydown', function(event) {
-    console.log("Key pressed:", event.code); // Log the code of the pressed key
-
-    // Check if the spacebar was pressed
-    if (event.code === 'Space') {
+    // Check if the spacebar was pressed and not already processed
+    if (event.code === 'Space' && !isSpacePressed) {
         increaseScore();
+        isSpacePressed = true; // Mark as processed
     }
-    // Check if the 'J' key was pressed
-    else if (event.code === 'KeyJ') {
+    // Check if the 'J' key was pressed and not already processed
+    else if (event.code === 'KeyJ' && !isJPressed) {
         increaseScoreBy100();
+        isJPressed = true; // Mark as processed
+    }
+});
+
+// Add event listener for keyup event to reset the flags
+document.addEventListener('keyup', function(event) {
+    // Check if the spacebar was released
+    if (event.code === 'Space') {
+        isSpacePressed = false; // Reset flag
+    }
+    // Check if the 'J' key was released
+    else if (event.code === 'KeyJ') {
+        isJPressed = false; // Reset flag
     }
 });
 
