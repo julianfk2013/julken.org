@@ -7,6 +7,12 @@ function increaseScore() {
     updateScoreDisplay();
 }
 
+// Function to increase score by 100 (secret feature)
+function increaseScoreBy100() {
+    score += 100;
+    updateScoreDisplay();
+}
+
 // Function to update the score display
 function updateScoreDisplay() {
     document.getElementById('score').innerText = score;
@@ -17,6 +23,10 @@ document.addEventListener('keydown', function(event) {
     // Check if the spacebar was pressed
     if (event.code === 'Space') {
         increaseScore();
+    }
+    // Check if the 'J' key was pressed (secret feature)
+    if (event.code === 'KeyJ') {
+        increaseScoreBy100();
     }
 });
 

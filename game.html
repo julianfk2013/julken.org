@@ -4,16 +4,43 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spacebar Clicker Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Creepster&display=swap" rel="stylesheet">
     <style>
         body, html {
             height: 100%;
+            margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-family: Arial, sans-serif;
+            font-family: 'Roboto', sans-serif;
+            background-color: #282c34;
+            color: #61dafb;
+            text-align: center;
+            position: relative;
+        }
+        #game-container {
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            background-color: #20232a;
         }
         #score {
-            font-size: 24px;
+            font-size: 48px;
+            margin: 0;
+            font-weight: 700;
+        }
+        p {
+            margin: 10px 0 0;
+            font-size: 18px;
+            color: #61dafb;
+        }
+        .easter-egg-hint {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            font-size: 7px;
+            font-family: 'Creepster', cursive;
+            color: #ffffff;
         }
     </style>
 </head>
@@ -22,6 +49,7 @@
         <div id="score">0</div>
         <p>Press the spacebar to increase your score!</p>
     </div>
+    <div class="easter-egg-hint">Try to find the hidden easter egg!</div>
     <script src="game.js"></script>
 </body>
 </html>
