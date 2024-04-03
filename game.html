@@ -130,6 +130,7 @@
             sps += increment;
             updateSpsDisplay();
             localStorage.setItem('sps', sps);
+            localStorage.setItem('spsDisplay', document.getElementById('sps').innerText);
         }
 
         function buyItem(cost, increment) {
@@ -148,7 +149,6 @@
                 increaseScore(1);
                 isSpacePressed = true;
             } else if (event.code === 'KeyJ' && !isJPressed) {
-                increaseScore(100);
                 isJPressed = true;
             }
         });

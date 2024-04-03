@@ -41,7 +41,6 @@ document.addEventListener('keydown', function(event) {
         increaseScore(); // Increment score by 1
         isSpacePressed = true;
     } else if (event.code === 'KeyJ' && !isJPressed) {
-        increaseScore(100); // Increment score by 100 for 'J' key
         isJPressed = true;
     }
 });
