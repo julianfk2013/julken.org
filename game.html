@@ -2,135 +2,107 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta viewport="width=device-width, initial-scale=1.0">
     <title>Spacebar Clicker Game</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Creepster&display=swap" rel="stylesheet">
     <style>
-        body, html {
-            height: 100%;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        body {
             font-family: 'Roboto', sans-serif;
-            background-color: #282c34;
-            color: #61dafb;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); /* Colorful background */
+            color: #FDEB71; /* Bright text color for contrast */
             text-align: center;
-            position: relative;
-        }
-        #game-container {
             padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            background-color: #20232a;
-        }
-        #score {
-            font-size: 48px;
+            font-size: 20px;
             margin: 0;
-            font-weight: 700;
         }
+
+        h1 {
+            color: #FDFD96; /* Light yellow for the heading */
+        }
+
         p {
-            margin: 10px 0 0;
-            font-size: 18px;
-            color: #61dafb;
+            color: #FDFD96;
         }
-        .easter-egg-hint {
-            position: absolute;
-            bottom: 10px;
-            right: 10px;
-            font-size: 12px;
-            font-family: 'Creepster', cursive;
-            color: #ffffff;
-        }
+
         #visual-spacebar {
-            width: 500px; /* Increased width */
-            height: 100px; /* Increased height */
-            background: linear-gradient(to right, #ff0000, #00ff00); /* Added gradient background */
-            margin: 20px auto; 
-            border-radius: 10px; /* Increased border radius */
-            text-align: center; 
-            line-height: 100px; /* Adjusted line-height */
-            font-family: 'Roboto', sans-serif;
-            font-size: 36px; /* Increased font size */
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            animation: spacebarAnimation 1s infinite alternate; /* Added animation */
+            font-family: 'Creepster', cursive;
+            font-size: 3em;
+            cursor: pointer;
+            user-select: none;
+            display: inline-block;
+            padding: 20px 40px;
+            background-color: #F76B8A; /* Bright pink for the spacebar */
+            color: #ffffff; /* White text for readability */
+            border: 4px solid #FDEB71; /* Border color matching the text */
+            border-radius: 15px;
+            transition: transform 0.2s ease-in-out;
+            margin-top: 20px; /* Spacing from text */
         }
-        #items-container {
-            position: fixed;
-            top: 50%;
-            right: 20px;
-            transform: translateY(-50%);
-            text-align: left;
+
+        #visual-spacebar:hover {
+            transform: scale(1.05); /* Slight increase in size on hover */
         }
-        .item {
-            margin-bottom: 10px;
-            padding: 10px;
-            background-color: #20232a;
-            border-radius: 5px;
-            color: #61dafb;
+
+        @keyframes spacebarAnimation {
+            0%, 100% {
+                transform: translateY(0);
+                background-color: #F76B8A;
+            }
+            50% {
+                transform: translateY(-10px);
+                background-color: #e94560; /* Darker shade when animated */
+            }
         }
-        .item-name {
-            font-size: 18px;
-            font-weight: 700;
-        }
-        .item-cost {
-            font-size: 14px;
+
+        #score {
+            font-size: 2em;
+            margin: 30px 0;
+            background-color: #4C4C6D; /* Dark background for score display */
+            color: #FDEB71; /* Text color for contrast */
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 10px;
+            width: auto;
         }
     </style>
 </head>
 <body>
-    <div id="game-container">
-        <div id="score">0</div>
-        <p>Press the spacebar to increase your score!</p>
-    </div>
-    <div id="visual-spacebar">SPACEBAR</div>
-    <div class="easter-egg-hint">Try to find the hidden easter egg!</div>
-    <div id="items-container">
-        <div class="item">
-            <p style="font-size: 15px;">Shop does not work yet please wait for the next update</p>
-            <div class="item-name">Item 1</div>
-            <div class="item-cost">Cost: 100 clicks</div>
-        </div>
-        <div class="item">
-            <div class="item-name">Item 2</div>
-            <div class="item-cost">Cost: 500 clicks</div>
-        </div>
-        <div class="item">
-            <div class="item-name">Item 3</div>
-            <div class="item-cost">Cost: 1,000 clicks</div>
-        </div>
-        <div class="item">
-            <div class="item-name">Item 4</div>
-            <div class="item-cost">Cost: 5,000 clicks</div>
-        </div>
-        <div class="item">
-            <div class="item-name">Item 5</div>
-            <div class="item-cost">Cost: 7,000 clicks</div>
-        </div>
-        <div class="item">
-            <div class="item-name">Item 6</div>
-            <div class="item-cost">Cost: 10,000 clicks</div>
-        </div>
-        <div class="item">
-            <div class="item-name">Item 7</div>
-            <div class="item-cost">Cost: 15,00 clicks</div>
-        </div>
-        <div class="item">
-            <div class="item-name">Item 8</div>
-            <div class="item-cost">Cost: 20,000 clicks</div>
-        </div>
-        <div class="item">
-            <div class="item-name">Item 9</div>
-            <div class="item-cost">Cost: 30,000 clicks</div>
-        </div>
-        <div class="item">
-            <div class="item-name">Item 10</div>
-            <div class="item-cost">Cost: 100,000 clicks</div>
-        </div>
-    </div>
-    <script src="game.js"></script>
+    <h1>Spacebar Clicker Game</h1>
+    <p>Press the spacebar to play! And try to find the hidden boost!</p>
+    <div id="score">Score: 0</div>
+    <div id="visual-spacebar" tabindex="0">SPACEBAR</div> <!-- Added tabindex for focus -->
+
+    <script>
+        let score = 0;
+        let isSpacePressed = false;
+        let isJPressed = false;
+
+        function updateScoreDisplay() {
+            document.getElementById('score').innerText = 'Score: ' + score;
+        }
+
+        function increaseScore(increment) {
+            score += increment;
+            updateScoreDisplay();
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space' && !isSpacePressed) {
+                increaseScore(1);
+                isSpacePressed = true;
+            } else if (event.code === 'KeyJ' && !isJPressed) {
+                increaseScore(100);
+                isJPressed = true;
+            }
+        });
+
+        document.addEventListener('keyup', function(event) {
+            if (event.code === 'Space') {
+                isSpacePressed = false;
+            } else if (event.code === 'KeyJ') {
+                isJPressed = false;
+            }
+        });
+    </script>
 </body>
 </html>
