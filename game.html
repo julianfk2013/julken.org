@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta viewport="width=device-width, initial-scale=1.0">
-    <title>Spacebar Clicker Game</title>
+    <title>Julian's Spacebar Clicker Game</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Creepster&display=swap" rel="stylesheet">
     <style>
         body {
@@ -88,7 +88,7 @@
 </head>
 <body>
     <h1>Spacebar Clicker Game</h1>
-    <p>Press the spacebar to play! And try to find the hidden boost!</p>
+    <p>Press the spacebar to play!</p>
     <div id="score">Score: 0</div>
     <div id="visual-spacebar" tabindex="0">SPACEBAR</div> <!-- Added tabindex for focus -->
     <div id="sps">SPS: 0</div> <!-- Added SPS display -->
@@ -158,8 +158,5 @@
                 isSpacePressed = false;
             } else if (event.code === 'KeyJ') {
                 isJPressed = false;
-            }
+                }
         });
-    </script>
-</body>
-</html>
