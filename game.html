@@ -64,6 +64,26 @@
             border-radius: 10px;
             width: auto;
         }
+
+        #sps {
+            font-size: 1.5em;
+            margin-top: 20px;
+            color: #FDFD96;
+        }
+
+        .shop-item {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px;
+            background-color: #4C4C6D;
+            color: #FDEB71;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .shop-item:hover {
+            background-color: #3B3B57;
+        }
     </style>
 </head>
 <body>
@@ -71,9 +91,24 @@
     <p>Press the spacebar to play! And try to find the hidden boost!</p>
     <div id="score">Score: 0</div>
     <div id="visual-spacebar" tabindex="0">SPACEBAR</div> <!-- Added tabindex for focus -->
+    <div id="sps">SPS: 0</div> <!-- Added SPS display -->
+
+    <div id="shop">
+        <div class="shop-item" onclick="buyItem(10, 1)">Item 1 (Cost: 10 SPS, +1 SPS)</div>
+        <div class="shop-item" onclick="buyItem(50, 5)">Item 2 (Cost: 50 SPS, +5 SPS)</div>
+        <div class="shop-item" onclick="buyItem(100, 10)">Item 3 (Cost: 100 SPS, +10 SPS)</div>
+        <div class="shop-item" onclick="buyItem(500, 50)">Item 4 (Cost: 500 SPS, +50 SPS)</div>
+        <div class="shop-item" onclick="buyItem(1000, 100)">Item 5 (Cost: 1000 SPS, +100 SPS)</div>
+        <div class="shop-item" onclick="buyItem(5000, 500)">Item 6 (Cost: 5000 SPS, +500 SPS)</div>
+        <div class="shop-item" onclick="buyItem(10000, 1000)">Item 7 (Cost: 10000 SPS, +1000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(50000, 5000)">Item 8 (Cost: 50000 SPS, +5000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(100000, 10000)">Item 9 (Cost: 100000 SPS, +10000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(500000, 50000)">Item 10 (Cost: 500000 SPS, +50000 SPS)</div>
+    </div>
 
     <script>
-        let score = 0;
+        let score = parseInt(localStorage.getItem('score')) || 0;
+        let sps = parseInt(localStorage.getItem('sps')) || 0; // Score per second
         let isSpacePressed = false;
         let isJPressed = false;
 
@@ -81,10 +116,32 @@
             document.getElementById('score').innerText = 'Score: ' + score;
         }
 
+        function updateSpsDisplay() {
+            document.getElementById('sps').innerText = 'SPS: ' + sps;
+        }
+
         function increaseScore(increment) {
             score += increment;
             updateScoreDisplay();
+            localStorage.setItem('score', score);
         }
+
+        function increaseSps(increment) {
+            sps += increment;
+            updateSpsDisplay();
+            localStorage.setItem('sps', sps);
+        }
+
+        function buyItem(cost, increment) {
+            if (score >= cost) {
+                score -= cost;
+                increaseSps(increment);
+            }
+        }
+
+        setInterval(function() {
+            increaseScore(sps);
+        }, 1000);
 
         document.addEventListener('keydown', function(event) {
             if (event.code === 'Space' && !isSpacePressed) {
