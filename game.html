@@ -18,10 +18,13 @@
 
         h1 {
             color: #FDFD96; /* Light yellow for the heading */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Shadow effect for the heading */
         }
 
         p {
             color: #FDFD96;
+            font-size: 1.2em;
+            margin-bottom: 30px;
         }
 
         #visual-spacebar {
@@ -37,6 +40,7 @@
             border-radius: 15px;
             transition: transform 0.2s ease-in-out;
             margin-top: 20px; /* Spacing from text */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Shadow effect for the spacebar */
         }
 
         #visual-spacebar:hover {
@@ -63,6 +67,7 @@
             padding: 10px 20px;
             border-radius: 10px;
             width: auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Shadow effect for the score display */
         }
 
         #sps {
@@ -79,10 +84,13 @@
             color: #FDEB71;
             border-radius: 10px;
             cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Shadow effect for the shop items */
+            transition: transform 0.2s ease-in-out;
         }
 
         .shop-item:hover {
             background-color: #3B3B57;
+            transform: scale(1.05); /* Slight increase in size on hover */
         }
     </style>
 </head>
@@ -94,26 +102,26 @@
     <div id="sps">SPS: 0</div> <!-- Added SPS display -->
 
     <div id="shop">
-        <div class="shop-item" onclick="buyItem(55, 1)">Item 1 (Cost: 55 SPS, +1 SPS)</div>
-        <div class="shop-item" onclick="buyItem(275, 5)">Item 2 (Cost: 275 SPS, +5 SPS)</div>
-        <div class="shop-item" onclick="buyItem(550, 10)">Item 3 (Cost: 550 SPS, +10 SPS)</div>
-        <div class="shop-item" onclick="buyItem(2750, 50)">Item 4 (Cost: 2750 SPS, +50 SPS)</div>
-        <div class="shop-item" onclick="buyItem(5500, 100)">Item 5 (Cost: 5500 SPS, +100 SPS)</div>
-        <div class="shop-item" onclick="buyItem(27500, 500)">Item 6 (Cost: 27500 SPS, +500 SPS)</div>
-        <div class="shop-item" onclick="buyItem(55000, 1000)">Item 7 (Cost: 55000 SPS, +1000 SPS)</div>
-        <div class="shop-item" onclick="buyItem(275000, 5000)">Item 8 (Cost: 275000 SPS, +5000 SPS)</div>
-        <div class="shop-item" onclick="buyItem(550000, 10000)">Item 9 (Cost: 550000 SPS, +10000 SPS)</div>
-        <div class="shop-item" onclick="buyItem(2750000, 50000)">Item 10 (Cost: 2750000 SPS, +50000 SPS)</div>
-        <div class="shop-item" onclick="buyItem(5500000, 100000)">Item 11 (Cost: 5500000 SPS, +100000 SPS)</div>
-        <div class="shop-item" onclick="buyItem(27500000, 500000)">Item 12 (Cost: 27500000 SPS, +500000 SPS)</div>
-        <div class="shop-item" onclick="buyItem(55000000, 1000000)">Item 13 (Cost: 55000000 SPS, +1000000 SPS)</div>
-        <div class="shop-item" onclick="buyItem(11000000, 200000)">Item 14 (Cost: 11000000 SPS, +200000 SPS)</div>
-        <div class="shop-item" onclick="buyItem(27500000, 500000)">Item 15 (Cost: 27500000 SPS, +500000 SPS)</div>
-        <div class="shop-item" onclick="buyItem(55000000, 1000000)">Item 16 (Cost: 55000000 SPS, +1000000 SPS)</div>
-        <div class="shop-item" onclick="buyItem(110000000, 2000000)">Item 17 (Cost: 110000000 SPS, +2000000 SPS)</div>
-        <div class="shop-item" onclick="buyItem(275000000, 5000000)">Item 18 (Cost: 275000000 SPS, +5000000 SPS)</div>
-        <div class="shop-item" onclick="buyItem(550000000, 10000000)">Item 19 (Cost: 550000000 SPS, +10000000 SPS)</div>
-        <div class="shop-item" onclick="buyItem(1100000000, 20000000)">Item 20 (Cost: 1100000000 SPS, +20000000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(50, 1)">Item 1 (Cost: 50 SPS, +1 SPS)</div>
+        <div class="shop-item" onclick="buyItem(250, 5)">Item 2 (Cost: 250 SPS, +5 SPS)</div>
+        <div class="shop-item" onclick="buyItem(500, 10)">Item 3 (Cost: 500 SPS, +10 SPS)</div>
+        <div class="shop-item" onclick="buyItem(2500, 50)">Item 4 (Cost: 2500 SPS, +50 SPS)</div>
+        <div class="shop-item" onclick="buyItem(5000, 100)">Item 5 (Cost: 5000 SPS, +100 SPS)</div>
+        <div class="shop-item" onclick="buyItem(25000, 500)">Item 6 (Cost: 25000 SPS, +500 SPS)</div>
+        <div class="shop-item" onclick="buyItem(50000, 1000)">Item 7 (Cost: 50000 SPS, +1000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(250000, 5000)">Item 8 (Cost: 250000 SPS, +5000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(500000, 10000)">Item 9 (Cost: 500000 SPS, +10000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(2500000, 50000)">Item 10 (Cost: 2500000 SPS, +50000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(10000000, 50000)">Item 11 (Cost: 10000000 SPS, +50000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(50000000, 100000)">Item 12 (Cost: 50000000 SPS, +100000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(100000000, 500000)">Item 13 (Cost: 100000000 SPS, +500000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(500000000, 1000000)">Item 14 (Cost: 500000000 SPS, +1000000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(1000000000, 5000000)">Item 15 (Cost: 1000000000 SPS, +5000000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(5000000000, 10000000)">Item 16 (Cost: 5000000000 SPS, +10000000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(10000000000, 50000000)">Item 17 (Cost: 10000000000 SPS, +50000000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(50000000000, 100000000)">Item 18 (Cost: 50000000000 SPS, +100000000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(100000000000, 500000000)">Item 19 (Cost: 100000000000 SPS, +500000000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(500000000000, 1000000000)">Item 20 (Cost: 500000000000 SPS, +1000000000 SPS)</div>
     </div>
 
     <script>
@@ -121,6 +129,16 @@
         let sps = parseInt(localStorage.getItem('sps')) || 0; // Score per second
         let isSpacePressed = false;
         let isJPressed = false;
+function buyItem(cost, increment) {
+    if (score >= cost) {
+        score -= cost;
+        increaseScore(-cost);
+        increaseSps(increment);
+        localStorage.setItem('score', score);
+        localStorage.setItem('sps', sps);
+        localStorage.setItem('spsDisplay', document.getElementById('sps').innerText);
+    }
+}
 
         function updateScoreDisplay() {
             document.getElementById('score').innerText = 'Score: ' + score;
