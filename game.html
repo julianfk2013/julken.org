@@ -19,6 +19,8 @@
         h1 {
             color: #FDFD96; /* Light yellow for the heading */
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Shadow effect for the heading */
+            font-size: 3em;
+            margin-bottom: 20px;
         }
 
         p {
@@ -131,6 +133,78 @@
         #visual-spacebar {
             animation: spacebarAnimation 2s infinite;
         }
+
+        /* Additional decorations */
+        #visual-spacebar {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Shadow effect for the spacebar */
+            background-image: linear-gradient(to right, #F76B8A, #e94560); /* Gradient background for the spacebar */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 0, 0, 0.2); /* Enhanced shadow effect for the spacebar */
+        }
+
+        #score {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Shadow effect for the score display */
+            background-image: linear-gradient(to right, #4C4C6D, #3B3B57); /* Gradient background for the score display */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 0, 0, 0.2); /* Enhanced shadow effect for the score display */
+        }
+
+        #sps {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Shadow effect for the SPS display */
+            background-image: linear-gradient(to right, #4C4C6D, #3B3B57); /* Gradient background for the SPS display */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 0, 0, 0.2); /* Enhanced shadow effect for the SPS display */
+        }
+
+        .shop-item {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Shadow effect for the shop items */
+            background-image: linear-gradient(to right, #4C4C6D, #3B3B57); /* Gradient background for the shop items */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 0, 0, 0.2); /* Enhanced shadow effect for the shop items */
+        }
+
+        /* Additional decorations */
+        #shop {
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Shadow effect for the shop section */
+            background-image: linear-gradient(to right, #4C4C6D, #3B3B57); /* Gradient background for the shop section */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 0, 0, 0.2); /* Enhanced shadow effect for the shop section */
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        /* Additional decorations */
+        #shop:before {
+            content: "🛍️";
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        /* Additional decorations */
+        #shop .shop-item:before {
+            content: "🎁";
+            display: inline-block;
+            margin-right: 5px;
+        }
+
+        /* Additional decorations */
+        #shop .shop-item:hover {
+            transform: scale(1.1); /* Increased size on hover */
+            background-color: #2a5298; /* Darker background on hover */
+        }
+
+        /* Additional decorations */
+        #shop .shop-item:hover:before {
+            content: "🎁";
+            display: inline-block;
+            margin-right: 5px;
+            animation: rotate 1s infinite linear; /* Rotating animation on hover */
+        }
+
+        /* Additional decorations */
+        @keyframes rotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
     </style>
 </head>
 <body>
@@ -139,7 +213,6 @@
     <div id="score">Score: 0</div>
     <div id="visual-spacebar" tabindex="0">SPACEBAR</div> <!-- Added tabindex for focus -->
     <div id="sps">SPS: 0</div> <!-- Added SPS display -->
-
 
     <div id="shop">
         <div class="shop-item" onclick="buyItem(100, 1)">Monkey (Cost: 100 Score, +1 SPS)</div>
@@ -162,7 +235,6 @@
         <div class="shop-item" onclick="buyItem(50000000000, 100000000)">Omniverse Crafter (Cost: 50000000000 Score, +100000000 SPS)</div>
         <div class="shop-item" onclick="buyItem(100000000000, 500000000)">Legend Forger (Cost: 100000000000 Score, +500000000 SPS)</div>
         <div class="shop-item" onclick="buyItem(500000000000, 1000000000)">GALACTIC JUICY (Cost: 500000000000 Score, +1000000000 SPS)</div>
-        
     </div>
 
     <script>
@@ -181,6 +253,7 @@
                 localStorage.setItem('spsDisplay', document.getElementById('sps').innerText);
             }
         }
+
         function resetProgress() {
             score = 0;
             sps = 0;
@@ -189,11 +262,12 @@
             updateScoreDisplay();
             updateSpsDisplay();
         }
-document.addEventListener('keydown', function(event) {
-    if (event.code === 'Space') {
-        event.preventDefault();
-    }
-});
+
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space') {
+                event.preventDefault();
+            }
+        });
 
         const resetButton = document.createElement('button');
         resetButton.innerText = 'Reset Progress';
@@ -212,7 +286,6 @@ document.addEventListener('keydown', function(event) {
             }
         });
         document.body.appendChild(resetButton);
-        
 
         function updateScoreDisplay() {
             document.getElementById('score').innerText = 'Score: ' + score;
