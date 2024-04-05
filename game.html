@@ -216,6 +216,7 @@ document.addEventListener('keydown', function(event) {
 
         function updateScoreDisplay() {
             document.getElementById('score').innerText = 'Score: ' + score;
+            document.getElementById('score').innerText = 'Score: ' + score.toLocaleString();
         }
 
         function updateSpsDisplay() {
