@@ -39,6 +39,9 @@
     transition: background-color 0.3s ease;
     user-select: none; /* Prevent text selection */
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    font-size: 24px;
+    color: #FFA07A;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
   }
   #clickArea:hover {
     background-color: #ffdab9;
@@ -52,9 +55,15 @@
     cursor: pointer;
     transition: background-color 0.3s ease;
     box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    font-size: 18px;
+    color: #FFA07A;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    border: 2px solid #FFA07A;
   }
   .decorated-button:hover {
     background-color: #f0f0f0;
+    color: #FF6347;
+    border-color: #FF6347;
   }
   #clickCounter {
     font-size: 18px;
@@ -79,9 +88,10 @@
   var endTime;
   var testDuration;
   var clickCount = 0;
+  var testStarted = false; // New variable to track if the test has started
 
   function countClick() {
-    if (testDuration) {
+    if (testStarted) { // Check if the test has started
       clickCount++;
       document.getElementById("clickCounter").textContent = "Clicks: " + clickCount;
     }
@@ -92,6 +102,7 @@
     testDuration = duration;
     startTime = new Date().getTime();
     var timerInterval = setInterval(updateTimer, 1000);
+    testStarted = true; // Set testStarted to true when the test starts
 
     function updateTimer() {
       var currentTime = new Date().getTime();
@@ -101,9 +112,9 @@
       if (remainingTime <= 0) {
         clearInterval(timerInterval);
         calculateCPS();
-      } else {
-        document.getElementById("timer").textContent = "Time left: " + Math.round(remainingTime) + "s";
-      }
+      }  
+      document.getElementById("timer").textContent = "Time left: " + Math.round(remainingTime) + "s";
+      
     }
   }
 
@@ -114,36 +125,36 @@
     if (totalTime > 0) {
       cps = clickCount / totalTime;
     }
-    var animal = "";
-    if (cps < 2) {
-      animal = "Sloth";
-    } else if (cps < 5) {
-      animal = "Turtle";
-    } else if (cps < 10) {
-      animal = "Rabbit";
-    } else if (cps < 15) {
-    } else if (cps < 20) {
-      animal = "Gazelle";
-    } else if (cps < 25) {
-      animal = "Leopard";
-    } else if (cps < 30) {
-      animal = "Panther";
-    } else if (cps < 35) {
-      animal = "Jaguar";
-    } else if (cps < 40) {
-      animal = "Tiger";
-    } else if (cps < 45) {
-      animal = "Lion";
-    } else if (cps < 50) {
-      animal = "Falcon";
-    } else {
-      animal = "Superhuman";
-    }
-    }
+      var animal = "";
+      if (cps < 1) {
+        animal = "Sloth";
+      } else if (cps < 3) {
+        animal = "Turtle";
+      } else if (cps < 5) {
+        animal = "Rabbit";
+      } else if (cps < 7) {
+        animal = "Gazelle";
+      } else if (cps < 10 ) {
+        animal = "Leopard";
+      } else if (cps < 15) {
+        animal = "Panther";
+      } else if (cps < 20) {
+        animal = "Jaguar";
+      } else if (cps < 25) {
+        animal = "Tiger";
+      } else if (cps < 30) {
+        animal = "Lion";
+      } else if (cps < 35) {
+        animal = "Falcon";
+      } else if (cps < 40) {
+        animal = "Superhuman";
+      }
+    
     alert("You are a " + animal + " in speed of clicking! Your CPS is " + cps.toFixed(2));
     clickCount = 0;
     document.getElementById("clickCounter").textContent = "Clicks: 0";
-    
+    testStarted = false; // Reset testStarted to false after the test ends
+  } 
 </script>
 </body>
 </html>
