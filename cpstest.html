@@ -10,13 +10,13 @@
     text-align: center;
     margin: 0;
     padding: 0;
-    background: linear-gradient(to right, #FFA07A, #87CEEB); /* Background gradient */
+    background: linear-gradient(to right, #FFA07A, #87CEEB);
     height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    user-select: none; /* Prevent text selection */
+    user-select: none; 
   }
   h1 {
     font-size: 48px;
@@ -32,7 +32,7 @@
   }
   #clickArea {
     padding: 20px;
-    background-color: #ffebcd;
+    background-color: #000;
     border-radius: 10px;
     display: inline-block;
     cursor: pointer;
@@ -42,9 +42,27 @@
     font-size: 24px;
     color: #FFA07A;
     text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    transform: scale(15); /* Added this line to scale the box */
+    width: 300px; /* Added this line to set the width */
+    height: 300px; /* Added this line to set the height */
+    position: fixed; /* Added this line to position the box */
+    bottom: 0; /* Added this line to align the box at the bottom */
+    left: 50%; /* Added this line to center the box horizontally */
+    transform: translateX(-50%); /* Added this line to center the box horizontally */
   }
   #clickArea:hover {
-    background-color: #ffdab9;
+    background-color: #006400;
+  }
+  #clickArea:active {
+    background-color: #008000;
+  }
+  #clickEffect {
+    position: absolute;
+    background-color: #00FF00;
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
   }
   .decorated-button {
     padding: 10px 20px;
@@ -71,6 +89,16 @@
     color: #fff;
     text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
   }
+  .additional-decoration {
+    background-color: #FF6347;
+    color: #fff;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 14px;
+    text-transform: uppercase;
+    margin-top: 10px;
+    display: inline-block;
+  }
 </style>
 </head>
 <body>
@@ -82,8 +110,11 @@
 <button class="decorated-button" onclick="startTest(5)">5 seconds</button>
 <button class="decorated-button" onclick="startTest(10)">10 seconds</button>
 <button class="decorated-button" onclick="startTest(15)">15 seconds</button>
+<button class="decorated-button" onclick="startTest(30)">30 seconds</button>
 </div>
-<div id="clickArea" onclick="countClick()">Click Here</div>
+<div id="clickArea" onclick="countClick()">
+  <div id="clickEffect"></div>
+</div>
 <script>
   var startTime;
   var endTime;
@@ -91,11 +122,24 @@
   var clickCount = 0;
   var testStarted = false; // New variable to track if the test has started
 
-  function countClick() {
+  function countClick(event) {
     if (testStarted) { // Check if the test has started
       clickCount++;
       document.getElementById("clickCounter").textContent = "Clicks: " + clickCount;
+      showClickEffect(event.clientX, event.clientY);
     }
+  }
+
+  function showClickEffect(x, y) {
+    var clickEffect = document.getElementById("clickEffect");
+    clickEffect.style.left = x + "px";
+    clickEffect.style.top = y + "px";
+    clickEffect.style.transform = "scale(0)";
+    clickEffect.style.opacity = "1";
+    setTimeout(function() {
+      clickEffect.style.transform = "scale(1)";
+      clickEffect.style.opacity = "0";
+    }, 10);
   }
 
   function startTest(duration) {
@@ -149,6 +193,7 @@
         animal = "Falcon";
       } else if (cps < 40) {
         animal = "Superhuman";
+     
       }
     
     alert("You are a " + animal + " in speed of clicking! Your CPS is " + cps.toFixed(2));
