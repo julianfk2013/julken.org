@@ -5,196 +5,146 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Julken Home</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #e9ecef;
+            font-family: 'Poppins', sans-serif;
             margin: 0;
             padding: 0;
-            color: #212529;
+            background: radial-gradient(circle, #1d2671, #c33764);
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
         }
-        
+
         header {
-            background-color: #007bff;
-            color: #fff;
-            padding: 1rem 0;
+            width: 100%;
+            background: linear-gradient(135deg, #f857a6, #ff5858);
+            padding: 20px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
             text-align: center;
-            border-bottom: 2px solid #fff;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
         }
 
         header h1 {
+            color: #fff;
             margin: 0;
+            font-size: 3rem;
+            text-transform: uppercase;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            animation: glow 8s ease-in-out infinite alternate;
         }
-        
+
+        @keyframes glow {
+            from { text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073, 0 0 50px #e60073, 0 0 60px #e60073, 0 0 70px #e60073; }
+            to { text-shadow: 0 0 20px #fff, 0 0 30px #ff4da6, 0 0 40px #ff4da6, 0 0 50px #ff4da6, 0 0 60px #ff4da6, 0 0 70px #ff4da6, 0 0 80px #ff4da6; }
+        }
+
         nav {
-            background-color: #0062cc;
-            padding: 0.5rem;
-        }
-        
-        nav ul {
-            list-style-type: none;
-            padding: 0;
-            margin: 0;
             display: flex;
             justify-content: center;
+            padding: 1rem;
+            width: 100%;
+            background: linear-gradient(to right, #25c668, #48a9fe);
+            margin-bottom: 20px;
         }
-        
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            padding: 0;
+        }
+
         nav ul li {
-            margin: 0 10px;
-            border: 1px solid #fff;
-            border-radius: 5px;
-            padding: 5px 10px;
+            padding: 0.5rem 1rem;
+            margin: 0 0.5rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            transition: all 0.3s ease-out;
+            position: relative;
+            overflow: hidden;
         }
-        
+
+        nav ul li:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        nav ul li:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.1);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.5s ease-out;
+        }
+
+        nav ul li:hover:before {
+            transform: scaleX(1);
+        }
+
         nav ul li a {
             color: #fff;
             text-decoration: none;
-            transition: color 0.3s ease-in-out;
+            font-weight: 600;
+            z-index: 1;
+            position: relative;
+        }
+
+        .content {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        .content h2 {
+            color: #ff8c00; /* Vivid orange for titles */
+            font-size: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .content p {
+            color: #ffffff; /* White text for better readability */
+            line-height: 1.6;
+            font-size: 1rem;
+        }
+
+        .content a {
+            color: #48a9fe;
+            text-decoration: none;
             font-weight: bold;
         }
 
-        nav ul li a:hover, nav ul li a:focus {
-            color: #adb5bd;
-        }
-        
-        .container {
-            max-width: 960px;
-            margin: 20px auto;
-            padding: 20px;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            border: 1px solid #ccc;
-            border-radius: 10px;
-        }
-
-        footer {
-            background-color: #343a40;
-            color: #adb5bd;
-            text-align: center;
-            padding: 1rem 0;
-            position: relative;
-            bottom: 0;
-            width: 100%;
-            margin-top: 20px;
-        }
-
-        .container p {
-            font-size: 18px;
-            line-height: 1.5;
-            color: #555;
-            margin: 0;
-        }
-
-        .container p:first-child {
-            margin-top: 0;
-        }
-
-        .container p:last-child {
-            margin-bottom: 0;
-        }
-
-        footer p {
-            font-size: 14px;
-            margin: 0;
-        }
-
-        section {
-            background-color: #f8f9fa;
-            padding: 20px;
-            margin-top: 20px;
-        }
-
-        section h2 {
-            color: #007bff;
-            margin-top: 0;
-        }
-
-        section p {
-            font-size: 16px;
-            color: #555;
-        }
-
-        section a {
-            color: #007bff;
-            text-decoration: none;
-        }
-
-        section a:hover {
+        .content a:hover {
             text-decoration: underline;
         }
 
-        header {
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        nav ul li {
-            background-color: #007bff;
-            transition: background-color 0.3s ease-in-out;
-        }
-
-        nav ul li:hover {
-            background-color: #0056b3;
-        }
-
-        .container {
-            border: 2px solid #007bff;
-        }
-
-        .container p {
-            font-weight: bold;
-        }
-
-        section {
-            border-top: 2px solid #007bff;
-        }
-
         footer {
+            width: 100%;
+            background: #2c3e50;
+            color: #bdc3c7;
+            text-align: center;
+            padding: 1rem 0;
+            margin-top: auto;
             box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
         }
 
         footer p {
-            font-weight: bold;
-        }
-
-
-        header {
-            background-image: linear-gradient(to right, #007bff, #00bcd4);
-        }
-
-        nav ul li {
-            background-color: #007bff;
-            transition: background-color 0.3s ease-in-out;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        nav ul li:hover {
-            background-color: #0056b3;
-            transform: scale(1.1);
-        }
-
-        .container {
-            border: 2px solid #007bff;
-            border-radius: 20px;
-        }
-
-        .container p {
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-        }
-
-        section {
-            border-top: 2px solid #007bff;
-            border-bottom: 2px solid #007bff;
-            border-radius: 10px;
-        }
-
-        footer {
-            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.2);
-            background-image: linear-gradient(to right, #343a40, #212529);
-        }
-
-        footer p {
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            margin: 0;
+            font-size: 0.9rem;
         }
     </style>
 </head>
@@ -205,24 +155,20 @@
     <nav>
         <ul>
             <li><a href="game.html">Spacebar Clicker Game</a></li>
-            <li><a href="cpstest.html">Cps test (beta)</a></li>
-            <li><a href="Insert code here">Coming soon!</a></li>
+            <li><a href="cpstest.html">CPS Test (beta)</a></li>
+            <li><a href="#">Coming Soon!</a></li>
         </ul>
     </nav>
-    
-    <div class="container">
-        <p>This website is in alpha, it was just made but this website is gonna be filled with a lot of games soon. This website it meant so there is more appropriate recess games to play during freetime. This website was made by Julian. So far I only have one not too good game, but it will get better. I am constantly working on this, and I hope you enjoy.</p>
+    <div class="content">
+        <p>This website is in alpha, it was just made but this website is gonna be filled with a lot of games soon. This website is meant to provide more appropriate recess games to play during freetime. This website was made by Julian. So far, I only have one not-too-good game, but it will get better. I am constantly working on this, and I hope you enjoy.</p>
     </div>
-
-    <section>
-        <div class="container">
-            <h2>Latest News</h2>
-            <p>Cps test has just been created, its still in beta. Have fun!</p>
-            <p>Please join our discord to report any bugs or just have fun! (server was just created) <a href="https://discord.gg/ShRHdCefQw">https://discord.gg/ShRHdCefQw</a></p>
-        </div>
+    <section class="content">
+        <h2>Latest News</h2>
+        <p>CPS test has just been created, it's still in beta. Have fun!</p>
+        <p>Please join our Discord to report any bugs or just have fun! (server was just created) <a href="https://discord.gg/ShRHdCefQw">Join Discord</a></p>
     </section>
-
     <footer>
-        <p>&copy; 2024 Julken's Gaming Hub.</p>
+        <p>&copy; 2024 Julken's Gaming Hub. All rights reserved.</p>
     </footer>
 </body>
+</html>

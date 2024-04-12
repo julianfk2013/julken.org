@@ -6,102 +6,92 @@
 <title>CPS Test</title>
 <style>
   body {
-    font-family: Arial, sans-serif;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     text-align: center;
     margin: 0;
     padding: 0;
-    background: linear-gradient(to right, #FFA07A, #87CEEB);
+    background-color: #0e101c;
     height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    user-select: none; 
+    user-select: none;
+    overflow: hidden;
   }
   h1 {
-    font-size: 48px;
-    color: #fff;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-    margin-bottom: 30px;
+    font-size: 60px;
+    color: #f0f8ff;
+    text-shadow: 4px 4px 10px #00e6e6;
   }
-  #timer {
+  #timer, #clickCounter {
     font-size: 24px;
-    margin-bottom: 20px;
-    color: #fff;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    color: #add8e6;
+    margin: 10px 0;
+    font-weight: bold;
   }
   #clickArea {
     padding: 20px;
-    background-color: #000;
+    background-color: #1a1a2e;
+    border: 2px solid #e94560;
     border-radius: 10px;
-    display: inline-block;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     cursor: pointer;
-    transition: background-color 0.3s ease;
-    user-select: none; /* Prevent text selection */
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    font-size: 24px;
-    color: #FFA07A;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-    transform: scale(15); /* Added this line to scale the box */
-    width: 300px; /* Added this line to set the width */
-    height: 300px; /* Added this line to set the height */
-    position: fixed; /* Added this line to position the box */
-    bottom: 0; /* Added this line to align the box at the bottom */
-    left: 50%; /* Added this line to center the box horizontally */
-    transform: translateX(-50%); /* Added this line to center the box horizontally */
+    transition: all 0.3s;
+    width: 300px;
+    height: 100px;
+    margin-top: 20px;
   }
   #clickArea:hover {
-    background-color: #006400;
+    background-color: #16213e;
+    transform: scale(1.1);
   }
   #clickArea:active {
-    background-color: #008000;
-  }
-  #clickEffect {
-    position: absolute;
-    background-color: #00FF00;
-    border-radius: 50%;
-    pointer-events: none;
-    opacity: 0;
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    background-color: #0f3460;
+    transform: scale(0.9);
   }
   .decorated-button {
-    padding: 10px 20px;
-    background-color: #fff;
-    border: none;
-    border-radius: 5px;
+    padding: 12px 24px;
+    background-color: #1a1a2e;
+    color: #e94560;
+    border-radius: 20px;
+    border: 2px solid #e94560;
     margin: 5px;
     cursor: pointer;
-    transition: background-color 0.3s ease;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-    font-size: 18px;
-    color: #FFA07A;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
-    border: 2px solid #FFA07A;
+    transition: all 0.2s;
+    font-size: 16px;
+    font-weight: bold;
   }
   .decorated-button:hover {
-    background-color: #f0f0f0;
-    color: #FF6347;
-    border-color: #FF6347;
+    background-color: #0f3460;
+    color: #f0f8ff;
+    border-color: #0f3460;
   }
-  #clickCounter {
-    font-size: 18px;
-    margin-top: 20px;
-    color: #fff;
-    text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+  .background-animation {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: -1;
+    background: linear-gradient(60deg, #29323c 25%, #485563 25%, #485563 50%, #29323c 50%, #29323c 75%, #485563 75%, #485563 100%);
+    background-size: 56.57px 56.57px;
+    animation: move 3s linear infinite;
   }
-  .additional-decoration {
-    background-color: #FF6347;
-    color: #fff;
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-size: 14px;
-    text-transform: uppercase;
-    margin-top: 10px;
-    display: inline-block;
+  @keyframes move {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 56.57px 56.57px;
+    }
   }
 </style>
 </head>
 <body>
+<div class="background-animation"></div>
 <h1>CPS Test</h1>
 <div id="timer">Time left: 0s</div>
 <div id="clickCounter">Clicks: 0</div>
@@ -112,42 +102,27 @@
 <button class="decorated-button" onclick="startTest(15)">15 seconds</button>
 <button class="decorated-button" onclick="startTest(30)">30 seconds</button>
 </div>
-<div id="clickArea" onclick="countClick()">
-  <div id="clickEffect"></div>
-</div>
+<div id="clickArea" onclick="countClick()">Click Me!</div>
 <script>
   var startTime;
   var endTime;
   var testDuration;
   var clickCount = 0;
-  var testStarted = false; // New variable to track if the test has started
+  var testStarted = false;
 
-  function countClick(event) {
-    if (testStarted) { // Check if the test has started
+  function countClick() {
+    if (testStarted) {
       clickCount++;
       document.getElementById("clickCounter").textContent = "Clicks: " + clickCount;
-      showClickEffect(event.clientX, event.clientY);
     }
   }
 
-  function showClickEffect(x, y) {
-    var clickEffect = document.getElementById("clickEffect");
-    clickEffect.style.left = x + "px";
-    clickEffect.style.top = y + "px";
-    clickEffect.style.transform = "scale(0)";
-    clickEffect.style.opacity = "1";
-    setTimeout(function() {
-      clickEffect.style.transform = "scale(1)";
-      clickEffect.style.opacity = "0";
-    }, 10);
-  }
-
   function startTest(duration) {
-    document.getElementById("clickArea").style.display = "block";
+    document.getElementById("clickArea").style.display = "flex";
     testDuration = duration;
     startTime = new Date().getTime();
     var timerInterval = setInterval(updateTimer, 1000);
-    testStarted = true; // Set testStarted to true when the test starts
+    testStarted = true;
 
     function updateTimer() {
       var currentTime = new Date().getTime();
@@ -157,50 +132,36 @@
       if (remainingTime <= 0) {
         clearInterval(timerInterval);
         calculateCPS();
-      }  
+      }
       document.getElementById("timer").textContent = "Time left: " + Math.round(remainingTime) + "s";
-      
     }
   }
 
   function calculateCPS() {
     endTime = new Date().getTime();
     var totalTime = (endTime - startTime) / 1000;
-    var cps = 0;
-    if (totalTime > 0) {
-      cps = clickCount / totalTime;
-    }
-      var animal = "";
-      if (cps < 1) {
-        animal = "Sloth";
-      } else if (cps < 3) {
-        animal = "Turtle";
-      } else if (cps < 5) {
-        animal = "Rabbit";
-      } else if (cps < 7) {
-        animal = "Gazelle";
-      } else if (cps < 10 ) {
-        animal = "Leopard";
-      } else if (cps < 15) {
-        animal = "Panther";
-      } else if (cps < 20) {
-        animal = "Jaguar";
-      } else if (cps < 25) {
-        animal = "Tiger";
-      } else if (cps < 30) {
-        animal = "Lion";
-      } else if (cps < 35) {
-        animal = "Falcon";
-      } else if (cps < 40) {
-        animal = "Superhuman";
-     
-      }
-    
+    var cps = clickCount / totalTime;
+    var animal = getAnimal(cps);
     alert("You are a " + animal + " in speed of clicking! Your CPS is " + cps.toFixed(2));
     clickCount = 0;
     document.getElementById("clickCounter").textContent = "Clicks: 0";
-    testStarted = false; // Reset testStarted to false after the test ends
-  } 
+    testStarted = false;
+  }
+
+  function getAnimal(cps) {
+    if (cps < 1) return "Sloth";
+    else if (cps < 3) return "Turtle";
+    else if (cps < 5) return "Rabbit";
+    else if (cps < 7) return "Gazelle";
+    else if (cps < 10) return "Leopard";
+    else if (cps < 15) return "Panther";
+    else if (cps < 20) return "Jaguar";
+    else if (cps < 25) return "Tiger";
+    else if (cps < 30) return "Lion";
+    else if (cps < 35) return "Falcon";
+    else if (cps < 40) return "Superhuman";
+    else return "Flash"; // For extremely high cps
+  }
 </script>
 </body>
 </html>
