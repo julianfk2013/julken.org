@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evil Magic 8 Ball</title>
+    <style>
+        body {
+            font-family: 'Comic Neue', Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(270deg, #ff8a00, #e52e71, #9a00ff, #00c6ff);
+            background-size: 800% 800%;
+            animation: BackgroundAnimation 10s ease infinite;
+            color: #ffffff;
+        }
+        @keyframes BackgroundAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .input-container {
+            width: 90%;
+            max-width: 500px;
+            margin: 20px;
+            text-align: center;
+        }
+        input[type="text"], .button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 25px;
+            border: none;
+            font-size: 16px;
+            outline: none;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+        .button {
+            background-color: #32cd32;
+            color: white;
+            cursor: pointer;
+        }
+        .button:hover {
+            background-color: #ffa500;
+        }
+        .magic-ball {
+            width: 140px;
+            height: 140px;
+            background: radial-gradient(circle, #000000, #434343);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px #fff;
+            margin-bottom: 20px;
+        }
+        .magic-number {
+            width: 60px;
+            height: 60px;
+            background-color: #fff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            color: #000;
+        }
+        #answer {
+            margin-top: 20px;
+            font-size: 18px;
+            font-style: italic;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            z-index: 10;
+        }
+        .overlay .button {
+            margin-top: 20px;
+        }
+        .overlay input[type="text"] {
+            margin-top: 10px;
+            text-align: center;
+            border-radius: 25px;
+            padding: 10px;
+        }
+        .steps {
+            display: none;
+        }
+        .step-visible {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="overlay" id="overlay">
+        <div class="steps step-1 step-visible">
+            <h1>WARNING!</h1>
+            <p>Exit this warning to proceed to the next step. (this does not currently work on mobile, will be fixed in the next update.</p>
+            <button onclick="showNextStep(2)">Exit</button>
+        </div>
+        <div class="steps step-2">
+            <h1>STEP 2</h1>
+            <p>Click "I Understand" to proceed to the final step.</p>
+            <button onclick="showNextStep(3)">I Understand</button>
+        </div>
+        <div class="steps step-3">
+            <h1>FINAL STEP</h1>
+            <p>Type the following to proceed: "I understand to not follow anything the Magic 8 Ball says"</p>
+            <p>Case does not matter.</p>
+            <input type="text" id="acknowledgeInput" placeholder="Type here..." oninput="checkInput()">
+            <button onclick="closeOverlay()" id="acknowledgeButton" disabled>I Understand</button>
+        </div>
+    </div>
+    <div class="magic-ball">
+        <div class="magic-number">8</div>
+    </div>
+    <h1>Evil Magic 8 Ball</h1>
+    <div class="input-container">
+        <input type="text" id="question" placeholder="Ask a question..." disabled>
+        <button onclick="getAnswer()" disabled>Get an answer</button>
+    </div>
+    <div id="answer"></div>
+
+    <script>
+        function showNextStep(step) {
+            const currentStep = document.querySelector('.step-visible');
+            currentStep.classList.remove('step-visible');
+            const nextStep = document.querySelector('.step-' + step);
+            nextStep.classList.add('step-visible');
+        }
+
+        function closeOverlay() {
+            const overlay = document.getElementById('overlay');
+            overlay.style.display = 'none';
+            document.getElementById('question').disabled = false;
+            document.querySelector('.input-container button').disabled = false;
+        }
+
+        function checkInput() {
+            const userInput = document.getElementById('acknowledgeInput').value.toLowerCase();
+            const requiredText = "i understand to not follow anything the magic 8 ball says";
+            document.getElementById('acknowledgeButton').disabled = (userInput !== requiredText);
+        }
+
+        function getAnswer() {
+            const answers = {
+                positive: [
+                    "Absolutely!", "Certainly!", "Without a doubt, yes!",
+                    "Go for it!", "Yes, definitely!", "You're gonna love it!"
+                ],
+                negative: [
+                    "No way.", "I don't think so.", "Don't count on it.",
+                    "Nope, never!", "Not in your wildest dreams.", "Certainly not!"
+                ],
+                cheeky: [
+                    "Ask again later...", "Is that really a question?", "I'm not sure I care...",
+                    "Can I ignore this one?", "Maybe yes, maybe no.", "I could tell you, but then..."
+                ]
+            };
+
+            const question = document.getElementById('question').value.toLowerCase();
+            let responseCategory = 'cheeky'; // Default to cheeky
+
+            if (/should|can|will|am i|could/i.test(question)) {
+                responseCategory = 'positive';
+                if (/not|never|can't|don't|shouldn't/i.test(question)) {
+                    responseCategory = 'negative';
+                }
+            } else if (/why|how|what|when|where/i.test(question)) {
+                responseCategory = 'cheeky';
+            }
+
+            const responses = answers[responseCategory];
+            const randomIndex = Math.floor(Math.random() * responses.length);
+            document.getElementById('answer').textContent = responses[randomIndex];
+        }
+    </script>
+</body>
+</html>
