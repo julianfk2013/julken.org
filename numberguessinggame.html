@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Number Guessing Game</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(120deg, #89f7fe, #66a6ff);
+            color: #333;
+            text-align: center;
+        }
+        .game-container {
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+            width: 340px;
+        }
+        input[type="number"], button {
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 8px;
+            border: 2px solid #ddd;
+            width: calc(100% - 22px);
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .hints, .stats, .message {
+            margin-top: 20px;
+        }
+        .hint-btn {
+            background-color: #008CBA;
+            color: white;
+            padding: 10px 15px;
+            margin-right: 5px;
+            cursor: pointer;
+            flex-grow: 1;
+            transition: background 0.3s;
+        }
+        .hint-btn:hover {
+            background-color: #007BAA;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Number Guessing Game</h1>
+        <input type="number" id="guessInput" min="1" max="100" placeholder="Enter your guess...">
+        <button onclick="checkGuess()">Guess</button>
+        <div class="message" id="message"></div>
+        <div class="stats">
+            <p>Successful guesses under 5 tries: <span id="successUnderFive">0</span></p>
+        </div>
+        <div class="hints">
+            <button class="hint-btn" onclick="useHint(1)" id="hint1" disabled>General Area (1 point)</button>
+            <button class="hint-btn" onclick="useHint(2)" id="hint2" disabled>Detailed Range (2 points)</button>
+        </div>
+    </div>
+
+    <script>
+        let randomNumber = Math.floor(Math.random() * 100) + 1;
+        let guesses = 0;
+        let successUnderFive = localStorage.getItem('successUnderFive') ? parseInt(localStorage.getItem('successUnderFive')) : 0;
+
+        document.getElementById('successUnderFive').textContent = successUnderFive;
+        updateHintButtons();
+
+        function checkGuess() {
+            const userGuess = parseInt(document.getElementById('guessInput').value);
+            const messageElement = document.getElementById('message');
+            guesses++;
+
+            if (isNaN(userGuess) || userGuess < 1 || userGuess > 100) {
+                messageElement.textContent = "Please enter a number between 1 and 100.";
+                return;
+            }
+
+            if (userGuess === randomNumber) {
+                messageElement.textContent = `Correct! You guessed the number in ${guesses} guesses!`;
+                if (guesses <= 5) {
+                    successUnderFive++;
+                    localStorage.setItem('successUnderFive', successUnderFive);
+                    document.getElementById('successUnderFive').textContent = successUnderFive;
+                    updateHintButtons();
+                }
+                resetGame();
+            } else {
+                messageElement.textContent = userGuess < randomNumber ? 'Too low!' : 'Too high!';
+            }
+        }
+
+        function useHint(level) {
+            if (successUnderFive >= level) {
+                let hintMessage;
+                if (level === 1) {
+                    const midPoint = 50;
+                    hintMessage = randomNumber > midPoint ? "Try higher than 50." : "Try lower than 50.";
+                } else if (level === 2) {
+                    const quarterPoint = randomNumber > 50 ? 75 : 25;
+                    hintMessage = randomNumber > 50 ? `Try higher than ${quarterPoint}.` : `Try lower than ${quarterPoint}.`;
+                }
+                document.getElementById('message').textContent = hintMessage;
+                successUnderFive -= level;
+                localStorage.setItem('successUnderFive', successUnderFive);
+                document.getElementById('successUnderFive').textContent = successUnderFive;
+                updateHintButtons();
+            } else {
+                document.getElementById('message').textContent = 'Not enough points for this hint!';
+            }
+        }
+
+        function updateHintButtons() {
+            document.getElementById('hint1').disabled = successUnderFive < 1;
+            document.getElementById('hint2').disabled = successUnderFive < 2;
+        }
+
+        function resetGame() {
+            randomNumber = Math.floor(Math.random() * 100) + 1;
+            guesses = 0;
+        }
+    </script>
+</body>
+</html>
