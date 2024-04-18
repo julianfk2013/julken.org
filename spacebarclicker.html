@@ -15,6 +15,13 @@
             padding: 20px;
             font-size: 20px;
             margin: 0;
+            background-size: cover;
+            animation: colorShift 10s ease infinite;
+        }
+        @keyframes colorShift {
+            0% { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); }
+            50% { background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%); }
+            100% { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); }
         }
         h1 {
             font-family: 'Press Start 2P', cursive;
@@ -32,6 +39,7 @@
             border: 4px solid #FDEB71;
             border-radius: 15px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
         }
         #visual-spacebar {
             font-family: 'Creepster', cursive;
@@ -43,11 +51,12 @@
             background-color: #F76B8A;
             color: #ffffff;
             margin-top: 20px;
-            transition: transform 0.2s ease-in-out;
+            transition: all 0.3s ease-in-out;
             background-image: linear-gradient(45deg, #f06d99, #f78da7);
         }
-        #visual-spacebar:hover, .shop-item:hover {
-            transform: scale(1.05);
+        #visual-spacebar:hover {
+            transform: scale(1.1);
+            background-color: #E52B50;
         }
         .shop-item {
             display: inline-block;
@@ -56,8 +65,11 @@
             background-color: #4C4C6D;
             color: #FDEB71;
             cursor: pointer;
-            transition: transform 0.2s ease-in-out;
+            transition: transform 0.3s ease-in-out;
             background-image: linear-gradient(45deg, #5c5c8a, #4c4c6d);
+        }
+        .shop-item:hover {
+            transform: scale(1.1);
         }
         #score, #sps {
             font-size: 2em;
@@ -70,8 +82,8 @@
             background-image: linear-gradient(45deg, #5c5c8a, #4c4c6d);
         }
         #resetButton {
-            font-family: 'Press Start 2P', cursive; /* Matching the game's retro vibe */
-            position: fixed; /* Ensures button is always visible */
+            font-family: 'Press Start 2P', cursive;
+            position: fixed;
             bottom: 20px;
             right: 20px;
             background-color: #ff6347;
@@ -84,7 +96,7 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
         }
         #resetButton:hover {
-            background-color: #ff4500; /* Darker shade on hover */
+            background-color: #ff4500;
         }
     </style>
 </head>
@@ -94,7 +106,6 @@
     <div id="score">Score: 0</div>
     <div id="visual-spacebar" tabindex="0">SPACEBAR</div>
     <div id="sps">SPS: 0</div>
-
     <div id="shop">
         <div class="shop-item" onclick="buyItem(100, 1)">Monkey (Cost: 100 Score, +1 SPS)</div>
         <div class="shop-item" onclick="buyItem(250, 5)">Julian (Cost: 250 Score, +5 SPS)</div>
@@ -116,13 +127,19 @@
         <div class="shop-item" onclick="buyItem(50000000000, 100000000)">Omniverse Crafter (Cost: 50,000,000,000 Score, +100,000,000 SPS)</div>
         <div class="shop-item" onclick="buyItem(100000000000, 500000000)">Legend Forger (Cost: 100,000,000,000 Score, +500,000,000 SPS)</div>
         <div class="shop-item" onclick="buyItem(500000000000, 1000000000)">Juicy Juice (Cost: 500,000,000,000 Score, +1,000,000,000 SPS)</div>    </div>
-
+    </div>
     <button id="resetButton">Reset Progress</button>
 
     <script>
         let score = parseInt(localStorage.getItem('score')) || 0;
-        let sps = parseInt(localStorage.getItem('sps')) || 0; // Score per second
-        let isSpacePressed = false;
+        let sps = parseInt(localStorage.getItem('sps')) || 0;
+
+        function updateScoreAndSPS() {
+            document.getElementById('score').innerText = 'Score: ' + score.toLocaleString();
+            document.getElementById('sps').innerText = 'SPS: ' + sps;
+            localStorage.setItem('score', score.toString());
+            localStorage.setItem('sps', sps.toString());
+        }
 
         function buyItem(cost, increment) {
             if (score >= cost) {
@@ -132,24 +149,15 @@
             }
         }
 
-        function updateScoreAndSPS() {
-            document.getElementById('score').innerText = 'Score: ' + score.toLocaleString();
-            document.getElementById('sps').innerText = 'SPS: ' + sps;
-            localStorage.setItem('score', score.toString());
-            localStorage.setItem('sps', sps.toString());
-        }
-
-        document.addEventListener('keydown', function(event) {
-            if (event.code === 'Space' && !isSpacePressed) {
-                score++;
-                isSpacePressed = true;
-                updateScoreAndSPS();
-            }
+        document.getElementById('visual-spacebar').addEventListener('click', function() {
+            score++;
+            updateScoreAndSPS();
         });
 
-        document.addEventListener('keyup', function(event) {
-            if (event.code === 'Space') {
-                isSpacePressed = false;
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space' && !event.repeat) {
+                score++;
+                updateScoreAndSPS();
             }
         });
 
@@ -160,7 +168,6 @@
             }
         }, 1000);
 
-        // Reset button functionality
         document.getElementById('resetButton').addEventListener('click', function() {
             if (confirm('Are you sure you want to reset your progress?')) {
                 localStorage.setItem('score', '0');
