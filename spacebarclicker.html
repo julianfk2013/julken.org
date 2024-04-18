@@ -129,6 +129,14 @@
         <div class="shop-item" onclick="buyItem(500000000000, 1000000000)">Juicy Juice (Cost: 500,000,000,000 Score, +1,000,000,000 SPS)</div>    </div>
     </div>
     <button id="resetButton">Reset Progress</button>
+    <script>
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space' && !event.repeat) {
+                event.preventDefault(); // Prevent default scroll behavior
+
+            }
+        });
+    </script>
 
     <script>
         let score = parseInt(localStorage.getItem('score')) || 0;
