@@ -24,6 +24,7 @@
             border-radius: 15px;
             box-shadow: 0 6px 20px rgba(0,0,0,0.15);
             width: 340px;
+            display: none; /* Initially hidden until the rules are closed */
         }
         input[type="number"], button {
             padding: 10px;
@@ -56,9 +57,57 @@
         .hint-btn:hover {
             background-color: #007BAA;
         }
+        .rules-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .rules-content {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            max-width: 500px;
+            color: #333;
+            text-align: left;
+        }
+        #closeRules {
+            margin-top: 20px;
+            background-color: #ff6347;
+            color: white;
+        }
     </style>
 </head>
 <body>
+    <div class="rules-container">
+        <div class="rules-content">
+            <h2>Game Rules</h2>
+            <p>Here are the rules of the Number Guessing Game:</p>
+            <ul>
+                <li>Guess a number between 1 and 100.</li>
+                <li>If you guess the number correctly within 5 tries, you earn a point.</li>
+                <li>You can use the earned points to get hints.</li>
+                <li>There are two types of hints available:
+                    <ul>
+                        <li>General Area: This hint tells you whether the number is higher or lower than 50.</li>
+                        <li>Detailed Range: This hint provides a specific range to narrow down your guess.</li>
+                    </ul>
+                </li>
+                <li>Each hint costs a certain number of points.</li>
+                <li>If you run out of points, you won't be able to use hints.</li>
+                <li>Good luck and have fun!</li>
+            </ul>
+            <button id="closeRules">Close Rules</button>
+        </div>
+    </div>
     <div class="game-container">
         <h1>Number Guessing Game</h1>
         <input type="number" id="guessInput" min="1" max="100" placeholder="Enter your guess...">
@@ -80,6 +129,11 @@
 
         document.getElementById('successUnderFive').textContent = successUnderFive;
         updateHintButtons();
+
+        document.getElementById('closeRules').addEventListener('click', function() {
+            document.querySelector('.rules-container').style.display = 'none';
+            document.querySelector('.game-container').style.display = 'block';
+        });
 
         function checkGuess() {
             const userGuess = parseInt(document.getElementById('guessInput').value);
