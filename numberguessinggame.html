@@ -114,7 +114,7 @@
         <button onclick="checkGuess()">Guess</button>
         <div class="message" id="message"></div>
         <div class="stats">
-            <p>Successful guesses under 5 tries: <span id="successUnderFive">0</span></p>
+            <p>Successful guesses under 7 tries: <span id="successUnderFive">0</span></p>
         </div>
         <div class="hints">
             <button class="hint-btn" onclick="useHint(1)" id="hint1" disabled>General Area (1 point)</button>
@@ -147,7 +147,7 @@
 
             if (userGuess === randomNumber) {
                 messageElement.textContent = `Correct! You guessed the number in ${guesses} guesses!`;
-                if (guesses <= 5) {
+                if (guesses <= 7) {
                     successUnderFive++;
                     localStorage.setItem('successUnderFive', successUnderFive);
                     document.getElementById('successUnderFive').textContent = successUnderFive;
