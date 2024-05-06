@@ -16,7 +16,7 @@
     font-family: Arial, sans-serif;
   }
   canvas {
-    width: 600px;  /* Increased width */
+    width: 600px;  /* Adjusted width */
     height: 700px;
     background: repeating-linear-gradient(180deg, #606060 0%, #606060 10%, #505050 10%, #505050 20%);
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
@@ -29,21 +29,43 @@
     font-size: 24px;
     color: white;
   }
+  .mobile-controls { display: none; }
+  @media screen and (max-width: 600px) {
+    .mobile-controls {
+      display: block;
+      position: fixed;
+      bottom: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+    }
+    button {
+      font-size: 20px;
+      padding: 10px 20px;
+      margin: 0 5px;
+    }
+  }
 </style>
 </head>
 <body>
 <canvas id="gameCanvas"></canvas>
 <div id="score">Score: 0</div>
+<div class="mobile-controls">
+  <button onclick="moveLeft()">Left</button>
+  <button onclick="moveRight()">Right</button>
+</div>
 <script>
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
-  canvas.width = 600;  // Adjusted to the new style width
+  canvas.width = 600;
   canvas.height = 700;
 
   const carImage = new Image();
-  carImage.src = 'download-removebg-preview.png'; 
-  const lanes = [0, 200, 400, 600].map(x => x + 50); // Adjusting lane positions for wider canvas
-  let carX = lanes[1];
+  carImage.src = 'car.png'; // Ensure this points to your car image
+  const laneCount = 5;
+  const laneWidth = canvas.width / laneCount;
+  const lanes = Array.from({length: laneCount}, (_, i) => laneWidth / 2 + i * laneWidth);
+  let carX = lanes[Math.floor(laneCount / 2)];
   let obstacles = [];
   let score = 0;
   let gameRunning = true;
@@ -51,7 +73,7 @@
 
   function drawCar() {
     if (gameRunning) {
-      ctx.drawImage(carImage, carX, canvas.height - 120, 50, 100);
+      ctx.drawImage(carImage, carX - 25, canvas.height - 120, 50, 100);
     }
   }
 
@@ -73,16 +95,18 @@
         obstacle.y += obstacleSpeed;
       });
       obstacles = obstacles.filter(obstacle => obstacle.y < canvas.height);
-
       if (Math.random() < 0.03 && obstacles.length < 3) {
-        const lane = lanes[Math.floor(Math.random() * lanes.length)];
-        obstacles.push({ x: lane, y: -50 });
+        let possiblePositions = lanes.filter(lane => !obstacles.some(ob => Math.abs(ob.x - lane) < 50));
+        if (possiblePositions.length > 0) {
+          const lane = possiblePositions[Math.floor(Math.random() * possiblePositions.length)];
+          obstacles.push({ x: lane, y: -50 });
+        }
       }
     }
   }
 
   function checkCollision() {
-    const carRect = { x: carX, y: canvas.height - 120, width: 50, height: 100 };
+    const carRect = { x: carX - 25, y: canvas.height - 120, width: 50, height: 100 };
     obstacles.forEach(obstacle => {
       const obstacleRect = { x: obstacle.x - 25, y: obstacle.y - 25, width: 50, height: 50 };
       if (carRect.x < obstacleRect.x + obstacleRect.width &&
@@ -132,7 +156,6 @@
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
     const y = event.clientY - rect.top;
-    // Coordinates for the "Try Again" button
     if (!gameRunning && x > canvas.width / 2 - 100 && x < canvas.width / 2 + 100 &&
         y > canvas.height / 2 + 100 && y < canvas.height / 2 + 150) {
       resetGame();
@@ -143,23 +166,35 @@
     gameRunning = true;
     obstacles = [];
     score = 0;
-    obstacleSpeed = 3;  // Reset speed
+    obstacleSpeed = 3;
     document.getElementById('score').textContent = 'Score: 0';
     requestAnimationFrame(updateGame);
   }
 
   document.addEventListener('keydown', function(event) {
     if (gameRunning) {
-      if (event.key === 'a' || event.key === 'ArrowLeft') {
-        const newIndex = Math.max(lanes.indexOf(carX) - 1, 0);
-        carX = lanes[newIndex];
-      }
-      if (event.key === 'd' || event.key === 'ArrowRight') {
-        const newIndex = Math.min(lanes.indexOf(carX) + 1, lanes.length - 1);
-        carX = lanes[newIndex];
-      }
+      moveCar(event.key);
     }
   });
+
+  function moveCar(key) {
+    if (key === 'a' || key === 'ArrowLeft') {
+      const newIndex = Math.max(lanes.indexOf(carX) - 1, 0);
+      carX = lanes[newIndex];
+    }
+    if (key === 'd' || key === 'ArrowRight') {
+      const newIndex = Math.min(lanes.indexOf(carX) + 1, lanes.length - 1);
+      carX = lanes[newIndex];
+    }
+  }
+
+  function moveLeft() {
+    moveCar('ArrowLeft');
+  }
+
+  function moveRight() {
+    moveCar('ArrowRight');
+  }
 
   carImage.onload = updateGame;
 </script>
