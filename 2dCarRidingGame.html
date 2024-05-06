@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2D Car Riding Game</title>
+<style>
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background: linear-gradient(135deg, #6d5dfc 0%, #c294ff 100%);
+    color: #fff;
+    font-family: Arial, sans-serif;
+  }
+  canvas {
+    width: 600px;  /* Increased width */
+    height: 700px;
+    background: repeating-linear-gradient(180deg, #606060 0%, #606060 10%, #505050 10%, #505050 20%);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
+  }
+  #score {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 24px;
+    color: white;
+  }
+</style>
+</head>
+<body>
+<canvas id="gameCanvas"></canvas>
+<div id="score">Score: 0</div>
+<script>
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = 600;  // Adjusted to the new style width
+  canvas.height = 700;
+
+  const carImage = new Image();
+  carImage.src = 'download-removebg-preview.png'; 
+  const lanes = [0, 200, 400, 600].map(x => x + 50); // Adjusting lane positions for wider canvas
+  let carX = lanes[1];
+  let obstacles = [];
+  let score = 0;
+  let gameRunning = true;
+  let obstacleSpeed = 3;
+
+  function drawCar() {
+    if (gameRunning) {
+      ctx.drawImage(carImage, carX, canvas.height - 120, 50, 100);
+    }
+  }
+
+  function drawObstacles() {
+    obstacles.forEach(obstacle => {
+      ctx.fillStyle = 'rgba(255, 165, 0, 0.85)';
+      ctx.beginPath();
+      ctx.arc(obstacle.x, obstacle.y, 25, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.stroke();
+    });
+  }
+
+  function updateObstacles() {
+    if (gameRunning) {
+      obstacles.forEach(obstacle => {
+        obstacle.y += obstacleSpeed;
+      });
+      obstacles = obstacles.filter(obstacle => obstacle.y < canvas.height);
+
+      if (Math.random() < 0.03 && obstacles.length < 3) {
+        const lane = lanes[Math.floor(Math.random() * lanes.length)];
+        obstacles.push({ x: lane, y: -50 });
+      }
+    }
+  }
+
+  function checkCollision() {
+    const carRect = { x: carX, y: canvas.height - 120, width: 50, height: 100 };
+    obstacles.forEach(obstacle => {
+      const obstacleRect = { x: obstacle.x - 25, y: obstacle.y - 25, width: 50, height: 50 };
+      if (carRect.x < obstacleRect.x + obstacleRect.width &&
+          carRect.x + carRect.width > obstacleRect.x &&
+          carRect.y < obstacleRect.y + obstacleRect.height &&
+          carRect.y + carRect.height > obstacleRect.y) {
+        gameRunning = false;
+        gameOverScreen();
+      }
+    });
+  }
+
+  function updateScore() {
+    if (gameRunning) {
+      score++;
+      document.getElementById('score').textContent = 'Score: ' + score;
+      if (score % 100 === 0) {
+        obstacleSpeed += 0.5;  // Increase speed every 100 points
+      }
+    }
+  }
+
+  function gameOverScreen() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.font = '36px Arial';
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'center';
+    ctx.fillText('Game Over', canvas.width / 2, canvas.height / 2);
+    ctx.fillText(`Your score is ${score}`, canvas.width / 2, canvas.height / 2 + 50);
+    ctx.fillText('Try Again', canvas.width / 2, canvas.height / 2 + 120);
+  }
+
+  function updateGame() {
+    if (gameRunning) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      updateObstacles();
+      drawObstacles();
+      drawCar();
+      checkCollision();
+      updateScore();
+      requestAnimationFrame(updateGame);
+    }
+  }
+
+  canvas.addEventListener('click', function(event) {
+    const rect = canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    // Coordinates for the "Try Again" button
+    if (!gameRunning && x > canvas.width / 2 - 100 && x < canvas.width / 2 + 100 &&
+        y > canvas.height / 2 + 100 && y < canvas.height / 2 + 150) {
+      resetGame();
+    }
+  });
+
+  function resetGame() {
+    gameRunning = true;
+    obstacles = [];
+    score = 0;
+    obstacleSpeed = 3;  // Reset speed
+    document.getElementById('score').textContent = 'Score: 0';
+    requestAnimationFrame(updateGame);
+  }
+
+  document.addEventListener('keydown', function(event) {
+    if (gameRunning) {
+      if (event.key === 'a' || event.key === 'ArrowLeft') {
+        const newIndex = Math.max(lanes.indexOf(carX) - 1, 0);
+        carX = lanes[newIndex];
+      }
+      if (event.key === 'd' || event.key === 'ArrowRight') {
+        const newIndex = Math.min(lanes.indexOf(carX) + 1, lanes.length - 1);
+        carX = lanes[newIndex];
+      }
+    }
+  });
+
+  carImage.onload = updateGame;
+</script>
+</body>
+</html>
