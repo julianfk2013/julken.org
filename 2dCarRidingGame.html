@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>2D Car Dodging game</title>
+<title>2D Car Riding Game</title>
 <style>
   body {
     display: flex;
@@ -29,20 +29,30 @@
     font-size: 24px;
     color: white;
   }
-  .mobile-controls { display: none; }
+  .mobile-controls {
+    display: none; /* Hidden by default, shown only on mobile */
+    position: fixed;
+    bottom: 10%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1000;
+  }
+  button {
+    font-size: 20px;
+    padding: 10px 20px;
+    margin: 0 5px;
+    background-color: #ffffff;
+    color: #333333;
+    border: none;
+    border-radius: 5px;
+    outline: none;
+  }
   @media screen and (max-width: 600px) {
     .mobile-controls {
-      display: block;
-      position: fixed;
-      bottom: 10%;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10;
+      display: flex; /* Make controls visible on mobile */
     }
     button {
-      font-size: 20px;
-      padding: 10px 20px;
-      margin: 0 5px;
+      cursor: pointer;
     }
   }
 </style>
@@ -61,7 +71,7 @@
   canvas.height = 700;
 
   const carImage = new Image();
-  carImage.src = 'download-removebg-preview.png'; // Ensure this points to your car image
+  carImage.src = 'car.png'; // Ensure this points to your car image
   const laneCount = 5;
   const laneWidth = canvas.width / laneCount;
   const lanes = Array.from({length: laneCount}, (_, i) => laneWidth / 2 + i * laneWidth);
@@ -155,7 +165,7 @@
   canvas.addEventListener('click', function(event) {
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
+    y = event.clientY - rect.top;
     if (!gameRunning && x > canvas.width / 2 - 100 && x < canvas.width / 2 + 100 &&
         y > canvas.height / 2 + 100 && y < canvas.height / 2 + 150) {
       resetGame();
