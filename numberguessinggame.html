@@ -93,7 +93,7 @@
             <p>Here are the rules of the Number Guessing Game:</p>
             <ul>
                 <li>Guess a number between 1 and 100.</li>
-                <li>If you guess the number correctly within 5 tries, you earn a point.</li>
+                <li>If you guess the number correctly within 7 tries, you earn a point.</li>
                 <li>You can use the earned points to get hints.</li>
                 <li>There are two types of hints available:
                     <ul>
@@ -125,7 +125,7 @@
     <script>
         let randomNumber = Math.floor(Math.random() * 100) + 1;
         let guesses = 0;
-        let successUnderFive = localStorage.getItem('successUnderFive') ? parseInt(localStorage.getItem('successUnderFive')) : 0;
+        let successUnderFive = localStorage.getItem('successUnderSeven') ? parseInt(localStorage.getItem('successUnderSeven')) : 0;
 
         document.getElementById('successUnderFive').textContent = successUnderFive;
         updateHintButtons();
