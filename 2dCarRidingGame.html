@@ -16,8 +16,8 @@
     font-family: Arial, sans-serif;
   }
   canvas {
-    width: 600px;  /* Adjusted width */
-    height: 700px;
+    width: 90vw;  /* Responsive width */
+    height: 90vh; /* Responsive height */
     background: repeating-linear-gradient(180deg, #606060 0%, #606060 10%, #505050 10%, #505050 20%);
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.4);
   }
@@ -67,14 +67,21 @@
 <script>
   const canvas = document.getElementById('gameCanvas');
   const ctx = canvas.getContext('2d');
-  canvas.width = 600;
-  canvas.height = 700;
+
+  // Set canvas dimensions based on viewport size
+  function setCanvasDimensions() {
+    canvas.width = window.innerWidth * 0.9;
+    canvas.height = window.innerHeight * 0.9;
+  }
+
+  window.addEventListener('resize', setCanvasDimensions);
+  setCanvasDimensions();
 
   const carImage = new Image();
   carImage.src = 'download-removebg-preview.png';
-  const laneCount = 5;
-  const laneWidth = canvas.width / laneCount;
-  const lanes = Array.from({length: laneCount}, (_, i) => laneWidth / 2 + i * laneWidth);
+  let laneCount = 5;
+  let laneWidth = canvas.width / laneCount;
+  let lanes = Array.from({length: laneCount}, (_, i) => laneWidth / 2 + i * laneWidth);
   let carX = lanes[Math.floor(laneCount / 2)];
   let obstacles = [];
   let score = 0;
@@ -165,7 +172,7 @@
   canvas.addEventListener('click', function(event) {
     const rect = canvas.getBoundingClientRect();
     const x = event.clientX - rect.left;
-    y = event.clientY - rect.top;
+    const y = event.clientY - rect.top;
     if (!gameRunning && x > canvas.width / 2 - 100 && x < canvas.width / 2 + 100 &&
         y > canvas.height / 2 + 100 && y < canvas.height / 2 + 150) {
       resetGame();
