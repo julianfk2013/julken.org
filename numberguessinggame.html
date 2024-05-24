@@ -110,11 +110,12 @@
     </div>
     <div class="game-container">
         <h1>Number Guessing Game</h1>
+        <p>Number of guesses: <span id="numGuesses">0</span></p>
         <input type="number" id="guessInput" min="1" max="100" placeholder="Enter your guess...">
         <button onclick="checkGuess()">Guess</button>
         <div class="message" id="message"></div>
         <div class="stats">
-            <p>Successful guesses under 7 tries: <span id="successUnderFive">0</span></p>
+            <p>Successful guesses under 7 tries: <span id="successUnderSeven">0</span></p>
         </div>
         <div class="hints">
             <button class="hint-btn" onclick="useHint(1)" id="hint1" disabled>General Area (1 point)</button>
@@ -125,9 +126,9 @@
     <script>
         let randomNumber = Math.floor(Math.random() * 100) + 1;
         let guesses = 0;
-        let successUnderFive = localStorage.getItem('successUnderSeven') ? parseInt(localStorage.getItem('successUnderSeven')) : 0;
+        let successUnderSeven = localStorage.getItem('successUnderSeven') ? parseInt(localStorage.getItem('successUnderSeven')) : 0;
 
-        document.getElementById('successUnderFive').textContent = successUnderFive;
+        document.getElementById('successUnderSeven').textContent = successUnderSeven;
         updateHintButtons();
 
         document.getElementById('closeRules').addEventListener('click', function() {
@@ -139,6 +140,7 @@
             const userGuess = parseInt(document.getElementById('guessInput').value);
             const messageElement = document.getElementById('message');
             guesses++;
+            document.getElementById('numGuesses').textContent = guesses;
 
             if (isNaN(userGuess) || userGuess < 1 || userGuess > 100) {
                 messageElement.textContent = "Please enter a number between 1 and 100.";
@@ -148,9 +150,9 @@
             if (userGuess === randomNumber) {
                 messageElement.textContent = `Correct! You guessed the number in ${guesses} guesses!`;
                 if (guesses <= 7) {
-                    successUnderFive++;
-                    localStorage.setItem('successUnderFive', successUnderFive);
-                    document.getElementById('successUnderFive').textContent = successUnderFive;
+                    successUnderSeven++;
+                    localStorage.setItem('successUnderSeven', successUnderSeven);
+                    document.getElementById('successUnderSeven').textContent = successUnderSeven;
                     updateHintButtons();
                 }
                 resetGame();
@@ -160,7 +162,7 @@
         }
 
         function useHint(level) {
-            if (successUnderFive >= level) {
+            if (successUnderSeven >= level) {
                 let hintMessage;
                 if (level === 1) {
                     const midPoint = 50;
@@ -170,9 +172,9 @@
                     hintMessage = randomNumber > 50 ? `Try higher than ${quarterPoint}.` : `Try lower than ${quarterPoint}.`;
                 }
                 document.getElementById('message').textContent = hintMessage;
-                successUnderFive -= level;
-                localStorage.setItem('successUnderFive', successUnderFive);
-                document.getElementById('successUnderFive').textContent = successUnderFive;
+                successUnderSeven -= level;
+                localStorage.setItem('successUnderSeven', successUnderSeven);
+                document.getElementById('successUnderSeven').textContent = successUnderSeven;
                 updateHintButtons();
             } else {
                 document.getElementById('message').textContent = 'Not enough points for this hint!';
@@ -180,13 +182,14 @@
         }
 
         function updateHintButtons() {
-            document.getElementById('hint1').disabled = successUnderFive < 1;
-            document.getElementById('hint2').disabled = successUnderFive < 2;
+            document.getElementById('hint1').disabled = successUnderSeven < 1;
+            document.getElementById('hint2').disabled = successUnderSeven < 2;
         }
 
         function resetGame() {
             randomNumber = Math.floor(Math.random() * 100) + 1;
             guesses = 0;
+            document.getElementById('numGuesses').textContent = guesses;
         }
     </script>
 </body>
