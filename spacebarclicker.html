@@ -1,1 +1,297 @@
-<p style="font-size: 50px;">Bugs are being fixed because of the new update, sorry for any inconvenience! Game should be up later today. (progress from before the update may not be saved sadly :(</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Julian's Spacebar Clicker Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Creepster&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: #FDEB71;
+            text-align: center;
+            padding: 20px;
+            font-size: 20px;
+            margin: 0;
+            background-size: cover;
+            animation: colorShift 10s ease infinite;
+        }
+        @keyframes colorShift {
+            0% { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); }
+            50% { background: linear-gradient(135deg, #2a5298 0%, #1e3c72 100%); }
+            100% { background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); }
+        }
+        h1 {
+            font-family: 'Press Start 2P', cursive;
+            color: #FDFD96;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            font-size: 3em;
+            margin-bottom: 20px;
+        }
+        p {
+            color: #FDFD96;
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+        #visual-spacebar, .shop-item, .click-upgrade, #score, #sps, #spc, #resetButton {
+            border: 4px solid #FDEB71;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+        #visual-spacebar {
+            font-family: 'Creepster', cursive;
+            font-size: 3em;
+            cursor: pointer;
+            user-select: none;
+            display: inline-block;
+            padding: 20px 40px;
+            background-color: #F76B8A;
+            color: #ffffff;
+            margin-top: 20px;
+            transition: all 0.3s ease-in-out;
+            background-image: linear-gradient(45deg, #f06d99, #f78da7);
+        }
+        #visual-spacebar:hover {
+            transform: scale(1.1);
+            background-color: #E52B50;
+        }
+        .shop-item, .click-upgrade {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px;
+            background-color: #4C4C6D;
+            color: #FDEB71;
+            cursor: pointer;
+            transition: transform 0.3s ease-in-out;
+            background-image: linear-gradient(45deg, #5c5c8a, #4c4c6d);
+        }
+        .shop-item:hover, .click-upgrade:hover {
+            transform: scale(1.1);
+        }
+        .click-upgrade {
+            background-color: #6D6D8A;
+        }
+        #score, #sps, #spc {
+            font-size: 2em;
+            margin: 30px 0;
+            background-color: #4C4C6D;
+            color: #FDEB71;
+            display: inline-block;
+            padding: 10px 20px;
+            width: auto;
+            background-image: linear-gradient(45deg, #5c5c8a, #4c4c6d);
+        }
+        #resetButton {
+            font-family: 'Press Start 2P', cursive;
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #ff6347;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: background-color 0.2s ease-in-out;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+        }
+        #resetButton:hover {
+            background-color: #ff4500;
+        }
+        .shop-category {
+            display: inline-block;
+            margin: 20px;
+        }
+        .shop-category button {
+            background-color: #4C4C6D;
+            color: #FDEB71;
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: transform 0.3s ease-in-out;
+            border: none;
+            border-radius: 15px;
+            margin: 10px;
+            background-image: linear-gradient(45deg, #5c5c8a, #4c4c6d);
+        }
+        .shop-category button:hover {
+            transform: scale(1.1);
+        }
+        .shop {
+            display: none; /* Initially hide all shops */
+        }
+    </style>
+</head>
+<body>
+    <h1>Julian's Spacebar Clicker Game</h1>
+    <p>Click the spacebar to earn points!</p>
+    
+    <div id="visual-spacebar" onclick="increaseScore()">PRESS SPACEBAR</div>
+    
+    <div id="score">Score: <span id="scoreValue">0</span></div>
+    <div id="sps">Score per Second: <span id="spsValue">0</span></div>
+    <div id="spc">Score per Click: <span id="spcValue">1</span></div>
+    
+    <div id="resetButton" onclick="resetGame()">Reset Game</div>
+    
+    <div class="shop-category">
+        <button onclick="showSPCShop()">SPC Shop</button>
+        <button onclick="showSPSShop()">SPS Shop</button>
+    </div>
+    
+    <div id="spc-shop" class="shop">
+        <div class="click-upgrade" onclick="buyClickUpgrade(150, 1)">Typewriter (Cost: 150 Score, +1 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(350, 5)">Keyboard (Cost: 350 Score, +5 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(1200, 10)">Backspace Eraser (Cost: 1,200 Score, +10 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(3000, 50)">Enhanced Tool (Cost: 3,000 Score, +50 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(8000, 100)">Advanced Device (Cost: 8,000 Score, +100 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(20000, 200)">Optimized Module (Cost: 20,000 Score, +200 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(50000, 500)">Precision Gear (Cost: 50,000 Score, +500 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(120000, 1000)">Elevated Mechanism (Cost: 120,000 Score, +1,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(300000, 2000)">Strategic Overlay (Cost: 300,000 Score, +2,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(800000, 5000)">Perfected Action (Cost: 800,000 Score, +5,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(2000000, 10000)">Synchronized System (Cost: 2,000,000 Score, +10,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(5000000, 20000)">Efficient Nexus (Cost: 5,000,000 Score, +20,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(12000000, 50000)">Ultimate Fusion (Cost: 12,000,000 Score, +50,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(30000000, 100000)">Pinnacle Interface (Cost: 30,000,000 Score, +100,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(80000000, 200000)">Apex Technology (Cost: 80,000,000 Score, +200,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(200000000, 500000)">Supreme Efficiency (Cost: 200,000,000 Score, +500,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(50000000000, 200000000)">Infinite Writer (Cost: 50,000,000,000 Score, +200,000,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(100000000000, 500000000)">Eternal Scribe (Cost: 100,000,000,000 Score, +500,000,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(500000000000, 1000000000)">Universal Author (Cost: 500,000,000,000 Score, +1,000,000,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(1000000000000, 5000000000)">Timeless Chronicler (Cost: 1,000,000,000,000 Score, +5,000,000,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(5000000000000, 10000000000)">Infinity Bard (Cost: 5,000,000,000,000 Score, +10,000,000,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(10000000000000, 50000000000)">Multiverse Writer (Cost: 10,000,000,000,000 Score, +50,000,000,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(50000000000000, 100000000000)">Omniscient Scribe (Cost: 50,000,000,000,000 Score, +100,000,000,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(100000000000000, 500000000000)">Cosmic Chronicler (Cost: 100,000,000,000,000 Score, +500,000,000,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(500000000000000, 1000000000000)">Infinite Bard (Cost: 500,000,000,000,000 Score, +1,000,000,000,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(1000000000000000, 5000000000000)">Eternal Writer (Cost: 1,000,000,000,000,000 Score, +5,000,000,000,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(5000000000000000, 10000000000000)">Universal Chronicler (Cost: 5,000,000,000,000,000 Score, +10,000,000,000,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(10000000000000000, 50000000000000)">Timeless Bard (Cost: 10,000,000,000,000,000 Score, +50,000,000,000,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(50000000000000000, 100000000000000)">Infinity Writer (Cost: 50,000,000,000,000,000 Score, +100,000,000,000,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(100000000000000000, 500000000000000)">Multiverse Chronicler (Cost: 100,000,000,000,000,000 Score, +500,000,000,000,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(500000000000000000, 1000000000000000)">Omniscient Bard (Cost: 500,000,000,000,000,000 Score, +1,000,000,000,000,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(1000000000000000000, 5000000000000000)">Cosmic Writer (Cost: 1,000,000,000,000,000,000 Score, +5,000,000,000,000,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(5000000000000000000, 10000000000000000)">Infinite Chronicler (Cost: 5,000,000,000,000,000,000 Score, +10,000,000,000,000,000 SPC)</div>
+    </div>
+
+    <div id="sps-shop" class="shop">
+        <div class="shop-item" onclick="buyItem(100, 1)">Monkey (Cost: 100 Score, +1 SPS)</div>
+        <div class="shop-item" onclick="buyItem(250, 5)">Julian (Cost: 250 Score, +5 SPS)</div>
+        <div class="shop-item" onclick="buyItem(500, 10)">Normal Person (Cost: 500 Score, +10 SPS)</div>
+        <div class="shop-item" onclick="buyItem(2500, 50)">Fast Typer (Cost: 2,500 Score, +50 SPS)</div>
+        <div class="shop-item" onclick="buyItem(5000, 100)">Speedy Thinker (Cost: 5,000 Score, +100 SPS)</div>
+        <div class="shop-item" onclick="buyItem(25000, 500)">Juicy (Cost: 25,000 Score, +500 SPS)</div>
+        <div class="shop-item" onclick="buyItem(50000, 1000)">Cosmic Scribe (Cost: 50,000 Score, +1,000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(250000, 5000)">Stellar Writer (Cost: 250,000 Score, +5,000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(500000, 10000)">Mega Juicy (Cost: 500,000 Score, +10,000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(2500000, 50000)">Universe Narrator (Cost: 2,500,000 Score, +50,000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(10000000, 50000)">Dimensional Author (Cost: 10,000,000 Score, +50,000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(50000000, 100000)">Void Penman (Cost: 50,000,000 Score, +100,000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(100000000, 500000)">Ultimate Juicy (Cost: 100,000,000 Score, +500,000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(500000000, 1000000)">Galaxy Bard (Cost: 500,000,000 Score, +1,000,000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(1000000000, 5000000)">Cosmos Chronicler (Cost: 1,000,000,000 Score, +5,000,000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(5000000000, 10000000)">Reality Weaver (Cost: 5,000,000,000 Score, +10,000,000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(10000000000, 50000000)">Mythos Architect (Cost: 10,000,000,000 Score, +50,000,000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(50000000000, 100000000)">Omniverse Crafter (Cost: 50,000,000,000 Score, +100,000,000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(100000000000, 500000000)">Legend Forger (Cost: 100,000,000,000 Score, +500,000,000 SPS)</div>
+        <div class="shop-item" onclick="buyItem(500000000000, 1000000000)">Juicy Juice (Cost: 500,000,000,000 Score, +1,000,000,000 SPS)</div>
+    </div>
+
+    <script>
+        let score = parseInt(localStorage.getItem('score')) || 0;
+        let sps = parseInt(localStorage.getItem('sps')) || 0;
+        let spc = parseInt(localStorage.getItem('spc')) || 1;
+        let interval;
+        let isSpacebarPressed = false;
+
+        function increaseScore() {
+            score += spc;
+            updateDisplay();
+            saveToLocalStorage();
+        }
+
+        function buyClickUpgrade(cost, increase) {
+            if (score >= cost) {
+                spc += increase;
+                score -= cost;
+                updateDisplay();
+                saveToLocalStorage();
+            }
+        }
+
+        function buyItem(cost, increase) {
+            if (score >= cost) {
+                sps += increase;
+                score -= cost;
+                updateDisplay();
+                saveToLocalStorage();
+            }
+        }
+
+        function showSPCShop() {
+            document.getElementById('spc-shop').style.display = 'block';
+            document.getElementById('sps-shop').style.display = 'none';
+        }
+
+        function showSPSShop() {
+            document.getElementById('spc-shop').style.display = 'none';
+            document.getElementById('sps-shop').style.display = 'block';
+        }
+
+        function resetGame() {
+            score = 0;
+            sps = 0;
+            spc = 1;
+            clearInterval(interval);
+            updateDisplay();
+            saveToLocalStorage();
+        }
+
+        function updateDisplay() {
+            document.getElementById('scoreValue').textContent = score;
+            document.getElementById('spsValue').textContent = sps;
+            document.getElementById('spcValue').textContent = spc;
+        }
+
+        function startSPSIncrement() {
+            interval = setInterval(() => {
+                score += sps;
+                updateDisplay();
+                saveToLocalStorage();
+            }, 1000);
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('score', score);
+            localStorage.setItem('sps', sps);
+            localStorage.setItem('spc', spc);
+        }
+
+        // Disable holding spacebar for continuous increment
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'Space' && !isSpacebarPressed) {
+                isSpacebarPressed = true;
+                increaseScore();
+                event.preventDefault();
+            }
+        });
+
+        document.addEventListener('keyup', (event) => {
+            if (event.code === 'Space') {
+                isSpacebarPressed = false;
+                event.preventDefault();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            showSPSShop(); // Show the SPS shop by default
+            updateDisplay();
+            startSPSIncrement();
+        });
+    </script>
+</body>
+</html>
