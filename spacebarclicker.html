@@ -35,7 +35,7 @@
             font-size: 1.2em;
             margin-bottom: 30px;
         }
-        #visual-spacebar, .shop-item, #score, #sps, #resetButton {
+        #visual-spacebar, .shop-item, .click-upgrade, #score, #sps, #spc, #resetButton {
             border: 4px solid #FDEB71;
             border-radius: 15px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3), 0 0 20px rgba(0, 0, 0, 0.2);
@@ -58,7 +58,7 @@
             transform: scale(1.1);
             background-color: #E52B50;
         }
-        .shop-item {
+        .shop-item, .click-upgrade {
             display: inline-block;
             margin: 10px;
             padding: 10px;
@@ -68,10 +68,13 @@
             transition: transform 0.3s ease-in-out;
             background-image: linear-gradient(45deg, #5c5c8a, #4c4c6d);
         }
-        .shop-item:hover {
+        .shop-item:hover, .click-upgrade:hover {
             transform: scale(1.1);
         }
-        #score, #sps {
+        .click-upgrade {
+            background-color: #6D6D8A;
+        }
+        #score, #sps, #spc {
             font-size: 2em;
             margin: 30px 0;
             background-color: #4C4C6D;
@@ -98,19 +101,71 @@
         #resetButton:hover {
             background-color: #ff4500;
         }
+        .shop-category {
+            display: inline-block;
+            margin: 20px;
+        }
+        .shop-category button {
+            background-color: #4C4C6D;
+            color: #FDEB71;
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: transform 0.3s ease-in-out;
+            border: none;
+            border-radius: 15px;
+            margin: 10px;
+            background-image: linear-gradient(45deg, #5c5c8a, #4c4c6d);
+        }
+        .shop-category button:hover {
+            transform: scale(1.1);
+        }
+        .shop {
+            display: none; /* Initially hide all shops */
+        }
     </style>
 </head>
 <body>
-    <h1>Spacebar Clicker Game</h1>
-    <p>Press the spacebar for a higher score!</p>
-    <div id="score">Score: 0</div>
-    <div id="visual-spacebar" tabindex="0">SPACEBAR</div>
-    <div id="sps">SPS: 0</div>
-    <div id="shop">
+    <h1>Julian's Spacebar Clicker Game</h1>
+    <p>Click the spacebar to earn points!</p>
+    
+    <div id="visual-spacebar" onclick="increaseScore()">PRESS SPACEBAR</div>
+    
+    <div id="score">Score: <span id="scoreValue">0</span></div>
+    <div id="sps">Score per Second: <span id="spsValue">0</span></div>
+    <div id="spc">Score per Click: <span id="spcValue">1</span></div>
+    
+    <div id="resetButton" onclick="resetGame()">Reset Game</div>
+    
+    <div class="shop-category">
+        <button onclick="showSPCShop()">SPC Shop</button>
+        <button onclick="showSPSShop()">SPS Shop</button>
+    </div>
+    
+    <div id="spc-shop" class="shop">
+        <div class="click-upgrade" onclick="buyClickUpgrade(150, 5)">Typewriter (Cost: 150 Score, +1 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(350, 10)">Keyboard (Cost: 350 Score, +5 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(1200, 20)">Backspace Eraser (Cost: 1,200 Score, +10 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(3000, 50)">Enhanced Tool (Cost: 3,000 Score, +50 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(8000, 100)">Advanced Device (Cost: 8,000 Score, +100 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(20000, 200)">Optimized Module (Cost: 20,000 Score, +200 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(50000, 500)">Precision Gear (Cost: 50,000 Score, +500 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(120000, 1000)">Elevated Mechanism (Cost: 120,000 Score, +1,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(300000, 2000)">Strategic Overlay (Cost: 300,000 Score, +2,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(800000, 5000)">Perfected Action (Cost: 800,000 Score, +5,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(2000000, 10000)">Synchronized System (Cost: 2,000,000 Score, +10,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(5000000, 20000)">Efficient Nexus (Cost: 5,000,000 Score, +20,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(12000000, 50000)">Ultimate Fusion (Cost: 12,000,000 Score, +50,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(30000000, 100000)">Pinnacle Interface (Cost: 30,000,000 Score, +100,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(80000000, 200000)">Apex Technology (Cost: 80,000,000 Score, +200,000 SPC)</div>
+        <div class="click-upgrade" onclick="buyClickUpgrade(200000000, 500000)">Supreme Efficiency (Cost: 200,000,000 Score, +500,000 SPC)</div>
+    </div>
+    
+    <div id="sps-shop" class="shop">
         <div class="shop-item" onclick="buyItem(100, 1)">Monkey (Cost: 100 Score, +1 SPS)</div>
         <div class="shop-item" onclick="buyItem(250, 5)">Julian (Cost: 250 Score, +5 SPS)</div>
-        <div class="shop-item" onclick="buyItem(500, 10)">Normal person (Cost: 500 Score, +10 SPS)</div>
-        <div class="shop-item" onclick="buyItem(2500, 50)">Fast typer (Cost: 2,500 Score, +50 SPS)</div>
+        <div class="shop-item" onclick="buyItem(500, 10)">Normal Person (Cost: 500 Score, +10 SPS)</div>
+        <div class="shop-item" onclick="buyItem(2500, 50)">Fast Typer (Cost: 2,500 Score, +50 SPS)</div>
         <div class="shop-item" onclick="buyItem(5000, 100)">Speedy Thinker (Cost: 5,000 Score, +100 SPS)</div>
         <div class="shop-item" onclick="buyItem(25000, 500)">Juicy (Cost: 25,000 Score, +500 SPS)</div>
         <div class="shop-item" onclick="buyItem(50000, 1000)">Cosmic Scribe (Cost: 50,000 Score, +1,000 SPS)</div>
@@ -126,64 +181,87 @@
         <div class="shop-item" onclick="buyItem(10000000000, 50000000)">Mythos Architect (Cost: 10,000,000,000 Score, +50,000,000 SPS)</div>
         <div class="shop-item" onclick="buyItem(50000000000, 100000000)">Omniverse Crafter (Cost: 50,000,000,000 Score, +100,000,000 SPS)</div>
         <div class="shop-item" onclick="buyItem(100000000000, 500000000)">Legend Forger (Cost: 100,000,000,000 Score, +500,000,000 SPS)</div>
-        <div class="shop-item" onclick="buyItem(500000000000, 1000000000)">Juicy Juice (Cost: 500,000,000,000 Score, +1,000,000,000 SPS)</div>    </div>
+        <div class="shop-item" onclick="buyItem(500000000000, 1000000000)">Juicy Juice (Cost: 500,000,000,000 Score, +1,000,000,000 SPS)</div>
     </div>
-    <button id="resetButton">Reset Progress</button>
-    <script>
-        document.addEventListener('keydown', function(event) {
-            if (event.code === 'Space' && !event.repeat) {
-                event.preventDefault(); // Prevent default scroll behavior
-
-            }
-        });
-    </script>
 
     <script>
-        let score = parseInt(localStorage.getItem('score')) || 0;
-        let sps = parseInt(localStorage.getItem('sps')) || 0;
+        let score = 0;
+        let sps = 0;
+        let spc = 1;
+        let interval;
+        let isSpacebarPressed = false;
 
-        function updateScoreAndSPS() {
-            document.getElementById('score').innerText = 'Score: ' + score.toLocaleString();
-            document.getElementById('sps').innerText = 'SPS: ' + sps;
-            localStorage.setItem('score', score.toString());
-            localStorage.setItem('sps', sps.toString());
+        function increaseScore() {
+            score += spc;
+            updateDisplay();
         }
 
-        function buyItem(cost, increment) {
+        function buyClickUpgrade(cost, increase) {
             if (score >= cost) {
+                spc += increase;
                 score -= cost;
-                sps += increment;
-                updateScoreAndSPS();
+                updateDisplay();
             }
         }
 
-        document.getElementById('visual-spacebar').addEventListener('click', function() {
-            score++;
-            updateScoreAndSPS();
-        });
-
-        document.addEventListener('keydown', function(event) {
-            if (event.code === 'Space' && !event.repeat) {
-                score++;
-                updateScoreAndSPS();
+        function buyItem(cost, increase) {
+            if (score >= cost) {
+                sps += increase;
+                score -= cost;
+                updateDisplay();
             }
-        });
+        }
 
-        setInterval(function() {
-            if (sps > 0) {
+        function showSPCShop() {
+            document.getElementById('spc-shop').style.display = 'block';
+            document.getElementById('sps-shop').style.display = 'none';
+        }
+
+        function showSPSShop() {
+            document.getElementById('spc-shop').style.display = 'none';
+            document.getElementById('sps-shop').style.display = 'block';
+        }
+
+        function resetGame() {
+            score = 0;
+            sps = 0;
+            spc = 1;
+            clearInterval(interval);
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            document.getElementById('scoreValue').textContent = score;
+            document.getElementById('spsValue').textContent = sps;
+            document.getElementById('spcValue').textContent = spc;
+        }
+
+        function startSPSIncrement() {
+            interval = setInterval(() => {
                 score += sps;
-                updateScoreAndSPS();
-            }
-        }, 1000);
+                updateDisplay();
+            }, 1000);
+        }
 
-        document.getElementById('resetButton').addEventListener('click', function() {
-            if (confirm('Are you sure you want to reset your progress?')) {
-                localStorage.setItem('score', '0');
-                localStorage.setItem('sps', '0');
-                score = 0;
-                sps = 0;
-                updateScoreAndSPS();
+        // Disable holding spacebar for continuous increment
+        document.addEventListener('keydown', (event) => {
+            if (event.code === 'Space' && !isSpacebarPressed) {
+                isSpacebarPressed = true;
+                increaseScore();
+                event.preventDefault();
             }
+        });
+
+        document.addEventListener('keyup', (event) => {
+            if (event.code === 'Space') {
+                isSpacebarPressed = false;
+                event.preventDefault();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', (event) => {
+            showSPSShop(); // Show the SPS shop by default
+            startSPSIncrement();
         });
     </script>
 </body>
