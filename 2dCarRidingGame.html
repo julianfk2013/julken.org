@@ -40,6 +40,9 @@
     /* ===== Pause Hint ===== */
     #pauseHint { position:absolute; left:50%; bottom:16px; transform:translateX(-50%); background:rgba(0,0,0,.35); padding:6px 10px; border-radius:10px; pointer-events:none; opacity:.85; font-size:12px; }
 
+  /* ===== Rotate Hint (mobile portrait) ===== */
+  #rotateHint { position:absolute; left:50%; top:14px; transform:translateX(-50%); background: rgba(0,0,0,.65); padding:8px 12px; border-radius:10px; font-weight:700; pointer-events:none; display:none; z-index:3; }
+
     /* ===== Touch Controls (mobile only) ===== */
   #touchControls { display:none; position:absolute; inset:0; pointer-events:none; z-index: 0; }
     #touchControls .pad { position:absolute; bottom:16px; display:flex; gap:10px; pointer-events:auto; }
@@ -52,8 +55,9 @@
       #touchControls { display:block; }
       #pauseHint { display:none; }
   .hud { left:8px; top:8px; padding:6px 8px; font-size:12px; }
-  #shop { right:8px; top:8px; min-width:auto; width:min(70vw, 360px); grid-template-columns: 1fr; gap:6px; }
-  #shop button { font-size:14px; padding:10px 12px; }
+  /* Hide the power-ups on mobile by default; we can expose later if desired */
+  #shop { display:none !important; right:8px; top:8px; min-width:auto; width:min(70vw, 320px); grid-template-columns: 1fr; gap:6px; }
+  #shop button { font-size:13px; padding:8px 10px; }
   #overlay .row .btn { font-size:16px; padding:12px 16px; }
   #minimap { right:8px; bottom:8px; width:180px; height:96px; }
     }
@@ -88,6 +92,7 @@
 
     <div id="toast"></div>
     <div id="pauseHint">ESC to Pause/Resume</div>
+  <div id="rotateHint">Rotate your device for a better view</div>
 
     <!-- Touch controls (shown on mobile) -->
     <div id="touchControls" aria-hidden="true">
@@ -261,6 +266,7 @@
       buildMountains(); seedParallax();
       buildGrassPattern();
   updateTouchUI();
+  updateRotateHint();
     }
     window.addEventListener('resize', resize);
 
@@ -436,11 +442,17 @@
     }
 
     // --- Responsive touch UI visibility ---
-    function isMobileLike(){ return window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 860; }
+  function isMobileLike(){ return window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 860; }
+  function isPortrait(){ return window.innerHeight > window.innerWidth; }
     function updateTouchUI(){
       const el = document.getElementById('touchControls'); if (!el) return;
       const show = isMobileLike();
       el.style.display = show ? 'block' : 'none';
+    }
+    function updateRotateHint(){
+      const rh = document.getElementById('rotateHint'); if (!rh) return;
+      const show = isMobileLike() && isPortrait();
+      rh.style.display = show ? 'block' : 'none';
     }
 
     // --- Projection ---
@@ -826,15 +838,17 @@
       } else {
         if (spawnTimer<=0){ spawnObstacle(); if (Math.random() < (0.12 + 0.18*chaos) * spawnRateMul) spawnObstacle(); spawnTimer=minSpawn; }
         if (decorTimer<=0){ spawnDecor(); decorTimer=rand(1.8, 3.2); }
-        const trafficLimit=Math.round(lerp(3, 11, chaos));
+  // Fewer cars on mobile (less space)
+  const baseLimit = Math.round(lerp(3, 11, chaos));
+  const trafficLimit = isMobileLike() ? Math.max(2, Math.floor(baseLimit * 0.6)) : baseLimit;
         if (trafficTimer<=0){
           if (traffic.length < trafficLimit) {
             spawnTraffic();
             // Often spawn a second car if there's room
-            const secondProb = lerp(0.35, 0.6, chaos);
+            const secondProb = (isMobileLike() ? 0.5 : 1.0) * lerp(0.35, 0.6, chaos);
             if (traffic.length < trafficLimit && Math.random() < secondProb) spawnTraffic();
           }
-          trafficTimer=lerp(2.5, 0.65, chaos);
+          trafficTimer = (isMobileLike() ? 1.2 : 1.0) * lerp(2.5, 0.65, chaos);
         }
   if (pickupTimer<=0){ if (pickups.length < 3 + Math.floor(2*chaos)) spawnPickup(); pickupTimer=lerp(1.9, 1.2, chaos); }
       }
@@ -951,6 +965,7 @@
   if (state==='menu' || state==='over') ui.overlay.style.display='block'; else ui.overlay.style.display='none';
   // keep touch UI in sync if viewport or state changes mid-frame
   updateTouchUI();
+  updateRotateHint();
   updateUIState();
       requestAnimationFrame(frame);
     }
