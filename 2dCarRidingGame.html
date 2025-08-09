@@ -7,7 +7,7 @@
   <style>
     /* ===== Base Layout ===== */
     html, body { margin: 0; height: 100%; overflow: hidden; background: #0e0f14; }
-    #game { display:block; }
+  #game { display:block; touch-action:none; user-select:none; -webkit-user-select:none; }
     #ui { position: fixed; inset: 0; pointer-events: none; color: #fff; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
     .hud { position: absolute; left: 16px; top: 12px; background: rgba(0,0,0,.35); padding: 8px 12px; border-radius: 10px; backdrop-filter: blur(2px); font-weight: 600; }
     .hud span { min-width: 36px; display: inline-block; text-align: right; }
@@ -37,6 +37,24 @@
 
     /* ===== Pause Hint ===== */
     #pauseHint { position:absolute; left:50%; bottom:16px; transform:translateX(-50%); background:rgba(0,0,0,.35); padding:6px 10px; border-radius:10px; pointer-events:none; opacity:.85; font-size:12px; }
+
+    /* ===== Touch Controls (mobile only) ===== */
+    #touchControls { display:none; position:absolute; inset:0; pointer-events:none; }
+    #touchControls .pad { position:absolute; bottom:16px; display:flex; gap:10px; pointer-events:auto; }
+    #touchControls .left { left:16px; }
+    #touchControls .right { right:16px; flex-direction:column; }
+    #touchControls .tc-btn { width:68px; height:68px; border-radius:50%; border:none; background:rgba(17,24,39,.55); color:#fff; font-weight:900; font-size:22px; box-shadow:0 8px 24px rgba(0,0,0,.35); backdrop-filter: blur(4px); touch-action:none; user-select:none; -webkit-user-select:none; }
+    #touchControls .tc-btn:active { transform: scale(0.96); }
+    #touchControls .tc-small { position:absolute; top:14px; right:14px; width:44px; height:44px; border-radius:10px; border:none; background:rgba(17,24,39,.55); color:#fff; font-weight:800; font-size:18px; pointer-events:auto; touch-action:none; }
+    @media (pointer: coarse), (max-width: 860px) {
+      #touchControls { display:block; }
+      #pauseHint { display:none; }
+  .hud { left:8px; top:8px; padding:6px 8px; font-size:12px; }
+  #shop { right:8px; top:8px; min-width:auto; width:min(70vw, 360px); grid-template-columns: 1fr; gap:6px; }
+  #shop button { font-size:14px; padding:10px 12px; }
+  #overlay .row .btn { font-size:16px; padding:12px 16px; }
+  #minimap { right:8px; bottom:8px; width:180px; height:96px; }
+    }
   </style>
 </head>
 <body>
@@ -68,6 +86,19 @@
 
     <div id="toast"></div>
     <div id="pauseHint">ESC to Pause/Resume</div>
+
+    <!-- Touch controls (shown on mobile) -->
+    <div id="touchControls" aria-hidden="true">
+      <div class="pad left">
+        <button id="btnLeft"  class="tc-btn" aria-label="Steer Left">◀</button>
+        <button id="btnRight" class="tc-btn" aria-label="Steer Right">▶</button>
+      </div>
+      <div class="pad right">
+        <button id="btnAccel" class="tc-btn" aria-label="Accelerate">⏫</button>
+        <button id="btnBrake" class="tc-btn" aria-label="Brake">⏬</button>
+      </div>
+      <button id="btnPause" class="tc-small" aria-label="Pause/Resume">⏸</button>
+    </div>
   </div>
 
   <script>
@@ -227,6 +258,7 @@
   road.topW = roadW; road.botW = roadW;
       buildMountains(); seedParallax();
       buildGrassPattern();
+  updateTouchUI();
     }
     window.addEventListener('resize', resize);
 
@@ -247,6 +279,42 @@
   if (e.key==='w' || e.key==='W') keys.w=false;
   if (e.key==='s' || e.key==='S') keys.s=false;
     });
+
+    // --- Touch controls mapping ---
+    function setupTouchControls(){
+      const left  = document.getElementById('btnLeft');
+      const right = document.getElementById('btnRight');
+      const accel = document.getElementById('btnAccel');
+      const brake = document.getElementById('btnBrake');
+      const pause = document.getElementById('btnPause');
+      if (!left || !right || !accel || !brake || !pause) return;
+
+      // Prevent long-press menu and page scroll on touch
+      window.addEventListener('contextmenu', e=> e.preventDefault());
+      ['touchstart','touchmove','touchend','gesturestart'].forEach(ev=>{
+        window.addEventListener(ev, e=> e.preventDefault(), { passive:false });
+      });
+
+      function bindHold(el, down, up){
+        let active = false;
+        const end = () => { if (!active) return; active=false; up(); };
+        el.addEventListener('pointerdown', e=>{ e.preventDefault(); active=true; try{ el.setPointerCapture(e.pointerId); }catch{} down(); });
+        el.addEventListener('pointerup',   e=>{ e.preventDefault(); end(); });
+        el.addEventListener('pointercancel', end);
+        el.addEventListener('pointerleave',  end);
+        // Also support regular mouse/touch events as fallback
+        el.addEventListener('mousedown', e=>{ e.preventDefault(); active=true; down(); });
+        window.addEventListener('mouseup', ()=> end());
+        el.addEventListener('touchstart', e=>{ e.preventDefault(); active=true; down(); }, {passive:false});
+        window.addEventListener('touchend', ()=> end(), {passive:false});
+      }
+
+      bindHold(left,  ()=>{ keys.a=true; triggerSwerve(-1); }, ()=>{ keys.a=false; });
+      bindHold(right, ()=>{ keys.d=true; triggerSwerve( 1); }, ()=>{ keys.d=false; });
+      bindHold(accel, ()=>{ keys.w=true; }, ()=>{ keys.w=false; });
+      bindHold(brake, ()=>{ keys.s=true; }, ()=>{ keys.s=false; });
+      pause.addEventListener('click', ()=> togglePause());
+    }
 
     // --- Audio (swerve + crash only, no looping beeps) ---
     let audioCtx = null;
@@ -347,10 +415,18 @@
     });
 
     // --- Start / pause ---
-    function togglePause(){ if(state==='play'){ state='pause'; toast('Paused'); } else if(state==='pause'){ state='play'; toast('Resumed'); } }
+  function togglePause(){ if(state==='play'){ state='pause'; toast('Paused'); } else if(state==='pause'){ state='play'; toast('Resumed'); } updateTouchUI(); }
     if (ui.start) {
       ui.start.addEventListener('click', () => { if(state!=='play') start(); });
       ui.start.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); if(state!=='play') start(); }});
+    }
+
+    // --- Responsive touch UI visibility ---
+    function isMobileLike(){ return window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 860; }
+    function updateTouchUI(){
+      const el = document.getElementById('touchControls'); if (!el) return;
+      const show = isMobileLike();
+      el.style.display = show ? 'block' : 'none';
     }
 
     // --- Projection ---
@@ -646,9 +722,10 @@
       spawnTimer=0; decorTimer=0; trafficTimer=0; pickupTimer=0;
       fewerTimer=0; spawnRateMul=1; coinRushTimer=0;
       shakeTime=0; shakeAmt=0;
-      state='play'; ui.overlay.style.display='none';
+  state='play'; ui.overlay.style.display='none';
       ui.title.textContent = 'Canvas Racer — Top-Down';
       refreshShop(); toast('Good luck! Best: '+bestScore);
+  updateTouchUI();
     }
     function gameOver(){
       state='over'; ui.overlay.style.display='block'; ui.title.textContent='Crashed!';
@@ -855,7 +932,9 @@
       const time=t/1000; const dt=Math.min(0.033, time - last || 0); last=time;
       if (state==='play') update(dt);
       drawEverything(dt);
-      if (state==='menu' || state==='over') ui.overlay.style.display='block'; else ui.overlay.style.display='none';
+  if (state==='menu' || state==='over') ui.overlay.style.display='block'; else ui.overlay.style.display='none';
+  // keep touch UI in sync if viewport or state changes mid-frame
+  updateTouchUI();
       requestAnimationFrame(frame);
     }
 
@@ -908,7 +987,8 @@
     }
 
     // Bind ESC to pause in global handler above; wire start button already done.
-    resize();
+  resize();
+  setupTouchControls();
     requestAnimationFrame(frame);
     setTimeout(runTests, 10);
   })();
