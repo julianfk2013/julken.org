@@ -9,6 +9,8 @@
     html, body { margin: 0; height: 100%; overflow: hidden; background: #0e0f14; }
   #game { display:block; touch-action:none; user-select:none; -webkit-user-select:none; }
     #ui { position: fixed; inset: 0; pointer-events: none; color: #fff; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
+  #overlay { z-index: 2; pointer-events: auto; }
+  #shop { z-index: 1; }
     .hud { position: absolute; left: 16px; top: 12px; background: rgba(0,0,0,.35); padding: 8px 12px; border-radius: 10px; backdrop-filter: blur(2px); font-weight: 600; }
     .hud span { min-width: 36px; display: inline-block; text-align: right; }
     .center { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); text-align: center; }
@@ -39,7 +41,7 @@
     #pauseHint { position:absolute; left:50%; bottom:16px; transform:translateX(-50%); background:rgba(0,0,0,.35); padding:6px 10px; border-radius:10px; pointer-events:none; opacity:.85; font-size:12px; }
 
     /* ===== Touch Controls (mobile only) ===== */
-    #touchControls { display:none; position:absolute; inset:0; pointer-events:none; }
+  #touchControls { display:none; position:absolute; inset:0; pointer-events:none; z-index: 0; }
     #touchControls .pad { position:absolute; bottom:16px; display:flex; gap:10px; pointer-events:auto; }
     #touchControls .left { left:16px; }
     #touchControls .right { right:16px; flex-direction:column; }
@@ -289,10 +291,14 @@
       const pause = document.getElementById('btnPause');
       if (!left || !right || !accel || !brake || !pause) return;
 
-      // Prevent long-press menu and page scroll on touch
-      window.addEventListener('contextmenu', e=> e.preventDefault());
-      ['touchstart','touchmove','touchend','gesturestart'].forEach(ev=>{
-        window.addEventListener(ev, e=> e.preventDefault(), { passive:false });
+      // Prevent long-press menu and page scroll on touch only on canvas/controls
+      const preventers = [document.getElementById('game'), left, right, accel, brake, pause];
+      preventers.forEach(el=>{
+        if(!el) return;
+        el.addEventListener('contextmenu', e=> e.preventDefault());
+        ['touchstart','touchmove','touchend','gesturestart'].forEach(ev=>{
+          el.addEventListener(ev, e=> e.preventDefault(), { passive:false });
+        });
       });
 
       function bindHold(el, down, up){
@@ -314,6 +320,14 @@
       bindHold(accel, ()=>{ keys.w=true; }, ()=>{ keys.w=false; });
       bindHold(brake, ()=>{ keys.s=true; }, ()=>{ keys.s=false; });
       pause.addEventListener('click', ()=> togglePause());
+    }
+
+    // Toggle visibility of shop/minimap based on state
+    function updateUIState(){
+      const shopEl = document.getElementById('shop');
+      const miniWrap = document.getElementById('minimap');
+      if (shopEl) shopEl.style.display = (state==='play') ? 'grid' : 'none';
+      if (miniWrap) miniWrap.style.display = (state==='play') ? 'block' : 'none';
     }
 
     // --- Audio (swerve + crash only, no looping beeps) ---
@@ -415,7 +429,7 @@
     });
 
     // --- Start / pause ---
-  function togglePause(){ if(state==='play'){ state='pause'; toast('Paused'); } else if(state==='pause'){ state='play'; toast('Resumed'); } updateTouchUI(); }
+  function togglePause(){ if(state==='play'){ state='pause'; toast('Paused'); } else if(state==='pause'){ state='play'; toast('Resumed'); } updateTouchUI(); updateUIState(); }
     if (ui.start) {
       ui.start.addEventListener('click', () => { if(state!=='play') start(); });
       ui.start.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); if(state!=='play') start(); }});
@@ -723,12 +737,14 @@
       fewerTimer=0; spawnRateMul=1; coinRushTimer=0;
       shakeTime=0; shakeAmt=0;
   state='play'; ui.overlay.style.display='none';
-      ui.title.textContent = 'Canvas Racer — Top-Down';
+  ui.title.textContent = '2D Car Dodging Game';
       refreshShop(); toast('Good luck! Best: '+bestScore);
   updateTouchUI();
+  updateUIState();
     }
     function gameOver(){
-      state='over'; ui.overlay.style.display='block'; ui.title.textContent='Crashed!';
+  state='over'; ui.overlay.style.display='block'; ui.title.textContent='Crashed!';
+  updateUIState();
       if (Math.floor(score)>bestScore){
         bestScore=Math.floor(score);
         try{ localStorage.setItem('cr_best', String(bestScore)); }catch{}
@@ -935,6 +951,7 @@
   if (state==='menu' || state==='over') ui.overlay.style.display='block'; else ui.overlay.style.display='none';
   // keep touch UI in sync if viewport or state changes mid-frame
   updateTouchUI();
+  updateUIState();
       requestAnimationFrame(frame);
     }
 
@@ -982,7 +999,7 @@
       fewerTimer=0; spawnRateMul=1; coinRushTimer=0;
       shakeTime=0; shakeAmt=0;
       state='play'; ui.overlay.style.display='none';
-  ui.title.textContent = 'Canvas Racer — Top-Down';
+  ui.title.textContent = '2D Car Dodging Game';
       refreshShop(); toast('Good luck! Best: '+bestScore);
     }
 
@@ -990,7 +1007,8 @@
   resize();
   setupTouchControls();
     requestAnimationFrame(frame);
-    setTimeout(runTests, 10);
+  updateUIState();
+  setTimeout(runTests, 10);
   })();
   </script>
 </body>
