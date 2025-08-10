@@ -33,9 +33,9 @@
     #minimap { position:absolute; right:12px; bottom:12px; background: rgba(0,0,0,.45); width: 220px; height: 120px; border-radius: 12px; pointer-events:none; overflow:hidden; }
     #minimap canvas { width:100%; height:100%; display:block; }
 
-    /* ===== Notifications ===== */
-    #toast { position:absolute; left: 50%; top: 12px; transform: translateX(-50%); background: rgba(0,0,0,.65); padding: 8px 12px; border-radius: 8px; pointer-events: none; opacity:0; transition: opacity .2s ease; }
-    #toast.show { opacity: 1; }
+  /* ===== Notifications ===== */
+  #toast { position:absolute; left: 50%; top: 12px; transform: translateX(-50%); background: rgba(0,0,0,.65); padding: 8px 12px; border-radius: 8px; pointer-events: none; opacity:0; transition: opacity .2s ease; }
+  #toast.show { opacity: 1; }
 
     /* ===== Pause Hint ===== */
     #pauseHint { position:absolute; left:50%; bottom:16px; transform:translateX(-50%); background:rgba(0,0,0,.35); padding:6px 10px; border-radius:10px; pointer-events:none; opacity:.85; font-size:12px; }
@@ -60,6 +60,7 @@
   #shop button { font-size:13px; padding:8px 10px; }
   #overlay .row .btn { font-size:16px; padding:12px 16px; }
   #minimap { right:8px; bottom:8px; width:180px; height:96px; }
+  /* (DevTools UI removed) */
     }
   </style>
 </head>
@@ -67,13 +68,13 @@
   <canvas id="game"></canvas>
 
   <div id="ui">
-    <div class="hud">Score: <span id="score">0</span> • Speed: <span id="spd">0</span> • Coins: <span id="coins">0</span> • FPS: <span id="fps">0</span></div>
+    <div class="hud">Score: <span id="score">0</span> • Speed: <span id="spd">0</span> • Coins: <span id="coins">0</span> • Combo: <span id="combo">1.00x</span> • FPS: <span id="fps">0</span></div>
 
     <div id="shop">
       <h3>Power-Ups</h3>
       <button id="btnFly">Fly 5s ✈️ (8)</button>
       <button id="btnFewer">50% Fewer Objects 10s 🧹 (8)</button>
-      <button id="btnRush">Coin Rush 12s 💰 (10)</button>
+  <button id="btnRush">Coin Rush 3s 💰 (10)</button>
       <div class="tip">Earn 1 coin every 5s you survive, or grab on-road coins.</div>
       <div id="activePU" class="tip"></div>
       <div class="tip" id="cooldowns"></div>
@@ -126,7 +127,8 @@
       score: document.getElementById('score'),
       spd: document.getElementById('spd'),
       coins: document.getElementById('coins'),
-      fps: document.getElementById('fps'),
+  fps: document.getElementById('fps'),
+  combo: document.getElementById('combo'),
       overlay: document.getElementById('overlay'),
       start: document.getElementById('start'),
       title: document.getElementById('title'),
@@ -149,6 +151,9 @@
     dayNightCycle: true,
   showHit: false // hide hitboxes
     };
+
+  // --- Developer Cheat flags ---
+  const CHEAT = { active:false, noHitboxes:false, speedBoost:1 };
 
     // --- Economy / power-up costs ---
     const PU_COST_FLY   = 8;
@@ -199,7 +204,7 @@
       cone:   { w:64, h:80,  hb:[0.18,0.45,0.64,0.48], src:'drive_assets/cone.png' },
       barrel: { w:70, h:80,  hb:[0.2,0.25,0.6,0.65],  src:`data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='70' height='80'><rect x='8' y='10' width='54' height='62' rx='10' ry='10' fill='#9ca3af' stroke='#4b5563' stroke-width='3'/><rect x='8' y='36' width='54' height='8' fill='#6b7280'/></svg>`)}` },
       tree:   { w:120,h:140, hb:[0.36,0.45,0.28,0.5],  src:'drive_assets/tree.png' },
-      rock:   { w:90, h:60,  hb:[0.12,0.35,0.76,0.5],  src:`data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='90' height='60'><rect x='8' y='18' width='74' height='34' rx='12' ry='12' fill='#64748b' stroke='#334155' stroke-width='3'/></svg>`)}` },
+  rock:   { w:90, h:60,  hb:[0.12,0.35,0.76,0.5],  src:'drive_assets/rock.png' },
       // Traffic car sprites
       car_blue:  { w:120, h:220, hb:[0.18,0.18,0.64,0.68], src:'drive_assets/bluecar.png' },
       car_red:   { w:120, h:220, hb:[0.18,0.18,0.64,0.68], src:'drive_assets/redcar.png' },
@@ -380,6 +385,52 @@
         src.connect(g).connect(ac.destination); src.start(); src.stop(ac.currentTime+dur+0.01);
       }catch(e){}
     }
+    // Custom coin sound (from drive_assets/coin.mp3) with synth fallback
+    const COIN_SOUND_SRC = 'drive_assets/coin.mp3';
+    let coinAudioTemplate = null;
+    function loadCoinAudio(){
+      try{
+        const a = new Audio(COIN_SOUND_SRC);
+        a.preload = 'auto';
+        a.crossOrigin = 'anonymous';
+        // Try to begin loading; browsers may defer until interaction but clone will still work after first gesture
+        a.load?.();
+        coinAudioTemplate = a;
+      }catch{ coinAudioTemplate = null; }
+    }
+    function playCoin(){
+      // Prefer your coin.mp3 if available; clone so overlapping picks don't cut off
+      try{
+        if (coinAudioTemplate){
+          const a = coinAudioTemplate.cloneNode(true);
+          a.volume = Math.max(0, Math.min(1, 0.7 * settings.volume));
+          a.play().catch(()=>{ /* ignore; fallback below */ });
+          return;
+        }
+      }catch{}
+      // Fallback: synth ding via WebAudio
+      try{
+        const ac=getAudio(); const osc=ac.createOscillator(); const g=ac.createGain();
+        osc.type='sine'; osc.frequency.setValueAtTime(880, ac.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1320, ac.currentTime+0.06);
+        g.gain.setValueAtTime(0, ac.currentTime);
+        g.gain.linearRampToValueAtTime(0.18*settings.volume, ac.currentTime+0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime+0.18);
+        osc.connect(g).connect(ac.destination); osc.start(); osc.stop(ac.currentTime+0.2);
+      }catch{}
+    }
+    function playCoin(){
+      // short pleasant ding using a sine and quick envelope
+      try{
+        const ac=getAudio(); const osc=ac.createOscillator(); const g=ac.createGain();
+        osc.type='sine'; osc.frequency.setValueAtTime(880, ac.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(1320, ac.currentTime+0.06);
+        g.gain.setValueAtTime(0, ac.currentTime);
+        g.gain.linearRampToValueAtTime(0.18*settings.volume, ac.currentTime+0.01);
+        g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime+0.18);
+        osc.connect(g).connect(ac.destination); osc.start(); osc.stop(ac.currentTime+0.2);
+      }catch(e){}
+    }
 
     // --- Game state ---
     let state='menu';
@@ -387,7 +438,7 @@
     let baseSpeed=220, speedMul=1, elapsed=0;
     const road={ topW:120, botW:1600 };
 
-  const player={ x:0, vx:0, accel:9, friction:10, tilt:0, maxTilt:0.11, flyTime:0, invuln:0, thrust:0 };
+  const player={ x:0, vx:0, accel:11, friction:11, tilt:0, maxTilt:0.12, flyTime:0, invuln:0, thrust:0 };
 
     const obstacles=[], decors=[], traffic=[], pickups=[];
   let spawnTimer=0, decorTimer=0, trafficTimer=0, pickupTimer=0;
@@ -395,6 +446,9 @@
     let shakeTime=0, shakeAmt=0, frames=0, fps=0, fpsAccum=0;
   // Effective speed multiplier for this frame (includes throttle)
   let speedMulNow = 1.0;
+    // Near-miss combo system
+    let combo = 1.0;       // score multiplier
+    let comboTime = 0.0;   // time until decay starts
 
     // --- Parallax ---
     function seededRandom(seed){ let s=seed%2147483647; if(s<=0) s+=2147483646; return ()=> (s=s*16807%2147483647)/2147483647; }
@@ -428,9 +482,9 @@
     ui.btnRush.addEventListener('click', () => {
       if (state!=='play') return;
       if (coins>=PU_COST_RUSH) {
-        coins-=PU_COST_RUSH; coinRushTimer=Math.max(coinRushTimer,12.0);
+        coins-=PU_COST_RUSH; coinRushTimer=Math.max(coinRushTimer,3.0);
         obstacles.length=0; traffic.length=0; spawnTimer=0; trafficTimer=9999; decorTimer=rand(0.35,0.7); pickupTimer=0;
-        toast('Coin Rush! Coins only for 12s'); refreshShop();
+        toast('Coin Rush! Coins only for 3s'); refreshShop();
       } else showShopError('Not enough coins');
     });
 
@@ -484,10 +538,10 @@
     }
   function spawnDecor(){
     // Only spawn side decor that has images in drive_assets
-    const type = choice(['tree','bush','billboard']);
+  const type = choice(['tree','bush','bush','tree','billboard','bush','tree']);
     const side = Math.random()<0.5 ? -1 : 1;
     const x = side * rand(1.08, 1.34);
-    const base = (type==='billboard'? 300 : type==='tree' ? 180 : 120);
+  const base = (type==='billboard'? rand(240, 320) : type==='tree' ? rand(150, 200) : rand(110, 140));
     const cand = {type,x,z:-0.2,base,seg:0,side};
     // Prevent overlap with recent decors near the top
     const cr = spriteDrawRect(cand.type, cand.x, cand.z, cand.base);
@@ -607,12 +661,20 @@
       } else {
         // Fallback simple shapes until image loads
         ctx.save(); ctx.translate(dr.x+dr.w/2, dr.y+dr.h/2); ctx.scale(dr.w/100, dr.h/100);
+        const n = nightFactor();
         if (d.type==='billboard'){
-          ctx.fillStyle='#0b1220'; roundRect(-45,-20,90,40,6); ctx.fill(); ctx.strokeStyle='#93c5fd'; ctx.lineWidth=2; ctx.strokeRect(-45,-20,90,40);
+          const face = n>0.5 ? '#0b1220' : '#0b1220';
+          ctx.fillStyle=face; roundRect(-45,-20,90,40,6); ctx.fill();
+          ctx.strokeStyle= n>0.5 ? '#7aa6ff' : '#93c5fd'; ctx.lineWidth=2; ctx.strokeRect(-45,-20,90,40);
         } else if (d.type==='tree'){
-          ctx.fillStyle='#22c55e'; ctx.beginPath(); ctx.ellipse(0,-10,40,30,0,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#8b5a2b'; roundRect(-4,10,8,40,4); ctx.fill();
+          ctx.fillStyle= n>0.5 ? '#1a6c3a' : '#22c55e'; ctx.beginPath(); ctx.ellipse(0,-10,40,30,0,0,Math.PI*2); ctx.fill();
+          ctx.fillStyle='#8b5a2b'; roundRect(-4,10,8,40,4); ctx.fill();
+          // simple highlight
+          ctx.fillStyle = 'rgba(255,255,255,0.08)'; roundRect(-20,-26,40,12,6); ctx.fill();
         } else { // bush
-          ctx.fillStyle='#166534'; ctx.beginPath(); ctx.ellipse(-16,10,22,20,0,0,Math.PI*2); ctx.fill(); ctx.beginPath(); ctx.ellipse(10,12,26,22,0,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#22c55e'; ctx.beginPath(); ctx.ellipse(0,0,18,16,0,0,Math.PI*2); ctx.fill();
+          ctx.fillStyle= n>0.5 ? '#14532d' : '#166534'; ctx.beginPath(); ctx.ellipse(-16,10,22,20,0,0,Math.PI*2); ctx.fill();
+          ctx.beginPath(); ctx.ellipse(10,12,26,22,0,0,Math.PI*2); ctx.fill();
+          ctx.fillStyle= n>0.5 ? '#1f8f4a' : '#22c55e'; ctx.beginPath(); ctx.ellipse(0,0,18,16,0,0,Math.PI*2); ctx.fill();
         }
         ctx.restore();
       }
@@ -690,23 +752,20 @@
     function nightFactor(){ if(!settings.dayNightCycle) return 0.25; const t=(performance.now()/1000)/40; return Math.sin(t*Math.PI*2)*0.5+0.5; }
     let centerDashOffset=0, grassOffset=0;
     function drawBackground(dt){
-      const W=canvas.clientWidth,H=canvas.clientHeight; const h=H*horizonFrac;
-  // Procedural grass background (pattern for perf)
-  if (!grassPattern) buildGrassPattern();
-  // Match grass scroll speed to object screen speed; freeze when not playing
-  const screenDY = (baseSpeed*speedMulNow) * (H/2.2) / 900;
-  if (state === 'play') grassOffset -= dt * screenDY;
-      const tile = 96;
-      const shiftY = - (grassOffset % tile);
+      const W=canvas.clientWidth,H=canvas.clientHeight;
+      // Full top-down grass background (no sky)
+      if (!grassPattern) buildGrassPattern();
+      const screenDY = (baseSpeed*speedMulNow) * (H/2.2) / 900;
+      if (state === 'play') grassOffset -= dt * screenDY;
+      const tile = 96; const shiftY = - (grassOffset % tile);
       if (grassPattern){
-        ctx.save();
-        ctx.translate(0, shiftY);
-        ctx.fillStyle = grassPattern;
-        ctx.fillRect(0, -tile, W, H + tile*2);
+        ctx.save(); ctx.translate(0, shiftY);
+        ctx.fillStyle = grassPattern; ctx.fillRect(0, -tile, W, H + tile*2);
         ctx.restore();
       } else {
         ctx.fillStyle='#0f3b1d'; ctx.fillRect(0,0,W,H);
       }
+
       // Road as a centered rectangle
       const roadLeft = W/2 - road.botW/2;
       ctx.fillStyle='#1f1f1f'; ctx.fillRect(roadLeft,0,road.botW,H);
@@ -726,6 +785,11 @@
       for(let y = - (centerDashOffset % spacing); y < H; y += spacing){
         ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y+dashLen); ctx.stroke();
       }
+      // Cat's eyes along the center
+      ctx.fillStyle = 'rgba(255,255,200,0.45)';
+      for(let y = - (centerDashOffset % (spacing)); y < H; y += spacing){
+        ctx.fillRect(x-1, y+dashLen+4, 2, 2);
+      }
       // Edge posts along shoulders
       const postSpacing = 100, postH = 14, postW = 3;
       const yStart = - (centerDashOffset % postSpacing);
@@ -733,6 +797,13 @@
       for(let y = yStart; y < H; y += postSpacing){
         ctx.fillRect(roadLeft-14, y, postW, postH);
         ctx.fillRect(roadLeft+road.botW+11, y, postW, postH);
+      }
+      // Rumble strip dashes just inside road edges
+      ctx.fillStyle = '#3a3a3a';
+      const rbx1 = roadLeft + 8, rbx2 = roadLeft + road.botW - 12;
+      for(let y = - (centerDashOffset % 22); y < H; y += 22){
+        ctx.fillRect(rbx1, y, 12, 3);
+        ctx.fillRect(rbx2, y, 12, 3);
       }
     }
 
@@ -775,12 +846,15 @@
   const slowPhase = clamp(1 - Math.min(elapsed, 60)/60, 0, 1);    // 1→0 over first minute
   const chaos     = clamp((elapsed - 60) / 240, 0, 1);            // 0 at 60s → 1 at 5min
   const curve     = (1 - slowPhase)*0.5 + chaos*0.5; 
-  baseSpeed = lerp(220, 460, curve); 
-  speedMul  = lerp(1.0, 1.9, curve); 
-  const ACCEL_RATE = 1.1;  // per second
+  // Faster overall game speed
+  baseSpeed = lerp(300, 700, curve); 
+  // Higher dynamic multiplier envelope
+  speedMul  = lerp(1.2, 2.5, curve); 
+  // Stronger forward acceleration
+  const ACCEL_RATE = 1.9;  // per second
   const BRAKE_RATE = 1.6;  // per second
   const DRAG_RATE  = 1.0;  // per second toward 0
-  const MAX_POS    = 0.9;  // max positive thrust
+  const MAX_POS    = 1.15; // max positive thrust
   const MAX_NEG    = 0.45; // max negative thrust
   if (keys.w) player.thrust = Math.min(MAX_POS, player.thrust + ACCEL_RATE*dt);
   if (keys.s) player.thrust = Math.max(-MAX_NEG, player.thrust - BRAKE_RATE*dt);
@@ -788,7 +862,8 @@
     if (player.thrust>0) player.thrust = Math.max(0, player.thrust - DRAG_RATE*dt);
     else if (player.thrust<0) player.thrust = Math.min(0, player.thrust + DRAG_RATE*dt);
   }
-  speedMulNow = speedMul * (1 + player.thrust);
+  const BASE_THRUST = 0.5; // baseline forward boost even without accelerating
+  speedMulNow = speedMul * Math.max(0.1, 1 + BASE_THRUST + player.thrust) * (CHEAT.speedBoost||1);
 
       // Controls
       const steer = (keys.d?1:0) - (keys.a?1:0);
@@ -801,7 +876,7 @@
         if (Math.abs(player.vx) <= decel) player.vx = 0; else player.vx += -Math.sign(player.vx) * decel;
         if (Math.abs(player.vx) < 0.02) player.vx = 0; // deadzone
       }
-      player.vx = clamp(player.vx, -2.6, 2.6);
+  player.vx = clamp(player.vx, -3.0, 3.0);
       // Keep the car fully within the road edges using visible width (prevents peeking past lines)
       {
         const cd = carDrawRect();
@@ -810,7 +885,7 @@
         const lineW = 6, extra = 6; // account for edge line width and a small buffer
         const maxCenter = Math.max(0, roadHalfW - carHalfVisible - lineW*0.5 - extra);
         const maxNormX = clamp(maxCenter / Math.max(1, roadHalfW), 0.1, 0.98);
-  if (player.vx !== 0) player.x = clamp(player.x + player.vx * dt * 0.6, -maxNormX, maxNormX);
+  if (player.vx !== 0) player.x = clamp(player.x + player.vx * dt * 0.68, -maxNormX, maxNormX);
       }
       const targetTilt=(player.vx/2.6)*player.maxTilt;
       player.tilt += (targetTilt - player.tilt) * (1 - Math.pow(0.001, dt));
@@ -833,11 +908,15 @@
 
       if (coinRushTimer>0){
         // Coin-only mode
-        if (pickupTimer<=0){ spawnPickup(); if (Math.random()<0.45) spawnPickup(); pickupTimer=lerp(0.7, 0.45, chaos); }
-        if (decorTimer<=0){ spawnDecor(); decorTimer=rand(1.6, 2.6); }
+        if (pickupTimer<=0){ spawnPickup(); if (Math.random()<0.55) spawnPickup(); pickupTimer=lerp(0.7, 0.45, chaos); }
+        if (decorTimer<=0){ spawnDecor(); if (Math.random()<0.35) spawnDecor(); decorTimer=rand(1.2, 2.0); }
       } else {
         if (spawnTimer<=0){ spawnObstacle(); if (Math.random() < (0.12 + 0.18*chaos) * spawnRateMul) spawnObstacle(); spawnTimer=minSpawn; }
-        if (decorTimer<=0){ spawnDecor(); decorTimer=rand(1.8, 3.2); }
+        if (decorTimer<=0){
+          // Spawn more frequent side decor with slight clustering
+          spawnDecor(); if (Math.random()<0.45) spawnDecor();
+          decorTimer=rand(1.1, 2.2);
+        }
   // Fewer cars on mobile (less space)
   const baseLimit = Math.round(lerp(3, 11, chaos));
   const trafficLimit = isMobileLike() ? Math.max(2, Math.floor(baseLimit * 0.6)) : baseLimit;
@@ -855,6 +934,30 @@
 
       const carR=getCarRect();
 
+      // Helper: award near-miss once per object when close but not colliding
+      function tryNearMiss(obj, r, carRect){
+        if (!obj || obj.nm) return;
+        const carTop = carRect.y, carBottom = carRect.y + carRect.h;
+        const vertOverlap = (r.y < carBottom) && (r.y + r.h > carTop);
+        if (!vertOverlap) return;
+        const carCx = carRect.x + carRect.w/2;
+        const objCx = r.x + r.w/2;
+        const distX = Math.abs(objCx - carCx);
+        const threshold = Math.max(18, carRect.w * 0.22);
+        if (distX < threshold){
+          obj.nm = true;
+          combo = Math.min(5.0, combo + 0.25); comboTime = 1.6;
+          // Reward: +1 coin with popup and sound
+          coins += 1; refreshShop(); try{ playCoin(); }catch{}
+          // transient toast for near-miss
+          try{
+            ui.toast.textContent = 'near miss! +1 coin';
+            ui.toast.classList.add('show');
+            setTimeout(()=> ui.toast.classList.remove('show'), 600);
+          }catch{}
+        }
+      }
+
       // Obstacles
       for (let i=obstacles.length-1;i>=0;i--){
   const o=obstacles[i]; o.z += dt*(baseSpeed*speedMulNow)/900;
@@ -865,10 +968,11 @@
         { const maxNormX=safeMaxNormForBase(o.base); o.x = clamp(o.x, -maxNormX, maxNormX); }
         const dr=spriteDrawRect(o.type,o.x,o.z,o.base); let r=spriteHitRect(o.type,dr);
         r = shrinkRect(r, 0.9, 0.85); const carRS = shrinkRect(carR, 0.9, 0.9);
-        if (player.flyTime<=0 && player.invuln<=0 && rectsOverlap(carRS,r)){
+  if (!CHEAT.noHitboxes && player.flyTime<=0 && player.invuln<=0 && rectsOverlap(carRS,r)){
           crash(); if (settings.shake){ shakeTime=0.35; shakeAmt=14; }
           gameOver(); obstacles.length=0; decors.length=0; traffic.length=0; pickups.length=0; break;
-        }
+  }
+  else { tryNearMiss(o, r, carR); }
       }
 
     // Traffic
@@ -882,19 +986,35 @@
           c.laneTarget = clamp((c.laneTarget || c.x) + rand(-0.5,0.5), -0.95, 0.95);
           c.laneTimer = rand(1.0, 3.0);
         }
-        const steerX = clamp((c.laneTarget - c.x), -0.6, 0.6);
-        c.vx += steerX * 0.6 * dt + rand(-0.03,0.03)*dt;
+        let steerX = clamp((c.laneTarget - c.x), -0.6, 0.6);
+        // Dampen sudden swerves near player to reduce unfair merges
+        let damp = 1.0, noiseAmp = 0.03;
+        try {
+          const cd = carDrawRect();
+          const drN = spriteDrawRect(c.type, c.x, c.z, c.base);
+          const cx = cd.cx, cy = cd.cy;
+          const objCx = drN.x + drN.w/2, objCy = drN.y + drN.h*0.5;
+          const nearY = Math.abs(objCy - cy) < 160;
+          const nearX = Math.abs(objCx - cx) < cd.carWidth * 0.85;
+          if (nearY && nearX){
+            damp = 0.35; noiseAmp = 0.008;
+            const toward = Math.sign(player.x - c.x);
+            if (Math.sign(steerX) === toward) steerX *= 0.5;
+          }
+        } catch{}
+        c.vx += steerX * 0.6 * dt * damp + rand(-noiseAmp,noiseAmp)*dt;
         c.vx = clamp(c.vx, -0.35, 0.35);
         c.x += c.vx * dt;
         const maxNormX = safeMaxNormForBase(c.base); c.x=clamp(c.x,-maxNormX,maxNormX);
         // Remove only when fully off-screen bottom
         { const drTest=spriteDrawRect(c.type,c.x,c.z,c.base); if (drTest.y > canvas.clientHeight) { traffic.splice(i,1); continue; } }
-        if (player.flyTime<=0 && player.invuln<=0){
+  if (!CHEAT.noHitboxes && player.flyTime<=0 && player.invuln<=0){
           const dr=spriteDrawRect(c.type,c.x,c.z,c.base); let r=spriteHitRect(c.type, dr); r = shrinkRect(r, 0.96, 0.94); const carRS = shrinkRect(carR, 0.9, 0.9);
           if (rectsOverlap(carRS,r)){
             crash(); if (settings.shake){ shakeTime=0.4; shakeAmt=16; }
             gameOver(); break;
           }
+          else { tryNearMiss(c, r, carR); }
         }
       }
 
@@ -905,7 +1025,13 @@
         { const prTest=project(pu.x, pu.z); const sizeTest=pu.base*prTest.scale*0.6; if (prTest.y - sizeTest > canvas.clientHeight) { pickups.splice(i,1); continue; } }
         { const maxNormX=safeMaxNormForBase(pu.base); pu.x = clamp(pu.x, -maxNormX, maxNormX); }
   const p=project(pu.x,pu.z); const size=pu.base*p.scale*0.6; let r={x:p.x-size/2,y:p.y-size,w:size,h:size}; r = shrinkRect(r,0.9,0.9);
-        if (rectsOverlap(carR,r)){ coins+=1; refreshShop(); pickups.splice(i,1); toast('+1 coin'); }
+        // While flying, slightly expand car rect for pickups so coins still collect
+        const carForPickup = (player.flyTime>0) ? shrinkRect(carR, 1.05, 1.15) : carR;
+        if (rectsOverlap(carForPickup,r)){
+          coins+=1; refreshShop(); pickups.splice(i,1);
+          try{ playCoin(); }catch{}
+          toast('+1 coin');
+        }
       }
 
       // Off-road decor update
@@ -917,9 +1043,12 @@
         if (prTest.y > canvas.clientHeight + 10){ decors.splice(i,1); continue; }
       }
 
-      // HUD
-  score += dt * 10 * speedMulNow; ui.score.textContent=Math.floor(score);
-  ui.spd.textContent=Math.floor(70 + 110*speedMulNow);
+    // Combo decay and HUD
+    if (combo > 1){ if (comboTime > 0) comboTime = Math.max(0, comboTime - dt); else combo = Math.max(1, combo - 0.4*dt); }
+    // HUD / scoring
+    score += dt * 10 * speedMulNow * combo; ui.score.textContent=Math.floor(score);
+  ui.spd.textContent=Math.floor(120 + 220*speedMulNow);
+    if (ui.combo) ui.combo.textContent = combo.toFixed(2) + 'x';
       const list=[]; if(player.flyTime>0) list.push(`Flying ${player.flyTime.toFixed(1)}s`); if(fewerTimer>0) list.push(`Fewer objs ${fewerTimer.toFixed(1)}s`); if (coinRushTimer>0) list.push(`Coin Rush ${coinRushTimer.toFixed(1)}s`);
       ui.activePU.textContent=list.join(' • ');
       ui.cooldowns.textContent = `Invulnerability ${player.invuln.toFixed(1)}s`;
@@ -954,6 +1083,20 @@
       } else {
         drawBackground(dt); drawWorldLists(dt);
       }
+      // Day-night tint overlay (subtle)
+      try {
+        const W=canvas.clientWidth,H=canvas.clientHeight; const n=nightFactor();
+        if (n>=0){
+          if (n>0.5){ // night – cool blue tint increasing up to ~0.25 alpha
+            const a = (n-0.5)*0.35;
+            ctx.fillStyle = `rgba(8, 20, 56, ${a.toFixed(3)})`;
+            ctx.fillRect(0,0,W,H);
+          } else { // day – very subtle warm haze
+            const a = (0.5-n)*0.08;
+            if (a>0){ ctx.fillStyle = `rgba(255, 210, 130, ${a.toFixed(3)})`; ctx.fillRect(0,0,W,H); }
+          }
+        }
+      } catch{}
       drawUIExtras();
     }
 
@@ -1021,9 +1164,45 @@
     // Bind ESC to pause in global handler above; wire start button already done.
   resize();
   setupTouchControls();
+  loadCoinAudio();
     requestAnimationFrame(frame);
   updateUIState();
   setTimeout(runTests, 10);
+
+
+  // --- Console cheat trigger ---
+  try{
+    Object.defineProperty(window, 'cheatcode', {
+      configurable: true,
+      get(){
+        CHEAT.active = true; CHEAT.noHitboxes = true; CHEAT.speedBoost = 50;
+        try{ toast('CHEAT: no hitboxes + 50x speed'); }catch{}
+        console.info('%cCHEAT ENABLED%c  no-hit + 50x speed','background:#22c55e;color:#04140a;padding:2px 6px;border-radius:6px','');
+        return 'CHEAT ENABLED';
+      }
+    });
+    // Optional: allow turning it off with resetcheat
+    Object.defineProperty(window, 'resetcheat', {
+      configurable: true,
+      get(){ CHEAT.active=false; CHEAT.noHitboxes=false; CHEAT.speedBoost=1; try{ toast('CHEAT disabled'); }catch{}; console.info('CHEAT disabled'); return 'CHEAT disabled'; }
+    });
+
+    // Callable fallbacks for consoles that don't resolve bare identifiers to window props
+    window.enableCheats = function(){
+      CHEAT.active=true; CHEAT.noHitboxes=true; CHEAT.speedBoost=50;
+      try{ toast('CHEAT: no hitboxes + 50x speed'); }catch{}
+      console.info('%cCHEAT ENABLED%c  no-hit + 50x speed','background:#22c55e;color:#04140a;padding:2px 6px;border-radius:6px','');
+      return 'CHEAT ENABLED';
+    };
+    window.disableCheats = function(){
+      CHEAT.active=false; CHEAT.noHitboxes=false; CHEAT.speedBoost=1;
+      try{ toast('CHEAT disabled'); }catch{}
+      console.info('CHEAT disabled');
+      return 'CHEAT disabled';
+    };
+    // convenient alias
+    window.cheat = window.enableCheats;
+  }catch{}
   })();
   </script>
 </body>
