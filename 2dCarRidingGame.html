@@ -1175,9 +1175,9 @@
     Object.defineProperty(window, 'cheatcode', {
       configurable: true,
       get(){
-        CHEAT.active = true; CHEAT.noHitboxes = true; CHEAT.speedBoost = 50;
-        try{ toast('CHEAT: no hitboxes + 50x speed'); }catch{}
-        console.info('%cCHEAT ENABLED%c  no-hit + 50x speed','background:#22c55e;color:#04140a;padding:2px 6px;border-radius:6px','');
+  CHEAT.active = true; CHEAT.noHitboxes = true; CHEAT.speedBoost = 5000;
+  try{ toast('CHEAT: no hitboxes + 5000x speed'); }catch{}
+  console.info('%cCHEAT ENABLED%c  no-hit + 500x speed','background:#22c55e;color:#04140a;padding:2px 6px;border-radius:6px','');
         return 'CHEAT ENABLED';
       }
     });
@@ -1189,9 +1189,9 @@
 
     // Callable fallbacks for consoles that don't resolve bare identifiers to window props
     window.enableCheats = function(){
-      CHEAT.active=true; CHEAT.noHitboxes=true; CHEAT.speedBoost=50;
-      try{ toast('CHEAT: no hitboxes + 50x speed'); }catch{}
-      console.info('%cCHEAT ENABLED%c  no-hit + 50x speed','background:#22c55e;color:#04140a;padding:2px 6px;border-radius:6px','');
+  CHEAT.active=true; CHEAT.noHitboxes=true; CHEAT.speedBoost=500;
+  try{ toast('CHEAT: no hitboxes + 500x speed'); }catch{}
+  console.info('%cCHEAT ENABLED%c  no-hit + 500x speed','background:#22c55e;color:#04140a;padding:2px 6px;border-radius:6px','');
       return 'CHEAT ENABLED';
     };
     window.disableCheats = function(){
