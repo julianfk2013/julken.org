@@ -1,170 +1,466 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<title>Spacebar Clicker — Maintenance</title>
-		<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
-		<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
-		<style>
-			:root {
-				--bg1: #1a2a6c;
-				--bg2: #b21f1f;
-				--bg3: #fdbb2d;
-				--card: rgba(255, 255, 255, 0.1);
-				--card-border: rgba(255, 255, 255, 0.25);
-				--text: #f5f7fb;
-				--muted: #d9e1ffcc;
-				--accent1: #7f5af0;
-				--accent2: #00d4ff;
-				--accent3: #ff7a59;
-				--shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<title>Spacebar Clicker</title>
+	<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+	<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+	<style>
+		:root {
+			--bg: #0b1020; --panel: #0f172a; --panel-2: #0b1320; --text: #e5e7eb; --muted:#9ca3af;
+			--accent:#38bdf8; --good:#22c55e; --warn:#f59e0b; --bad:#ef4444; --shadow: 0 16px 40px rgba(0,0,0,0.45);
+		}
+		*{box-sizing:border-box}
+		html,body{height:100%}
+		body{margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, sans-serif; color:var(--text);
+			background: radial-gradient(1200px 600px at 10% -10%, #1f2937 0%, transparent 60%), radial-gradient(1000px 500px at 110% 10%, #0b1320 0%, transparent 60%), linear-gradient(160deg, #0b1020, #0f172a 55%, #0a0f1f);
+			overflow-x:hidden;
+		}
+		#bgCanvas{position:fixed; inset:0; z-index:0; pointer-events:none}
+		.aurora{position:fixed; inset:-20% -10% 0 -10%; z-index:0; pointer-events:none; opacity:.55; filter:blur(22px) saturate(1.1); mix-blend-mode:screen}
+		.aurora::before,.aurora::after{content:""; position:absolute; border-radius:50%}
+		.aurora::before{width:60vw;height:60vw;left:-10vw;top:10vh;background:radial-gradient(closest-side, rgba(59,130,246,.18), rgba(59,130,246,0) 70%);animation:aurA 22s ease-in-out infinite alternate}
+		.aurora::after{width:55vw;height:55vw;right:-8vw;top:30vh;background:radial-gradient(closest-side, rgba(236,72,153,.18), rgba(236,72,153,0) 70%);animation:aurB 26s ease-in-out infinite alternate}
+		@keyframes aurA{from{transform:translateY(-6vh)} to{transform:translateY(6vh)}}
+		@keyframes aurB{from{transform:translateY(5vh)} to{transform:translateY(-5vh)}}
+
+		header{position:sticky; top:0; z-index:10; backdrop-filter: blur(10px); background: rgba(10,15,31,0.55); border-bottom:1px solid rgba(255,255,255,0.08)}
+		.nav{max-width:1100px; margin:0 auto; padding:10px 16px; display:flex; justify-content:space-between; align-items:center}
+		.brand{display:flex; align-items:center; gap:10px}
+		.brand .dot{width:10px; height:10px; border-radius:50%; background:linear-gradient(135deg,#38bdf8,#0ea5e9); box-shadow:0 0 10px rgba(56,189,248,.7)}
+		.brand .title{font-weight:700; letter-spacing:.3px}
+		.nav a{color:#bcd3ff; text-decoration:none}
+
+		.wrap{position:relative; z-index:1; max-width:1200px; margin:20px auto; padding:0 16px}
+		.grid{display:grid; grid-template-columns: 1fr; gap:16px; min-height: calc(100vh - 80px);}
+		.card{position:relative; background:linear-gradient(180deg, var(--panel), var(--panel-2)); border:1px solid rgba(255,255,255,0.08); border-radius:16px; box-shadow:var(--shadow); overflow:hidden}
+		.card .header{padding:14px 16px; border-bottom:1px solid rgba(255,255,255,0.08)}
+		.card .title{margin:0; font-size:18px}
+		.card .body{padding:16px}
+		.muted{color:var(--muted)}
+
+		/* Play panel */
+		.topRow{display:grid; grid-template-columns: 1fr; gap:10px}
+		.counterLarge{font-size: clamp(36px, 8vw, 64px); font-weight: 800; letter-spacing:.5px; text-align:center; text-shadow: 0 6px 20px rgba(0,0,0,.35)}
+		.stats{display:flex; gap:10px; flex-wrap:wrap; justify-content:center}
+		.stat{flex:1; min-width:140px; background:#0e162b; border:1px solid rgba(255,255,255,.06); border-radius:12px; padding:10px 12px}
+		.stat .lab{font-size:12px; color:var(--muted)}
+		.stat .val{font-size:20px; font-weight:700}
+		.spaceWrap{margin-top:6px; display:grid; gap:10px}
+		.spaceKey{user-select:none; border-radius:18px; padding:28px; text-align:center; font-weight:800; letter-spacing:.6px; font-size:28px; color:#0b1020; background:linear-gradient(180deg,#e5eefc,#cfe0ff); border:1px solid rgba(0,0,0,.08); box-shadow:inset 0 -4px 0 rgba(0,0,0,.15), 0 20px 50px rgba(0,0,0,.45); transition: transform .06s ease, box-shadow .06s ease}
+		.spaceKey.pressed{transform: translateY(2px); box-shadow: inset 0 -1px 0 rgba(0,0,0,.1), 0 10px 24px rgba(0,0,0,.35)}
+		.tapBtn{appearance:none; border:1px solid rgba(255,255,255,.08); color:#001018; background:linear-gradient(180deg, #38bdf8, #0ea5e9); padding:12px 16px; border-radius:12px; font-weight:800; cursor:pointer}
+		.tapBtn:active{transform:translateY(1px)}
+		.hint{font-size:12px; color:var(--muted)}
+		.ripple{position:absolute; border-radius:50%; pointer-events:none; transform:translate(-50%,-50%); background:rgba(255,255,255,.6); mix-blend-mode:overlay; width:8px; height:8px; opacity:.8; animation:rip .5s ease-out forwards}
+		@keyframes rip{to{opacity:0; transform:translate(-50%,-50%) scale(16)}}
+
+		/* Shop */
+		.tabs{display:flex; gap:8px; padding:12px 16px; border-bottom:1px solid rgba(255,255,255,.08)}
+		.tab{appearance:none; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:var(--text); padding:8px 12px; border-radius:10px; cursor:pointer; font-weight:600}
+		.tab.active{background:linear-gradient(180deg,#38bdf8,#0ea5e9); color:#001018; border:0}
+		.shopBody{padding:16px}
+		.shopItem{display:flex; gap:10px; align-items:center; justify-content:space-between; background:#0e162b; border:1px solid rgba(255,255,255,.06); border-radius:12px; padding:10px 12px; margin-bottom:10px}
+		.shopItem .meta{display:grid; gap:4px}
+		.shopItem .name{font-weight:700}
+		.shopItem .desc{font-size:12px; color:var(--muted)}
+		.buy{appearance:none; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:var(--text); padding:8px 12px; border-radius:10px; cursor:pointer}
+		.buy.primary{background:linear-gradient(180deg,#22c55e,#16a34a); color:#fff; border:0}
+		.buy[disabled]{opacity:.6; cursor:not-allowed}
+
+		.row{display:flex; gap:8px; flex-wrap:wrap}
+		.btn{appearance:none; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:var(--text); padding:8px 12px; border-radius:10px; cursor:pointer}
+		.btn.danger{background:linear-gradient(180deg,#ef4444,#b91c1c); border:0}
+
+		.toasts{position:fixed; right:12px; top:12px; z-index:60}
+		.toast{background:rgba(17,24,39,.9); color:#e5e7eb; border:1px solid rgba(255,255,255,.12); border-radius:10px; padding:8px 12px; margin-bottom:8px; box-shadow:0 10px 24px rgba(0,0,0,.35)}
+	</style>
+</head>
+<body>
+	<canvas id="bgCanvas"></canvas>
+	<div class="aurora" aria-hidden="true"></div>
+	<div class="toasts" id="toasts" aria-live="polite" aria-atomic="true"></div>
+
+	<header>
+		<nav class="nav" aria-label="Top">
+			<div class="brand"><span class="dot" aria-hidden="true"></span><div class="title">Spacebar Clicker</div></div>
+			<a href="index.html">Home</a>
+		</nav>
+	</header>
+
+		<div class="wrap">
+			<div class="grid">
+				<!-- Play panel (top) -->
+				<section class="card" aria-labelledby="tPlay">
+				<header class="header"><h2 id="tPlay" class="title">Play</h2></header>
+				<div class="body">
+						<div class="topRow">
+							<div class="counterLarge" id="counterLarge">0</div>
+							<div class="stats">
+								<div class="stat"><div class="lab">Total</div><div class="val" id="total">0</div></div>
+								<div class="stat"><div class="lab">Per Press</div><div class="val" id="per">1</div></div>
+								<div class="stat"><div class="lab">Auto /s</div><div class="val" id="cps">0</div></div>
+							</div>
+						</div>
+						<div class="spaceWrap">
+							<div id="spaceKey" class="spaceKey" role="button" aria-label="Press spacebar or click to gain points" tabindex="0">SPACE</div>
+						<div class="row">
+							<button id="tapBtn" class="tapBtn">Click!</button>
+							<span class="hint">Press Space to play. Hold won’t spam.</span>
+						</div>
+					</div>
+					<div class="row" style="margin-top:10px">
+						<button id="resetBtn" class="btn danger">Reset</button>
+						<button id="saveBtn" class="btn">Save</button>
+					</div>
+				</div>
+			</section>
+
+					<!-- Shop (bottom) -->
+					<aside class="card" aria-labelledby="tShop">
+						<header class="header"><h2 id="tShop" class="title">Shop</h2></header>
+						<div class="tabs">
+							<button class="tab active" id="tabUp">Upgrades</button>
+							<button class="tab" id="tabGen">Generators</button>
+						</div>
+						<div class="shopBody" id="shopBody"></div>
+					</aside>
+		</div>
+	</div>
+
+	<script>
+	(function(){
+		'use strict';
+		// Elements
+		const $ = (s)=>document.querySelector(s);
+			const els = {
+			bg: $('#bgCanvas'),
+			toasts: $('#toasts'),
+				total: $('#total'), per: $('#per'), cps: $('#cps'), counterLarge: $('#counterLarge'),
+			space: $('#spaceKey'), tap: $('#tapBtn'), reset: $('#resetBtn'), save: $('#saveBtn'),
+				shopBody: $('#shopBody'), tabUp: $('#tabUp'), tabGen: $('#tabGen')
+		};
+
+		// State
+		const store = {
+			get(k,d){ try{ const v=localStorage.getItem(k); return v? JSON.parse(v): d; }catch{ return d; } },
+			set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch{} }
+		};
+			function baseState(){
+				return {
+					total: 0,
+					per: 1,
+					auto: 0,
+					carry: 0,
+					items: {
+						// Upgrades
+						clickUp: 0, booster: 0, megaKey: 0, titanium: 0, nebulaGlove: 0, supernova: 0, galacticStamp: 0,
+						cosmicHammer: 0, singularity: 0, darkMatter: 0, starforge: 0,
+						carbonFiber: 0, hyperKey: 0, plasmaSpring: 0, quantumInk: 0, fusionPad: 0, tachyonGrip: 0,
+						// Generators
+						autoClicker: 0, worker: 0, factory: 0, robot: 0, server: 0, quantum: 0,
+						printer: 0, lab: 0, aiOverlord: 0, blackHole: 0,
+						microservice: 0, pipeline: 0, datacenter: 0, fusionReactor: 0, wormhole: 0, timeDilation: 0,
+						// Formerly timed gens; now per-second as well
+						fish: 0, shark: 0, crab: 0, whale: 0, chest: 0, comet: 0, asteroid: 0
+					}
+				};
+			}
+			const state = Object.assign(baseState(), store.get('sb_v2', {}));
+			// ensure shape if loading older saves (gen no longer used)
+			state.items = Object.assign({}, baseState().items, state.items||{});
+
+		// Shop config
+			const UPGRADES = [
+				{ id:'clickUp', name:'Stronger Press', desc:'+1 per press', base: 10, scale: 1.15, apply: ()=>{ state.per += 1; } },
+				{ id:'booster', name:'Booster Keycap', desc:'+2 per press', base: 80, scale: 1.17, apply: ()=>{ state.per += 2; } },
+				{ id:'megaKey', name:'Mega Key', desc:'+5 per press', base: 200, scale: 1.22, apply: ()=>{ state.per += 5; } },
+				{ id:'titanium', name:'Titanium Key', desc:'+10 per press', base: 800, scale: 1.22, apply: ()=>{ state.per += 10; } },
+				{ id:'nebulaGlove', name:'Nebula Glove', desc:'+25 per press', base: 4000, scale: 1.24, apply: ()=>{ state.per += 25; } },
+				{ id:'supernova', name:'Supernova Touch', desc:'+50 per press', base: 15000, scale: 1.26, apply: ()=>{ state.per += 50; } },
+				{ id:'galacticStamp', name:'Galactic Stamp', desc:'+100 per press', base: 60000, scale: 1.28, apply: ()=>{ state.per += 100; } },
+				{ id:'cosmicHammer', name:'Cosmic Hammer', desc:'+250 per press', base: 220000, scale: 1.29, apply: ()=>{ state.per += 250; } },
+				{ id:'singularity', name:'Singularity Tap', desc:'+1000 per press', base: 1500000, scale: 1.31, apply: ()=>{ state.per += 1000; } },
+				{ id:'darkMatter', name:'Dark Matter Glove', desc:'+5000 per press', base: 8000000, scale: 1.33, apply: ()=>{ state.per += 5000; } },
+				{ id:'starforge', name:'Starforge Stamp', desc:'+20000 per press', base: 40000000, scale: 1.35, apply: ()=>{ state.per += 20000; } },
+				{ id:'carbonFiber', name:'Carbon Fiber Plate', desc:'+50000 per press', base: 120000000, scale: 1.36, apply: ()=>{ state.per += 50000; } },
+				{ id:'hyperKey', name:'Hyper Key', desc:'+120000 per press', base: 400000000, scale: 1.37, apply: ()=>{ state.per += 120000; } },
+				{ id:'plasmaSpring', name:'Plasma Spring', desc:'+300000 per press', base: 1200000000, scale: 1.38, apply: ()=>{ state.per += 300000; } },
+				{ id:'quantumInk', name:'Quantum Ink', desc:'+800000 per press', base: 3500000000, scale: 1.39, apply: ()=>{ state.per += 800000; } },
+				{ id:'fusionPad', name:'Fusion Pad', desc:'+2000000 per press', base: 10000000000, scale: 1.40, apply: ()=>{ state.per += 2000000; } },
+				{ id:'tachyonGrip', name:'Tachyon Grip', desc:'+6000000 per press', base: 30000000000, scale: 1.41, apply: ()=>{ state.per += 6000000; } },
+			];
+			const GENERATORS = [
+				// Per-second producers (all generators now grant per-second income)
+				{ id:'fish', name:'Background Job', desc:'+2 per second', base: 60, scale: 1.17, apply: ()=>{ state.auto += 2; } },
+				{ id:'shark', name:'Edge Cluster', desc:'+5 per second', base: 550, scale: 1.20, apply: ()=>{ state.auto += 5; } },
+				{ id:'crab', name:'Cache Worker', desc:'+3 per second', base: 220, scale: 1.18, apply: ()=>{ state.auto += 3; } },
+				{ id:'whale', name:'Logistics Fleet', desc:'+3.33 per second', base: 5200, scale: 1.25, apply: ()=>{ state.auto += (100/30); } },
+				{ id:'chest', name:'Data Vault', desc:'+3.33 per second', base: 1800, scale: 1.22, apply: ()=>{ state.auto += (50/15); } },
+				{ id:'comet', name:'Event Stream', desc:'+3.33 per second', base: 18000, scale: 1.26, apply: ()=>{ state.auto += (200/60); } },
+				{ id:'asteroid', name:'Mining Rig', desc:'+4.17 per second', base: 120000, scale: 1.28, apply: ()=>{ state.auto += (500/120); } },
+				// Additional per-second producers
+				{ id:'autoClicker', name:'Auto Clicker', desc:'+1 per second', base: 50, scale: 1.18, apply: ()=>{ state.auto += 1; } },
+				{ id:'worker', name:'Worker Bee', desc:'+5 per second', base: 250, scale: 1.20, apply: ()=>{ state.auto += 5; } },
+				{ id:'factory', name:'Click Factory', desc:'+10 per second', base: 1000, scale: 1.25, apply: ()=>{ state.auto += 10; } },
+				{ id:'robot', name:'Robot Crew', desc:'+25 per second', base: 3000, scale: 1.26, apply: ()=>{ state.auto += 25; } },
+				{ id:'server', name:'Server Farm', desc:'+100 per second', base: 12000, scale: 1.28, apply: ()=>{ state.auto += 100; } },
+				{ id:'quantum', name:'Quantum Tapper', desc:'+500 per second', base: 80000, scale: 1.30, apply: ()=>{ state.auto += 500; } },
+				{ id:'printer', name:'Nano Printer', desc:'+1,500 per second', base: 240000, scale: 1.30, apply: ()=>{ state.auto += 1500; } },
+				{ id:'lab', name:'Quantum Lab', desc:'+5,000 per second', base: 1200000, scale: 1.32, apply: ()=>{ state.auto += 5000; } },
+				{ id:'aiOverlord', name:'AI Overlord', desc:'+20,000 per second', base: 9000000, scale: 1.34, apply: ()=>{ state.auto += 20000; } },
+				{ id:'blackHole', name:'Black Hole Plant', desc:'+100,000 per second', base: 60000000, scale: 1.36, apply: ()=>{ state.auto += 100000; } },
+				{ id:'microservice', name:'Microservice Mesh', desc:'+250,000 per second', base: 200000000, scale: 1.32, apply: ()=>{ state.auto += 250000; } },
+				{ id:'pipeline', name:'Build Pipeline', desc:'+900,000 per second', base: 1000000000, scale: 1.33, apply: ()=>{ state.auto += 900000; } },
+				{ id:'datacenter', name:'Data Center', desc:'+3,000,000 per second', base: 5000000000, scale: 1.34, apply: ()=>{ state.auto += 3000000; } },
+				{ id:'fusionReactor', name:'Fusion Reactor', desc:'+10,000,000 per second', base: 50000000000, scale: 1.35, apply: ()=>{ state.auto += 10000000; } },
+				{ id:'wormhole', name:'Wormhole Relay', desc:'+40,000,000 per second', base: 300000000000, scale: 1.36, apply: ()=>{ state.auto += 40000000; } },
+				{ id:'timeDilation', name:'Time Dilation Array', desc:'+150,000,000 per second', base: 2000000000000, scale: 1.37, apply: ()=>{ state.auto += 150000000; } },
+			];
+			function allItems(){ return [...UPGRADES, ...GENERATORS]; }
+			function findItem(id){ return allItems().find(i=>i.id===id); }
+			// Global price tuning
+			const COST_MULTIPLIER = 1.25; // make everything a little more expensive
+			const TIER_GAP_FACTOR = 1.5; // widen gaps between items by tier
+			function getRankInGroup(itemId){
+				const inUp = UPGRADES.some(i=>i.id===itemId);
+				const group = inUp ? UPGRADES : GENERATORS;
+				const sorted = [...group].sort((a,b)=> a.base - b.base);
+				const idx = sorted.findIndex(i=>i.id===itemId);
+				return Math.max(0, idx);
+			}
+			function rawCost(itemId){
+				const it = findItem(itemId);
+				const n = (state.items[itemId]||0);
+				const rank = getRankInGroup(itemId);
+				const tierMult = Math.pow(TIER_GAP_FACTOR, rank);
+				const baseProgression = (it.base * tierMult) * Math.pow(it.scale, n);
+				const adjusted = baseProgression * COST_MULTIPLIER;
+				return Math.max(100, adjusted);
+			}
+			function costMapForGroup(group){
+				const arr = group.map(it=>({ id: it.id, cost: rawCost(it.id) }));
+				arr.sort((a,b)=> a.cost - b.cost);
+				for(let i=1;i<arr.length;i++){
+					if(Math.floor(arr[i].cost) <= Math.floor(arr[i-1].cost)){
+						arr[i].cost = Math.floor(arr[i-1].cost) + 1; // bump to ensure uniqueness
+					}
+				}
+				const map = {};
+				for(const e of arr){ map[e.id] = Math.floor(e.cost); }
+				return map;
+			}
+			function getCost(itemId){
+				const inUp = UPGRADES.some(i=>i.id===itemId);
+				const group = inUp ? UPGRADES : GENERATORS;
+				const map = costMapForGroup(group);
+				return Math.max(100, map[itemId]||Math.floor(rawCost(itemId)));
 			}
 
-			* { box-sizing: border-box; }
-			html, body { height: 100%; }
-			body {
-				margin: 0;
-				color: var(--text);
-				font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
-				display: grid;
-				place-items: center;
-				background: linear-gradient(-45deg, var(--bg1), var(--bg2), var(--bg3), #0f172a);
-				background-size: 400% 400%;
-				animation: gradientMove 18s ease infinite;
-				overflow: hidden;
-			}
+		// UI helpers
+		function fmt(n){ return n.toLocaleString(); }
 
-			/* floating sparkles */
-			.sparkles::before, .sparkles::after {
-				content: "";
-				position: absolute;
-				inset: -30vmax;
-				background:
-					radial-gradient(2px 2px at 20% 30%, #ffffffaa 60%, transparent 61%)
-					,radial-gradient(1.5px 1.5px at 70% 60%, #ffffff88 60%, transparent 61%)
-					,radial-gradient(1.8px 1.8px at 40% 80%, #ffffff99 60%, transparent 61%)
-					,radial-gradient(1.2px 1.2px at 85% 20%, #ffffff77 60%, transparent 61%);
-				animation: float 60s linear infinite;
-				pointer-events: none;
+		function autoPerSecond(){
+			let base = state.auto || 0;
+			return { base, timed: 0, total: base };
+		}
+		function renderHUD(){
+			// Full values (no abbreviations)
+			const tFull = fmt(state.total);
+			els.total.textContent = tFull; els.total.title = tFull;
+			if(els.counterLarge){ els.counterLarge.textContent = tFull; els.counterLarge.title = tFull; }
+			const perFull = fmt(state.per);
+			const aps = autoPerSecond();
+			const cpsFull = `${fmt(Math.floor(aps.total))} per second`;
+			els.per.textContent = fmt(state.per); els.per.title = perFull;
+			els.cps.textContent = fmt(Math.floor(aps.total)); els.cps.title = cpsFull;
+			updateShopAffordability();
+		}
+		function render(){ renderHUD(); renderShop(); }
+		function updateShopAffordability(){
+			if(!els.shopBody) return;
+			const rows = els.shopBody.querySelectorAll('.shopItem');
+			rows.forEach(row=>{
+				const id = row.getAttribute('data-id');
+				if(!id) return;
+				const btn = row.querySelector('button.buy');
+				const it = findItem(id);
+				if(!it) return;
+				const cost = getCost(id);
+				if(btn) btn.disabled = state.total < cost;
+				const desc = row.querySelector('.desc'); if(desc){ desc.textContent = `${it.desc} — Cost: ${fmt(cost)}`; desc.title = `Exact: ${fmt(cost)}`; }
+				const name = row.querySelector('.name'); if(name){ const owned = state.items[id]||0; name.textContent = `${it.name} ${owned? '×'+owned: ''}`; }
+			});
+		}
+			let activeTab = 'up';
+			function renderShop(){
+				els.shopBody.innerHTML = '';
+				const list = activeTab==='up' ? UPGRADES : GENERATORS;
+				const listSorted = [...list].sort((a,b)=> a.base - b.base);
+				for(const it of listSorted){
+					const owned = state.items[it.id]||0; const cost = getCost(it.id);
+				const row = document.createElement('div'); row.className='shopItem'; row.setAttribute('data-id', it.id);
+				const meta = document.createElement('div'); meta.className='meta';
+				const name = document.createElement('div'); name.className='name'; name.textContent = `${it.name} ${owned? '×'+owned: ''}`;
+					const desc = document.createElement('div'); desc.className='desc'; desc.textContent = `${it.desc} — Cost: ${fmt(cost)}`; desc.title = `Exact: ${fmt(cost)}`;
+				meta.append(name, desc);
+				const btn = document.createElement('button'); btn.type='button'; btn.className='buy primary'; btn.textContent = 'Buy'; btn.setAttribute('data-id', it.id);
+				btn.disabled = state.total < cost;
+				btn.addEventListener('click', (ev)=>{
+					const currentCost = getCost(it.id);
+					if(state.total < currentCost) { toast('Not enough'); return; }
+					state.total -= currentCost; state.items[it.id]=(state.items[it.id]||0)+1; try{ it.apply(); }catch{}
+					render(); save(); sfx.buy();
+				});
+					row.append(meta, btn);
+					els.shopBody.appendChild(row);
 			}
-			.sparkles::after { animation-duration: 90s; opacity: 0.5; }
+		}
+		function toast(msg){ if(!els.toasts) return; const d=document.createElement('div'); d.className='toast'; d.textContent=msg; els.toasts.appendChild(d); setTimeout(()=>d.remove(), 2600); }
 
-			@keyframes gradientMove {
-				0% { background-position: 0% 50%; }
-				50% { background-position: 100% 50%; }
-				100% { background-position: 0% 50%; }
-			}
-			@keyframes float {
-				from { transform: translate3d(0, 0, 0) rotate(0deg); }
-				to   { transform: translate3d(10vmax, 10vmax, 0) rotate(360deg); }
-			}
+		// Game logic
+		let lastKeyDown=false; // prevent space hold spam
+		function tap(x,y){
+				state.total += state.per; renderHUD(); sfx.click();
+			// ripple
+			try{ const r=document.createElement('span'); r.className='ripple'; if(x==null||y==null){ const rect=els.space.getBoundingClientRect(); x=rect.left+rect.width/2; y=rect.top+rect.height/2; } r.style.left=x+'px'; r.style.top=y+'px'; document.body.appendChild(r); setTimeout(()=>r.remove(), 520);}catch{}
+			// Achievements
+			if(state.total===100) toast('Milestone: 100!');
+			if(state.total===1000) toast('Milestone: 1,000!');
+		}
 
-			.card {
-				position: relative;
-				max-width: 880px;
-				width: calc(100% - 24px);
-				margin: 12px;
-				padding: 28px 24px 26px;
-				background: var(--card);
-				border: 1px solid var(--card-border);
-				border-radius: 20px;
-				box-shadow: var(--shadow);
-				backdrop-filter: blur(10px) saturate(120%);
-			}
+			// Auto tick every 100ms (integer carry)
+			setInterval(()=>{
+				// per second generators
+				if(state.auto>0){ state.carry += state.auto/10; while(state.carry>=1){ state.total += 1; state.carry -= 1; } }
+				renderHUD();
+			}, 100);
 
-			.badge {
-				display: inline-flex;
-				align-items: center;
-				gap: 10px;
-				padding: 8px 14px;
-				border-radius: 999px;
-				font-weight: 700;
-				letter-spacing: .3px;
-				background: linear-gradient(90deg, var(--accent2), var(--accent1));
-				color: #0b1020;
-				box-shadow: 0 6px 18px rgba(0, 212, 255, .35);
-				text-transform: uppercase;
-				font-size: 12px;
-			}
-			.badge .dot { width: 8px; height: 8px; border-radius: 50%; background: #0b1020; opacity: .9; }
+		// Save periodically
+		function save(){ store.set('sb_v2', state); }
+		setInterval(save, 5000);
 
-			h1 {
-				margin: 14px 0 10px;
-				font-size: clamp(28px, 4vw, 44px);
-				line-height: 1.08;
-				text-shadow:
-					0 2px 8px rgba(0,0,0,.35),
-					0 0 20px rgba(127,90,240,.35),
-					0 0 42px rgba(0,212,255,.25);
+		// Events
+		els.tap.addEventListener('click', (e)=> { tap(e.clientX, e.clientY); pressVisual(); });
+		els.space.addEventListener('mousedown', ()=>{ pressVisual(true); });
+		els.space.addEventListener('mouseup', ()=>{ pressVisual(false); });
+		els.space.addEventListener('mouseleave', ()=>{ pressVisual(false); });
+		// Only treat real pointer clicks on the SPACE key area; ignore keyboard-triggered clicks (detail===0)
+		els.space.addEventListener('click', (e)=> { if(e && e.detail===0){ return; } tap(e.clientX, e.clientY); });
+		// Prevent default space behavior on the key element; document keydown handles tap and visuals
+		els.space.addEventListener('keydown', (e)=>{ if(e.code==='Space'){ e.preventDefault(); }});
+		// Also block keyup default to avoid a synthesized click from keyboard activation
+		els.space.addEventListener('keyup', (e)=>{ if(e.code==='Space'){ e.preventDefault(); e.stopPropagation(); }});
+		document.addEventListener('keydown', (e)=>{
+			if(e.code==='Space'){
+				e.preventDefault();
+				const ae = document.activeElement;
+				const isSpaceKey = ae === els.space;
+				const isButtonish = ae && (ae.tagName === 'BUTTON' || ae.getAttribute('role') === 'button');
+				// If focus is on a button-like element other than the SPACE key area, let it handle the click (avoid double tap)
+				if(isButtonish && !isSpaceKey) return;
+				if(!lastKeyDown){ tap(); lastKeyDown=true; pressVisual(true); }
 			}
-			.subtitle {
-				margin: 0 0 18px;
-				font-size: clamp(15px, 2vw, 18px);
-				color: var(--muted);
-			}
+		});
+		document.addEventListener('keyup', (e)=>{ if(e.code==='Space'){ lastKeyDown=false; pressVisual(false); }});
+		function pressVisual(down){ if(down==null){ els.space.classList.add('pressed'); setTimeout(()=>els.space.classList.remove('pressed'), 80); } else { els.space.classList.toggle('pressed', !!down); } }
+		function hardReset(){
+			try{ localStorage.removeItem('sb_v2'); }catch{}
+			const fresh = baseState();
+			// Clear existing state thoroughly, then apply fresh base values
+			for(const k of Object.keys(state)) { delete state[k]; }
+			Object.assign(state, fresh);
+			lastKeyDown = false;
+			render();
+			// Persist the fresh state and hard-reload to guarantee a clean slate
+			try{ save(); }catch{}
+			setTimeout(()=>{ try{ location.reload(); }catch{} }, 50);
+		}
+		els.reset.addEventListener('click', ()=>{ if(confirm('Reset progress?')){ hardReset(); }});
+		els.save.addEventListener('click', ()=>{ save(); toast('Saved'); });
 
-			.links {
-				display: grid;
-				grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-				gap: 12px;
-				margin-top: 14px;
-			}
-			.btn {
-				display: inline-flex;
-				align-items: center;
-				justify-content: center;
-				gap: 10px;
-				padding: 12px 16px;
-				border-radius: 14px;
-				color: #0b1020;
-				text-decoration: none;
-				font-weight: 700;
-				letter-spacing: .2px;
-				background: linear-gradient(135deg, #ffffff, #e9f1ff);
-				box-shadow: 0 6px 18px rgba(255,255,255,.15), inset 0 -1px 0 rgba(0,0,0,.06);
-				border: 1px solid rgba(255,255,255,.55);
-				transition: transform .15s ease, box-shadow .2s ease, background .2s ease;
-			}
-			.btn:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(0,0,0,.25); }
-			.btn:active { transform: translateY(0); }
-			.btn.accent {
-				background: linear-gradient(135deg, var(--accent2), var(--accent1));
-				color: #071018;
-				border: 1px solid rgba(0,0,0,.08);
-				box-shadow: 0 10px 24px rgba(127,90,240,.4);
-			}
+		// Tabs
+		els.tabUp.addEventListener('click', ()=>{ activeTab='up'; els.tabUp.classList.add('active'); els.tabGen.classList.remove('active'); renderShop(); });
+		els.tabGen.addEventListener('click', ()=>{ activeTab='gen'; els.tabGen.classList.add('active'); els.tabUp.classList.remove('active'); renderShop(); });
 
-			.footer {
-				display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap;
-				margin-top: 20px; font-size: 13px; color: #e8f0ffb3;
+		// Init
+		render();
+
+		// DevTools cheats
+		(function setupCheats(){
+			const api = {
+				// Set total explicitly
+				set(n){ n=Number(n)||0; state.total = Math.max(0, Math.floor(n)); render(); save(); return state.total; },
+				// Add to total
+				add(n){ n=Number(n)||0; state.total = Math.max(0, Math.floor(state.total + n)); render(); save(); return state.total; },
+				// Set per-press
+				per(n){ n=Number(n)||1; state.per = Math.max(1, Math.floor(n)); render(); save(); return state.per; },
+				// Set auto per second
+				auto(n){ n=Number(n)||0; state.auto = Math.max(0, Math.floor(n)); render(); save(); return state.auto; },
+				// Grant shop items (bypass cost)
+				give(id, count=1){
+					const it = findItem(id);
+					if(!it) return `Unknown item: ${id}`;
+					count = Math.max(1, Math.floor(Number(count)||1));
+					for(let i=0;i<count;i++){
+						state.items[id] = (state.items[id]||0)+1;
+						try{ it.apply(); }catch{}
+					}
+					render(); save(); return `${id} x${state.items[id]}`;
+				},
+				// Save/Load
+				save(){ save(); return 'saved'; },
+				load(){ const loaded = store.get('sb_v2', {}); Object.assign(state, baseState(), loaded); render(); return 'loaded'; },
+				// Reset
+				reset(){ hardReset(); return 'reset'; },
+				// Help
+				help(){ return 'sb(n) set total; sbAdd(n) add; sbX.give(id,n) grant item; sbX.per(n); sbX.auto(n); ids: '+allItems().map(i=>i.id).join(', '); }
+			};
+			// Short helpers
+			window.sb = function(n){ return api.set(n); };
+			window.sbAdd = function(n){ return api.add(n); };
+			// Friendly aliases
+			window.setNumber = window.sb;
+			window.addNumber = window.sbAdd;
+			window.sbX = api;
+			try{ console.log('%cCheats ready: sb(n) to set total, sbAdd(n) to add, sbX.help() for more','color:#0ea5e9'); }catch{}
+		})();
+
+		// Background stars + light galaxy (simple)
+		(function startBg(){
+			const canvas=els.bg; if(!canvas) return; const ctx=canvas.getContext('2d'); if(!ctx) return; const DPR=Math.min(2, window.devicePixelRatio||1);
+			let w=0,h=0, stars=[], nebulas=[], meteors=[]; let mx=0,my=0; const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+			function resize(){ const cw=innerWidth, ch=innerHeight; w=canvas.width=Math.floor(cw*DPR); h=canvas.height=Math.floor(ch*DPR); canvas.style.width=cw+'px'; canvas.style.height=ch+'px'; ctx.setTransform(DPR,0,0,DPR,0,0);
+				const starCount=Math.floor((cw*ch)/11000), nebCount=Math.max(2,Math.floor((cw*ch)/520000));
+				stars=new Array(starCount).fill(0).map(()=>({x:Math.random()*cw,y:Math.random()*ch,z:Math.random()*0.9+0.1,t:Math.random()*6,s:Math.random()*0.9+0.1}));
+				nebulas=new Array(nebCount).fill(0).map(()=>({x:Math.random()*cw,y:Math.random()*ch,r:Math.random()*260+200,hue:Math.random()<0.5?200+Math.random()*40:120+Math.random()*30,alpha:0.06+Math.random()*0.06,drift:(Math.random()*0.5+0.2)*(Math.random()<0.5?-1:1)}));
+				meteors.length=0;
 			}
-			.footer a { color: #e8f0ff; opacity: .95; }
-		</style>
-	</head>
-	<body class="sparkles">
-		<main class="card" role="main" aria-labelledby="title">
-			<span class="badge" aria-hidden="true">
-				<span class="dot"></span>
-				Maintenance
-			</span>
-			<h1 id="title">This game is currently closed for maintenance</h1>
-			<p class="subtitle">Spacebar Clicker will be back soon—thanks for your patience. In the meantime, check out our other games:</p>
+			resize(); addEventListener('resize', resize);
+			addEventListener('mousemove', (e)=>{ const cx=innerWidth/2, cy=innerHeight/2; mx=(e.clientX-cx)/cx; my=(e.clientY-cy)/cy; });
+			function drawNeb(){ for(const n of nebulas){ n.x+=reduce?0:n.drift*0.04; if(n.x<-n.r) n.x=innerWidth+n.r; if(n.x>innerWidth+n.r) n.x=-n.r; const px=n.x+mx*8, py=n.y+my*5; const g=ctx.createRadialGradient(px,py,0,px,py,n.r); g.addColorStop(0,`hsla(${n.hue},70%,55%,${n.alpha})`); g.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(px,py,n.r,0,Math.PI*2); ctx.fill(); } }
+			function drawGalaxy(){ const cx=innerWidth*0.6+mx*10, cy=innerHeight*0.42+my*7; const coreR=Math.min(innerWidth,innerHeight)*0.09; const core=ctx.createRadialGradient(cx,cy,0,cx,cy,coreR*2.1); core.addColorStop(0,'rgba(255,255,255,0.14)'); core.addColorStop(1,'rgba(255,255,255,0)'); ctx.fillStyle=core; ctx.beginPath(); ctx.arc(cx,cy,coreR*2.1,0,Math.PI*2); ctx.fill(); if(reduce) return; const arms=3, armLen=Math.min(innerWidth,innerHeight)*0.5; ctx.globalCompositeOperation='lighter'; for(let a=0;a<arms;a++){ const base=(a/arms)*Math.PI*2; for(let i=0;i<420;i++){ const t=i/420; const ang=base+t*4.8+Math.sin(t*6)*0.05; const r=t*armLen+(Math.random()-0.5)*8; const x=cx+Math.cos(ang)*r+(Math.random()-0.5)*3; const y=cy+Math.sin(ang)*r+(Math.random()-0.5)*3; const alpha=(1-t)*0.2+Math.random()*0.05; const size=0.8+Math.random()*1.2; ctx.fillStyle=`rgba(200,220,255,${alpha.toFixed(3)})`; ctx.fillRect(x,y,size,size); } } ctx.globalCompositeOperation='source-over'; }
+			function drawStars(){ for(const s of stars){ s.x+=reduce?0:0.018*s.z; if(s.x>innerWidth) s.x=0; s.t+=0.03+0.02*s.z; const tw=0.6+0.4*Math.sin(s.t); const alpha=(0.25+0.55*s.z)*tw; const size=(0.6+1.2*s.s*s.z); const px=s.x+mx*(6*s.z), py=s.y+my*(4*s.z); ctx.fillStyle=`rgba(255,255,255,${alpha.toFixed(3)})`; ctx.fillRect(px,py,size,size);} }
+			function maybeMeteor(){ if(reduce) return; if(Math.random()<0.01 && meteors.length<1){ const startX=Math.random()*innerWidth*0.3; const startY=-20; const speed=5+Math.random()*3; meteors.push({x:startX,y:startY,vx:speed,vy:speed*0.35,life:0,max:80+Math.random()*40}); } }
+			function drawM(){ for(let i=meteors.length-1;i>=0;i--){ const m=meteors[i]; m.x+=m.vx; m.y+=m.vy; m.life++; const tail=80; const g=ctx.createLinearGradient(m.x,m.y,m.x-tail,m.y-tail*0.35); g.addColorStop(0,'rgba(255,255,255,0.9)'); g.addColorStop(1,'rgba(255,255,255,0)'); ctx.strokeStyle=g; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(m.x,m.y); ctx.lineTo(m.x-tail,m.y-tail*0.35); ctx.stroke(); if(m.life>m.max||m.x>innerWidth+50||m.y>innerHeight+50){ meteors.splice(i,1); } } }
+					function tick(){ ctx.clearRect(0,0,canvas.width,canvas.height); drawNeb(); drawGalaxy(); drawStars(); maybeMeteor(); drawM(); requestAnimationFrame(tick); }
+			requestAnimationFrame(tick);
+		})();
+    
+				// Confetti removed
 
-			<nav class="links" aria-label="Other games">
-				<a class="btn accent" href="index.html">🏠 Home</a>
-				<a class="btn" href="2dCarRidingGame.html">🚗 2D Car Riding Game</a>
-				<a class="btn" href="cpstest.html">⌛ CPS Test</a>
-				<a class="btn" href="Evil8ball.html">🎱 Evil 8 Ball</a>
-				<a class="btn" href="numberguessinggame.html">🔢 Number Guessing</a>
-				<a class="btn" href="calculator.html">🧮 Calculator</a>
-			</nav>
-
-			<div class="footer">
-				<span>We’re improving performance and fixing bugs.</span>
-				<span>Estimated downtime: short.</span>
-			</div>
-		</main>
-	</body>
+				// SFX using WebAudio
+				const sfx = (function(){
+					let ctx; function ac(){ if(!ctx){ try{ ctx = new (window.AudioContext||window.webkitAudioContext)(); }catch{} } return ctx; }
+					function tone(freq=220, dur=0.07, type='square', vol=0.1){ const c=ac(); if(!c) return; const o=c.createOscillator(); const g=c.createGain(); o.type=type; o.frequency.value=freq; g.gain.value=vol; o.connect(g); g.connect(c.destination); const now=c.currentTime; o.start(now); o.stop(now+dur); g.gain.setValueAtTime(vol, now); g.gain.exponentialRampToValueAtTime(0.0001, now+dur); }
+					return {
+						click:(f)=> tone(f||240, 0.05, 'square', 0.08),
+						buy:()=>{ tone(620,0.06,'sine',0.08); setTimeout(()=>tone(820,0.08,'sine',0.08),60); }
+					};
+				})();
+	})();
+	</script>
+</body>
 </html>
 

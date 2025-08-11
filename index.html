@@ -1,131 +1,270 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Julken Home</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Julken — Games Hub</title>
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
 
+        :root {
+            --bg: #0b1020;
+            --panel: #0f172a;
+            --panel-2: #0b1320;
+            --text: #e5e7eb;
+            --muted: #9ca3af;
+            --accent: #38bdf8;
+            --good: #22c55e;
+            --warn: #f59e0b;
+            --danger: #ef4444;
+            --shadow: 0 16px 40px rgba(0,0,0,0.45);
+        }
+
+        * { box-sizing: border-box; }
+        html, body { height: 100%; }
         body {
-            font-family: 'Poppins', sans-serif;
             margin: 0;
-            padding: 0;
-            background: linear-gradient(135deg, #12c2e9, #c471ed, #f64f59);
-            color: #ffffff;
-            display: flex;
-            flex-direction: row;
-            align-items: flex-start;
+            font-family: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, sans-serif;
+            color: var(--text);
+            background:
+                radial-gradient(1200px 600px at 10% -10%, #1f2937 0%, transparent 60%),
+                radial-gradient(1000px 500px at 110% 10%, #0b1320 0%, transparent 60%),
+                linear-gradient(160deg, #0b1020, #0f172a 55%, #0a0f1f);
             min-height: 100vh;
             overflow-x: hidden;
-            position: relative;
         }
 
+        /* Background */
+        #bgCanvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; display:block; }
+        .aurora { position: fixed; inset: -20% -10% 0 -10%; z-index: 0; pointer-events: none; opacity: 0.55; filter: blur(22px) saturate(1.1); mix-blend-mode: screen; }
+        .aurora::before, .aurora::after { content:""; position:absolute; inset:auto; border-radius:50%; }
+        .aurora::before { width: 60vw; height: 60vw; left: -10vw; top: 10vh; background: radial-gradient(closest-side, rgba(59,130,246,.18), rgba(59,130,246,0) 70%); animation: auroraA 22s ease-in-out infinite alternate; }
+        .aurora::after { width: 55vw; height: 55vw; right: -8vw; top: 30vh; background: radial-gradient(closest-side, rgba(236,72,153,.18), rgba(236,72,153,0) 70%); animation: auroraB 26s ease-in-out infinite alternate; }
+        @keyframes auroraA { from { transform: translateY(-6vh);} to { transform: translateY(6vh);} }
+        @keyframes auroraB { from { transform: translateY(5vh);} to { transform: translateY(-5vh);} }
+
+        /* Header */
         header {
-            width: 100%;
-            background: #333;
-            padding: 5px 0; /* Reduced padding */
-            text-align: center;
-            position: fixed;
-            top: 0;
-            z-index: 1000;
-            height: 40px; /* Fixed height to prevent overlap */
+            position: sticky; top: 0; z-index: 10;
+            backdrop-filter: blur(10px);
+            background: rgba(10, 15, 31, 0.55);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
         }
+    .nav { max-width: 1100px; margin: 0 auto; padding: 10px 16px; display:flex; align-items:center; justify-content:center; }
+        .brand { display:flex; align-items:center; gap: 10px; }
+        .brand img { width: 34px; height: 34px; border-radius: 8px; box-shadow: 0 6px 18px rgba(0,0,0,0.35); }
+        .brand .title { font-weight: 700; letter-spacing: .3px; }
+    .nav a.btn { display:none; }
 
-        header a {
-            color: #fff;
-            text-decoration: none;
-            font-size: 1.2rem;
-        }
+        /* Hero */
+    .hero { position: relative; z-index: 1; max-width: 1100px; margin: 24px auto 12px; padding: 22px 16px 0; text-align: center; }
+        .hero h1 { margin: 0 0 10px; font-size: clamp(28px, 6vw, 44px); letter-spacing: .4px; }
+        .hero p { margin: 0; color: var(--muted); font-size: clamp(14px, 2.6vw, 18px); }
 
-        .discord-link {
-            color: gold; /* Sets the text color to gold */
-            text-shadow: 0 0 10px gold, 0 0 20px gold, 0 0 30px gold, 0 0 40px gold, 0 0 50px gold, 0 0 60px gold, 0 0 70px gold; /* Creates a glowing effect */
-        }
+        /* Grid */
+        .grid { position: relative; z-index: 1; max-width: 1100px; margin: 16px auto; padding: 0 16px 24px; display: grid; gap: 16px; grid-template-columns: repeat(12, 1fr); }
+        .col-4 { grid-column: span 4; }
+        .col-6 { grid-column: span 6; }
+        .col-12 { grid-column: span 12; }
+        @media (max-width: 900px) { .col-4, .col-6 { grid-column: span 6; } }
+        @media (max-width: 620px) { .col-4, .col-6 { grid-column: span 12; } }
 
-        .sidebar {
-            width: 200px;
-            background: #252525;
-            height: 100vh;
-            overflow: auto;
-            position: fixed;
-            left: 0;
-            padding: 20px 10px;
-            top: 40px; /* Adjust top margin to fit under header */
-        }
+        .card { background: linear-gradient(180deg, var(--panel), var(--panel-2)); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; box-shadow: var(--shadow); overflow: clip; display:flex; flex-direction:column; min-height: 120px; }
+        .card .body { padding: 14px; display:flex; flex-direction:column; gap:10px; }
+        .card h3 { margin: 0; font-size: 18px; letter-spacing: .3px; }
+        .card p { margin: 0; color: var(--muted); font-size: 14px; }
+        .card .actions { margin-top: auto; display:flex; gap: 8px; flex-wrap: wrap; }
+        .btn { appearance:none; cursor:pointer; border-radius: 10px; border: 1px solid rgba(255,255,255,0.12); background: rgba(255,255,255,0.06); color: var(--text); padding: 9px 12px; font-size: 14px; text-decoration:none; display:inline-flex; align-items:center; gap:8px; }
+        .btn:hover { border-color: rgba(255,255,255,0.22); }
+        .btn.primary { background: linear-gradient(180deg, #22c55e, #16a34a); border: 0; color: #fff; }
+        .btn.accent { background: linear-gradient(180deg, #38bdf8, #0ea5e9); border: 0; color: #001018; }
+    .thumb { height: 120px; background: radial-gradient(200px 120px at 30% 40%, rgba(255,255,255,0.06), rgba(255,255,255,0) 60%), linear-gradient(180deg, #0b1320, #0a0f1f); display:grid; place-items:center; color:#c7e9ff; font-weight:700; letter-spacing: .3px; font-size: 18px; }
+        .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .badge { display:inline-block; padding: 3px 8px; border-radius: 999px; font-size: 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); color: var(--muted); }
 
-        .sidebar a {
-            display: block;
-            padding: 10px;
-            color: white;
-            text-decoration: none;
-        }
+        footer { position: relative; z-index:1; max-width:1100px; margin: 0 auto; padding: 12px 16px 32px; color: var(--muted); text-align:center; }
 
-        .sidebar a:hover {
-            background: #444;
-        }
-
-        .main-content {
-            margin-left: 200px;
-            padding: 60px 20px 20px;
-            width: calc(100% - 200px);
-            top: 40px; /* Align content top with header height */
-        }
-
-        .content {
-            max-width: 800px;
-            margin: auto;
-            padding: 2rem;
-            background: rgba(0, 0, 0, 0.7);
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            color: #e0e0e0;
-        }
-
-        footer {
-            width: 100%;
-            background: #121212;
-            color: #cccccc;
-            text-align: center;
-            padding: 1rem 0;
-            position: fixed;
-            bottom: 0;
+        @media (prefers-reduced-motion: reduce) {
+            .aurora::before, .aurora::after { animation: none !important; }
         }
     </style>
 </head>
 <body>
+    <canvas id="bgCanvas"></canvas>
+    <div class="aurora" aria-hidden="true"></div>
+
     <header>
-        <a href="https://discord.gg/ShRHdCefQw" class="discord-link">Join our Discord!</a>
+        <nav class="nav" aria-label="Main">
+            <div class="brand">
+                <img src="LogO.png" alt="Julken logo" />
+                <div class="title">Julken's Gaming Hub</div>
+            </div>
+        </nav>
     </header>
-    <div class="sidebar">
-        <img src="LogO.png" alt="Julken's Gaming Logo" style="width:100%; height:auto; display: block; margin-bottom: 20px;">
-        <a href="spacebarclicker.html">Spacebar Clicker Game</a>
-        <a href="cpstest.html">CPS Test (beta)</a>
-        <a href="calculator.html">Calculator (beta)</a>
-        <a href="Evil8ball.html">Evil 8 Ball</a>
-        <a href="numberguessinggame.html">Number Guessing Game</a>
-        <a href="2dCarRidingGame.html">2D Car Dodging Game</a>
-    </div>
-    <div class="main-content">
-        <section class="content">
-            <section class="content">
-                <h2>Latest News</h2>
-                <p>We are currently working on many more games, stay tuned!</p>
-            </section>
-        <section class="content">
-            <h2>Game updates:</h2>
-            <p>In spacebar clicker, we have made the in-game spacebar work.</p>
+
+    <section class="hero" aria-label="Intro">
+        <h1>Play small web games with big vibes</h1>
+        <p>Quick, fun, and free. New stuff drops often — bookmark and check back.</p>
+    </section>
+
+    <main class="grid">
+        <!-- Games grid -->
+        <article class="card col-4" aria-labelledby="g1">
+            <div class="thumb" aria-hidden="true">
+                <span>Spacebar Clicker</span>
+            </div>
+            <div class="body">
+                <h3 id="g1">Spacebar Clicker</h3>
+                <p>How fast can you mash? Test your spacebar stamina.</p>
+                <div class="actions">
+                    <a href="spacebarclicker.html" class="btn primary">Play</a>
+                    <span class="badge">Arcade</span>
+                </div>
+            </div>
+        </article>
+
+        <article class="card col-4" aria-labelledby="g2">
+            <div class="thumb" aria-hidden="true">
+                <span>CPS Test</span>
+            </div>
+            <div class="body">
+                <h3 id="g2">CPS Test <span class="badge">Beta</span></h3>
+                <p>Clicks per second challenge. Beat your best streak.</p>
+                <div class="actions">
+                    <a href="cpstest.html" class="btn primary">Try it</a>
+                    <span class="badge">Challenge</span>
+                </div>
+            </div>
+        </article>
+
+        <article class="card col-4" aria-labelledby="g3">
+            <div class="thumb" aria-hidden="true">
+                <span>Calculator</span>
+            </div>
+            <div class="body">
+                <h3 id="g3">Calculator <span class="badge">Beta</span></h3>
+                <p>Sleek, simple, and fast. Handy for quick math.</p>
+                <div class="actions">
+                    <a href="calculator.html" class="btn accent">Open</a>
+                    <span class="badge">Utility</span>
+                </div>
+            </div>
+        </article>
+
+    <article class="card col-4" aria-labelledby="g4">
+            <div class="thumb" aria-hidden="true">
+                <span>Magic 8 Ball</span>
+            </div>
+            <div class="body">
+                <h3 id="g4">Evil Magic 8 Ball</h3>
+                <p>Ask anything. Mischievous answers, galaxy background, and voice.</p>
+                <div class="actions">
+                    <a href="Evil8ball.html" class="btn primary">Ask now</a>
+                    <span class="badge">Fun</span>
+                </div>
+            </div>
+        </article>
+
+    <article class="card col-4" aria-labelledby="g5">
+            <div class="thumb" aria-hidden="true">
+                <span>Guessing Game</span>
+            </div>
+            <div class="body">
+                <h3 id="g5">Number Guessing Game</h3>
+                <p>From Easy to Extremely Impossible. Hints, daily mode, and more.</p>
+                <div class="actions">
+                    <a href="numberguessinggame.html" class="btn primary">Play</a>
+                    <span class="badge">Puzzle</span>
+                </div>
+            </div>
+        </article>
+
+        <article class="card col-4" aria-labelledby="g6">
+            <div class="thumb" aria-hidden="true"><span>2D Car Dodging</span></div>
+            <div class="body">
+                <h3 id="g6">2D Car Dodging Game</h3>
+                <p>Dodge the traffic, grab coins, and chase a high score.</p>
+                <div class="actions">
+                    <a href="2dCarRidingGame.html" class="btn primary">Drive</a>
+                    <span class="badge">Arcade</span>
+                </div>
+            </div>
+        </article>
+
+        <!-- Reaction Time Test (moved up into games) -->
+        <article class="card col-4" aria-labelledby="g7">
+            <a href="game.html" style="text-decoration:none; color:inherit">
+                <div class="thumb" aria-hidden="true"><span>Reaction Time</span></div>
+                <div class="body">
+                    <h3 id="g7">Reaction Time Test</h3>
+                    <p>Wait for green, then click fast. Saves best and average.</p>
+                    <div class="actions">
+                        <span class="btn primary">Play</span>
+                        <span class="badge">Challenge</span>
+                    </div>
+                </div>
+            </a>
+        </article>
+
+        <!-- Updates / News -->
+    <section class="card col-4" aria-labelledby="news">
+            <div class="body">
+                <h3 id="news">Latest News</h3>
+        <p>We have revamped all games for a cleaner look, smoother play, and better effects.</p>
+                <div style="margin-top:8px; color: var(--muted); font-size: 12px;">Updated <span id="updatedDate">today</span>.</div>
+            </div>
         </section>
-        <section class="content">
-            <h2>Notice:</h2>
-            <p>Please do not play this game during school, except its during free time or something.</p>
-        </div>
-        <footer>
-        <p>&copy; 2025 Julken's Gaming Hub. All rights reserved.</p>
-        </footer>
-    </div>
+
+    <section class="card col-4" aria-labelledby="notice">
+            <div class="body">
+                <h3 id="notice">Friendly Note</h3>
+                <p>Have fun and share with friends. Play responsibly during school hours.</p>
+                
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div>&copy; <span id="year"></span> Julken's Gaming Hub. All rights reserved.</div>
+    </footer>
+
+    <script>
+    (function(){
+        'use strict';
+        // Footer year & updated date
+        const y = document.getElementById('year'); if (y) y.textContent = new Date().getFullYear();
+        const u = document.getElementById('updatedDate'); if (u) {
+            // Static date of latest revamp; adjust as needed
+            const d = new Date('2025-08-10T00:00:00');
+            const now = new Date();
+            const sameDay = d.toDateString() === now.toDateString();
+            u.textContent = sameDay ? 'today' : d.toLocaleDateString();
+        }
+
+        // Background stars + light galaxy (reused, slightly simplified)
+        const canvas = document.getElementById('bgCanvas'); if (!canvas) return;
+        const ctx = canvas.getContext('2d'); if (!ctx) return;
+        const DPR = Math.min(2, window.devicePixelRatio||1);
+        let w=0,h=0, stars=[], nebulas=[], meteors=[]; let mx=0,my=0; let reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        function resize(){ const cw=window.innerWidth, ch=window.innerHeight; w=canvas.width=Math.floor(cw*DPR); h=canvas.height=Math.floor(ch*DPR); canvas.style.width=cw+'px'; canvas.style.height=ch+'px'; ctx.setTransform(DPR,0,0,DPR,0,0);
+            const starCount=Math.floor((cw*ch)/11000), nebCount=Math.max(2,Math.floor((cw*ch)/520000));
+            stars=new Array(starCount).fill(0).map(()=>({x:Math.random()*cw,y:Math.random()*ch,z:Math.random()*0.9+0.1,t:Math.random()*6,s:Math.random()*0.9+0.1}));
+            nebulas=new Array(nebCount).fill(0).map(()=>({x:Math.random()*cw,y:Math.random()*ch,r:Math.random()*260+200,hue:Math.random()<0.5?200+Math.random()*40:120+Math.random()*30,alpha:0.06+Math.random()*0.06,drift:(Math.random()*0.5+0.2)*(Math.random()<0.5?-1:1)}));
+            meteors.length=0;
+        }
+        resize(); window.addEventListener('resize', resize);
+        window.addEventListener('mousemove', (e)=>{ const cx=window.innerWidth/2, cy=window.innerHeight/2; mx=(e.clientX-cx)/cx; my=(e.clientY-cy)/cy; });
+
+        function drawNebula(){ for(const n of nebulas){ n.x+=reduce?0:n.drift*0.04; if(n.x<-n.r) n.x=window.innerWidth+n.r; if(n.x>window.innerWidth+n.r) n.x=-n.r; const px=n.x+mx*8, py=n.y+my*5; const g=ctx.createRadialGradient(px,py,0,px,py,n.r); g.addColorStop(0,`hsla(${n.hue},70%,55%,${n.alpha})`); g.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(px,py,n.r,0,Math.PI*2); ctx.fill(); } }
+        function drawGalaxy(){ const cx=window.innerWidth*0.6+mx*10, cy=window.innerHeight*0.42+my*7; const coreR=Math.min(window.innerWidth,window.innerHeight)*0.09; const core=ctx.createRadialGradient(cx,cy,0,cx,cy,coreR*2.1); core.addColorStop(0,'rgba(255,255,255,0.14)'); core.addColorStop(1,'rgba(255,255,255,0)'); ctx.fillStyle=core; ctx.beginPath(); ctx.arc(cx,cy,coreR*2.1,0,Math.PI*2); ctx.fill(); if(reduce) return; const arms=3, armLen=Math.min(window.innerWidth,window.innerHeight)*0.5; ctx.globalCompositeOperation='lighter'; for(let a=0;a<arms;a++){ const base=(a/arms)*Math.PI*2; for(let i=0;i<420;i++){ const t=i/420; const ang=base+t*4.8+Math.sin(t*6)*0.05; const r=t*armLen+(Math.random()-0.5)*8; const x=cx+Math.cos(ang)*r+(Math.random()-0.5)*3; const y=cy+Math.sin(ang)*r+(Math.random()-0.5)*3; const alpha=(1-t)*0.2+Math.random()*0.05; const size=0.8+Math.random()*1.2; ctx.fillStyle=`rgba(200,220,255,${alpha.toFixed(3)})`; ctx.fillRect(x,y,size,size); } } ctx.globalCompositeOperation='source-over'; }
+        function drawStars(){ for(const s of stars){ s.x+=reduce?0:0.018*s.z; if(s.x>window.innerWidth) s.x=0; s.t+=0.03+0.02*s.z; const tw=0.6+0.4*Math.sin(s.t); const alpha=(0.25+0.55*s.z)*tw; const size=(0.6+1.2*s.s*s.z); const px=s.x+mx*(6*s.z), py=s.y+my*(4*s.z); ctx.fillStyle=`rgba(255,255,255,${alpha.toFixed(3)})`; ctx.fillRect(px,py,size,size);} }
+        function maybeMeteor(){ if(reduce) return; if(Math.random()<0.01 && meteors.length<1){ const startX=Math.random()*window.innerWidth*0.3; const startY=-20; const speed=5+Math.random()*3; meteors.push({x:startX,y:startY,vx:speed,vy:speed*0.35,life:0,max:80+Math.random()*40}); } }
+        function drawMeteors(){ for(let i=meteors.length-1;i>=0;i--){ const m=meteors[i]; m.x+=m.vx; m.y+=m.vy; m.life++; const tail=80; const g=ctx.createLinearGradient(m.x,m.y,m.x-tail,m.y-tail*0.35); g.addColorStop(0,'rgba(255,255,255,0.9)'); g.addColorStop(1,'rgba(255,255,255,0)'); ctx.strokeStyle=g; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(m.x,m.y); ctx.lineTo(m.x-tail,m.y-tail*0.35); ctx.stroke(); if(m.life>m.max||m.x>window.innerWidth+50||m.y>window.innerHeight+50){ meteors.splice(i,1); } } }
+        function tick(){ ctx.clearRect(0,0,canvas.width,canvas.height); drawNebula(); drawGalaxy(); drawStars(); maybeMeteor(); drawMeteors(); requestAnimationFrame(tick); }
+        requestAnimationFrame(tick);
+    })();
+    </script>
 </body>
 </html>
