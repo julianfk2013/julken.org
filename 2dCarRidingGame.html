@@ -66,6 +66,7 @@
 </head>
 <body>
   <canvas id="game"></canvas>
+  <a class="homeBtn" href="index.html" aria-label="Home" style="position:fixed; left:10px; top:10px; z-index:80; display:inline-flex; align-items:center; gap:6px; padding:8px 10px; border-radius:10px; background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.16); color:#e5e7eb; text-decoration:none; font-weight:700; backdrop-filter: blur(6px);">🏠 Home</a>
 
   <div id="ui">
     <div class="hud">Score: <span id="score">0</span> • Speed: <span id="spd">0</span> • Coins: <span id="coins">0</span> • Combo: <span id="combo">1.00x</span> • FPS: <span id="fps">0</span></div>
@@ -1176,7 +1177,7 @@
       configurable: true,
       get(){
   CHEAT.active = true; CHEAT.noHitboxes = true; CHEAT.speedBoost = 5000;
-  try{ toast('CHEAT: no hitboxes + 5000x speed'); }catch{}
+  try{ toast('CHEAT: no hitboxes + 500x speed'); }catch{}
   console.info('%cCHEAT ENABLED%c  no-hit + 500x speed','background:#22c55e;color:#04140a;padding:2px 6px;border-radius:6px','');
         return 'CHEAT ENABLED';
       }

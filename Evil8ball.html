@@ -104,11 +104,15 @@
 
         .toast-layer { position: fixed; right: 12px; top: 12px; z-index: 60; }
         .toast { background: rgba(17,24,39,0.88); color: #e5e7eb; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 8px 12px; margin-bottom: 8px; box-shadow: 0 10px 24px rgba(0,0,0,0.35); }
+        /* Global Home button */
+        .homeBtn { position: fixed; left: 10px; top: 10px; z-index: 80; display:inline-flex; align-items:center; gap:6px; padding:8px 10px; border-radius:10px; background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.16); color:#e5e7eb; text-decoration:none; font-weight:700; backdrop-filter: blur(6px); }
+        .homeBtn:hover{ background: rgba(255,255,255,0.16); }
     </style>
 </head>
 <body>
     <canvas id="bgCanvas"></canvas>
     <div class="aurora" aria-hidden="true"></div>
+    <a class="homeBtn" href="index.html" aria-label="Home">🏠 Home</a>
     <div class="flash" id="flash" aria-hidden="true"></div>
     <div class="toast-layer" id="toastLayer" aria-live="polite" aria-atomic="true"></div>
 
@@ -185,7 +189,8 @@
             <div class="body">
                 <ul>
                     <li>Categories: <strong style="color:var(--good)">Positive</strong>, <strong style="color:var(--bad)">Negative</strong>, <strong style="color:var(--cheeky)">Uncertain</strong>, and rare <strong style="color:var(--evil)">Evil</strong>.</li>
-                    <li>Weights: Positive ~40%, Negative ~30%, Uncertain ~25%, Evil ~5% (varies with your wording).</li>
+                    <li>Weights: Positive ~10%, Negative ~60%, Uncertain ~20%, Evil ~10% (still varies a bit with your wording).</li>
+                    <li>Understands simple negation: “Should I X?” vs “Should I not X?” produce opposite yes/no.</li>
                     <li>Tip: Add words like “not/never/shouldn’t” to skew negative, or “should/can/will” to skew positive.</li>
                     <li>History stores your last 20 Q&A on this device.</li>
                     <li>Voice uses your browser’s speech synthesis if enabled.</li>
@@ -243,14 +248,27 @@
             ],
             negative: [
                 "Don't count on it.", 'Very doubtful.', 'My reply is no.', 'Outlook not so good.', 'Nope.', 'I wouldn\'t.', 'It\'s unlikely.', 'Not a chance.',
+                'Absolutely not.', 'The stars say no.', 'Odds look terrible.', 'Outlook grim.', 'Denied.', 'Hard pass.', 'Try again never.',
             ],
             cheeky: [
                 'Ask again later.', 'Better not tell you now.', 'Reply hazy—try again.', 'Concentrate and ask again.', 'Define “question”.', 'I could, but why?', 'Plot twist: maybe.',
+                'Lol, no idea.', 'You first.', 'That\'s classified.',
             ],
             evil: [
                 'Heh. You\'ll see.', 'Chaos approves.', 'I know, but I\'m not telling.', 'Beware the consequences.', 'A delicious disaster awaits.', 'Proceed... if you dare.',
+                'The void whispers “no”.', 'Suffer the suspense.', 'I choose violence—kidding. Just no.', 'I foresaw this... disaster.',
             ],
         };
+
+        // Short yes/no-style pools for smart handling
+        const YES_NEGATE_POOL = [
+            'Yes.', 'Yes—skip it.', 'Yes, avoid that.', 'Yes. Sit this one out.',
+        ];
+        const NO_ACTION_POOL = [
+            'No.', 'Nope.', 'Absolutely not.', 'Hard no.',
+        ];
+
+        const rand = (arr)=> arr[Math.floor(Math.random()*arr.length)];
 
         function toast(msg){
             if(!els.toastLayer) return;
@@ -276,20 +294,51 @@
         }
 
         function pickCategory(q){
-            // Base weights
-            let w = {positive: 0.40, negative: 0.30, cheeky: 0.25, evil: 0.05};
+            // Evil bias base weights
+            let w = { positive: 0.10, negative: 0.60, cheeky: 0.20, evil: 0.10 };
             const s = (q||'').toLowerCase();
-            if(/not |never|can\'t|dont|don\'t|shouldn\'t|won\'t|no way/.test(s)) { w.negative += 0.15; w.positive -= 0.10; }
-            if(/should|can|will|could|may|am i|do i|is it/.test(s)) { w.positive += 0.10; w.cheeky -= 0.05; }
-            if(/why|how|what|when|where|explain/.test(s)) { w.cheeky += 0.10; }
-            // Normalize
-            const sum = w.positive + w.negative + w.cheeky + w.evil; let r = Math.random() * sum;
+            // Strongly punish optimistic wording; reward negations for extra doom
+            if(/\b(not|never|can\'t|dont|don\'t|shouldn\'t|won\'t|no way)\b/.test(s)) { w.negative += 0.20; w.evil += 0.05; w.positive -= 0.08; }
+            if(/\b(should|can|will|could|may|am i|do i|is it|will i)\b/.test(s)) { w.negative += 0.10; w.cheeky += 0.05; w.positive -= 0.08; }
+            if(/\b(why|how|what|when|where|explain)\b/.test(s)) { w.cheeky += 0.08; }
+            // Random mood swing towards evil
+            if(Math.random() < 0.20){ w.evil += 0.06; w.negative += 0.04; }
+            // Clamp at small positive values and normalize
+            for(const k of ['positive','negative','cheeky','evil']){ w[k] = Math.max(0.001, w[k]); }
+            const sum = w.positive + w.negative + w.cheeky + w.evil;
+            let r = Math.random() * sum;
             for (const k of ['positive','negative','cheeky','evil']) { if ((r -= w[k]) <= 0) return k; }
-            return 'cheeky';
+            return 'negative';
         }
 
         function pickAnswer(cat){
             const arr = ANSWERS[cat] || ANSWERS.cheeky; return arr[Math.floor(Math.random()*arr.length)];
+        }
+
+        // Very light yes/no intent + negation parser
+        function parseYesNo(q){
+            const s = (q||'').trim().toLowerCase();
+            const ynStart = /^(\s*)(should|can|will|would|could|may|do|does|did|is|are|am|was|were)\b/.test(s);
+            if(!ynStart) return { yn:false };
+            // Detect negation tokens anywhere after the modal
+            const neg = /(\bnot\b|\bnever\b|don'?t\b|do not\b|can'?t\b|won'?t\b|shouldn'?t\b|isn'?t\b|aren'?t\b|wasn'?t\b|weren'?t\b|doesn'?t\b|didn'?t\b|wouldn'?t\b|couldn'?t\b)/.test(s);
+            return { yn:true, negated: neg };
+        }
+
+        // Generate a logically consistent evil answer for yes/no questions
+        function smartAnswer(q){
+            const p = parseYesNo(q);
+            if(!p.yn) return null;
+            // Evil baseline: deny the action. For negated questions, affirm the negation.
+            const wantYes = p.negated; // yes to "should I not X"; no to "should I X"
+            if(wantYes){
+                // Yes, but to not doing the thing; keep vibe negative/evil
+                const cat = Math.random()<0.5 ? 'evil' : 'negative';
+                return { cat, text: rand(YES_NEGATE_POOL) };
+            } else {
+                const cat = Math.random()<0.7 ? 'negative' : 'evil';
+                return { cat, text: rand(NO_ACTION_POOL) };
+            }
         }
 
         function renderHistory(){
@@ -333,6 +382,13 @@
             const q = (els.question.value || '').trim();
             if (!q) { toast('Type a question first.'); els.question.focus(); return; }
             animateBall();
+            const smart = smartAnswer(q);
+            if(smart){
+                setAnswer(smart.cat, smart.text);
+                speak(smart.text);
+                state.history.push({ q, a:smart.text, c:smart.cat, t: Date.now() }); saveHistory(); renderHistory();
+                return;
+            }
             const cat = pickCategory(q);
             const a = pickAnswer(cat);
             setAnswer(cat, a);
