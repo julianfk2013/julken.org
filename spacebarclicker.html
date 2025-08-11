@@ -56,6 +56,15 @@
 		.ripple{position:absolute; border-radius:50%; pointer-events:none; transform:translate(-50%,-50%); background:rgba(255,255,255,.6); mix-blend-mode:overlay; width:8px; height:8px; opacity:.8; animation:rip .5s ease-out forwards}
 		@keyframes rip{to{opacity:0; transform:translate(-50%,-50%) scale(16)}}
 
+		/* Floating +n on tap */
+		.floatAdd{position:absolute; left:0; top:0; transform:translate(-50%,-50%); pointer-events:none; z-index:70; color:#fff56a; font-weight:800; text-shadow:0 2px 8px rgba(0,0,0,.6), 0 0 12px rgba(255,245,150,.45); opacity:0; animation:floatAdd .9s ease-out forwards}
+		@keyframes floatAdd{
+			0%{ transform: translate(-50%,-50%) translate(var(--x0, 0px), var(--y0, 0px)); opacity:0; }
+			15%{ opacity:1; }
+			70%{ opacity:1; }
+			100%{ transform: translate(-50%,-50%) translate(var(--x1, 0px), var(--y1, -80px)); opacity:0; }
+		}
+
 		/* Shop */
 		.tabs{display:flex; gap:8px; padding:12px 16px; border-bottom:1px solid rgba(255,255,255,.08)}
 		.tab{appearance:none; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:var(--text); padding:8px 12px; border-radius:10px; cursor:pointer; font-weight:600}
@@ -143,7 +152,7 @@
 				shopBody: $('#shopBody'), tabUp: $('#tabUp'), tabGen: $('#tabGen')
 		};
 
-		// State
+		// State (persistence enabled)
 		const store = {
 			get(k,d){ try{ const v=localStorage.getItem(k); return v? JSON.parse(v): d; }catch{ return d; } },
 			set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch{} }
@@ -153,6 +162,7 @@
 					total: 0,
 					per: 1,
 					auto: 0,
+						infinite: false,
 					carry: 0,
 					items: {
 						// Upgrades
@@ -168,6 +178,14 @@
 					}
 				};
 			}
+			// One-time wipe of any old save to start from scratch
+			try{
+				const WIPE_FLAG = 'sb_wiped_v3';
+				if(!localStorage.getItem(WIPE_FLAG)){
+					localStorage.removeItem('sb_v2');
+					localStorage.setItem(WIPE_FLAG,'1');
+				}
+			}catch{}
 			const state = Object.assign(baseState(), store.get('sb_v2', {}));
 			// ensure shape if loading older saves (gen no longer used)
 			state.items = Object.assign({}, baseState().items, state.items||{});
@@ -283,15 +301,16 @@
 			return { base, timed: 0, total: base };
 		}
 		function renderHUD(){
-			const tFull = fmt(state.total);
-			const tShort = abbr(state.total);
+			const isInf = !!state.infinite;
+			const tFull = isInf ? 'Infinite' : fmt(state.total);
+			const tShort = isInf ? '∞' : abbr(state.total);
 			els.total.textContent = tShort; els.total.title = tFull;
 			if(els.counterLarge){ els.counterLarge.textContent = tShort; els.counterLarge.title = tFull; }
-			const perFull = fmt(state.per);
-			els.per.textContent = abbr(state.per); els.per.title = perFull;
+			const perFull = isInf ? 'Infinite per press' : fmt(state.per);
+			els.per.textContent = isInf ? '∞' : abbr(state.per); els.per.title = perFull;
 			const aps = autoPerSecond();
-			const cpsShort = abbr(aps.total);
-			const cpsFull = `${fmt(aps.total)} per second`;
+			const cpsShort = isInf ? '∞' : abbr(aps.total);
+			const cpsFull = isInf ? 'Infinite per second' : `${fmt(aps.total)} per second`;
 			els.cps.textContent = cpsShort; els.cps.title = cpsFull;
 			updateShopAffordability();
 		}
@@ -306,7 +325,8 @@
 				const it = findItem(id);
 				if(!it) return;
 				const cost = getCost(id);
-				if(btn) btn.disabled = state.total < cost;
+				// In infinite mode, always enable Buy regardless of funds
+				if(btn) btn.disabled = (!state.infinite) && (state.total < cost);
 				const desc = row.querySelector('.desc'); if(desc){ desc.textContent = `${it.desc} — Cost: ${abbr(cost)}`; desc.title = `Exact: ${fmt(cost)}`; }
 				const name = row.querySelector('.name'); if(name){ const owned = state.items[id]||0; name.textContent = `${it.name} ${owned? '×'+owned: ''}`; }
 			});
@@ -324,11 +344,14 @@
 					const desc = document.createElement('div'); desc.className='desc'; desc.textContent = `${it.desc} — Cost: ${abbr(cost)}`; desc.title = `Exact: ${fmt(cost)}`;
 				meta.append(name, desc);
 				const btn = document.createElement('button'); btn.type='button'; btn.className='buy primary'; btn.textContent = 'Buy'; btn.setAttribute('data-id', it.id);
-				btn.disabled = state.total < cost;
+				// In infinite mode, button should not be disabled
+				btn.disabled = (!state.infinite) && (state.total < cost);
 				btn.addEventListener('click', (ev)=>{
 					const currentCost = getCost(it.id);
-					if(state.total < currentCost) { toast('Not enough'); return; }
-					state.total -= currentCost; state.items[it.id]=(state.items[it.id]||0)+1; try{ it.apply(); }catch{}
+					// Allow purchase even without funds when infinite; otherwise require enough total
+					if(!state.infinite && state.total < currentCost) { toast('Not enough'); return; }
+					if(!state.infinite) state.total -= currentCost;
+					state.items[it.id]=(state.items[it.id]||0)+1; try{ it.apply(); }catch{}
 					render(); save(); sfx.buy();
 				});
 					row.append(meta, btn);
@@ -342,7 +365,33 @@
 		function tap(x,y){
 				state.total += state.per; renderHUD(); sfx.click();
 			// ripple
-			try{ const r=document.createElement('span'); r.className='ripple'; if(x==null||y==null){ const rect=els.space.getBoundingClientRect(); x=rect.left+rect.width/2; y=rect.top+rect.height/2; } r.style.left=x+'px'; r.style.top=y+'px'; document.body.appendChild(r); setTimeout(()=>r.remove(), 520);}catch{}
+			try{
+				// Compute center if no coordinates provided
+				if(x==null||y==null){ const rect=els.space.getBoundingClientRect(); x=rect.left+rect.width/2; y=rect.top+rect.height/2; }
+				// Ripple effect
+				const r=document.createElement('span'); r.className='ripple'; r.style.left=x+'px'; r.style.top=y+'px'; document.body.appendChild(r); setTimeout(()=>r.remove(), 520);
+				// Floating +n
+				const f=document.createElement('div'); f.className='floatAdd';
+				const isInf = !!state.infinite; const addTxt = isInf ? '∞' : '+' + abbr(state.per);
+				f.textContent = addTxt;
+				// Offset so it doesn’t sit under the cursor: 12px right, 8px up
+				f.style.left=(x+12)+'px'; f.style.top=(y-8)+'px';
+				// Random direction and distance using CSS variables
+				const ang = Math.random()*Math.PI*2; // 0..2π
+				const dist = 60 + Math.random()*60; // 60..120px
+				const x1 = Math.cos(ang)*dist; const y1 = Math.sin(ang)*dist * -1; // bias upward visually
+				f.style.setProperty('--x0', '0px');
+				f.style.setProperty('--y0', '0px');
+				f.style.setProperty('--x1', x1.toFixed(1)+'px');
+				f.style.setProperty('--y1', y1.toFixed(1)+'px');
+				// Vary duration slightly for variety
+				const dur = (0.8 + Math.random()*0.5).toFixed(2) + 's';
+				f.style.animationDuration = dur;
+				document.body.appendChild(f);
+				// Clean up after animation ends or timeout
+				f.addEventListener('animationend', ()=>{ try{ f.remove(); }catch{} }, { once:true });
+				setTimeout(()=>{ try{ f.remove(); }catch{} }, 1200);
+			}catch{}
 			// Achievements
 			if(state.total===100) toast(`Milestone: ${abbr(100)}!`);
 			if(state.total===1000) toast(`Milestone: ${abbr(1000)}!`);
@@ -355,7 +404,7 @@
 				renderHUD();
 			}, 100);
 
-		// Save periodically
+		// Save to localStorage
 		function save(){ store.set('sb_v2', state); }
 		setInterval(save, 5000);
 
@@ -393,7 +442,6 @@
 			Object.assign(state, fresh);
 			lastKeyDown = false;
 			render();
-			// Persist the fresh state and hard-reload to guarantee a clean slate
 			try{ save(); }catch{}
 			setTimeout(()=>{ try{ location.reload(); }catch{} }, 50);
 		}
@@ -407,9 +455,17 @@
 		// Init
 		render();
 
+		// Minimal cheat: global inf(on=true) to toggle infinite money
+		(function setupCheat(){
+			function setInfinite(on=true){ state.infinite = !!on; save(); render(); return `infinite=${state.infinite}`; }
+			try{ window.inf = setInfinite; }catch{}
+		})();
+
 		// DevTools cheats
 		(function setupCheats(){
 			const api = {
+				// Toggle infinite display mode
+				infinite(on){ state.infinite = !!on; save(); render(); return `infinite=${state.infinite}`; },
 				// Set total explicitly
 				set(n){ n=Number(n)||0; state.total = Math.max(0, Math.floor(n)); render(); save(); return state.total; },
 				// Add to total
@@ -435,16 +491,16 @@
 				// Reset
 				reset(){ hardReset(); return 'reset'; },
 				// Help
-				help(){ return 'sb(n) set total; sbAdd(n) add; sbX.give(id,n) grant item; sbX.per(n); sbX.auto(n); ids: '+allItems().map(i=>i.id).join(', '); }
+				help(){ return 'inf(on) infinite money; sb(n) set; sbAdd(n) add; sbX.give(id,n); sbX.per(n); sbX.auto(n); ids: '+allItems().map(i=>i.id).join(', '); }
 			};
 			// Short helpers
 			window.sb = function(n){ return api.set(n); };
 			window.sbAdd = function(n){ return api.add(n); };
+			window.inf = function(on=true){ return api.infinite(on); };
 			// Friendly aliases
 			window.setNumber = window.sb;
 			window.addNumber = window.sbAdd;
 			window.sbX = api;
-			try{ console.log('%cCheats ready: sb(n) to set total, sbAdd(n) to add, sbX.help() for more','color:#0ea5e9'); }catch{}
 		})();
 
 		// Background stars + light galaxy (simple)
