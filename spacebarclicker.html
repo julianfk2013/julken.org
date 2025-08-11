@@ -350,8 +350,10 @@
 		els.space.addEventListener('click', (e)=> { if(e && e.detail===0){ return; } tap(e.clientX, e.clientY); });
 		// Prevent default space behavior on the key element; document keydown handles tap and visuals
 		els.space.addEventListener('keydown', (e)=>{ if(e.code==='Space'){ e.preventDefault(); }});
-		// Also block keyup default to avoid a synthesized click from keyboard activation
-		els.space.addEventListener('keyup', (e)=>{ if(e.code==='Space'){ e.preventDefault(); e.stopPropagation(); }});
+		// On keyup, allow bubbling so document keyup can clear guards; also clear here for safety
+		els.space.addEventListener('keyup', (e)=>{ if(e.code==='Space'){ e.preventDefault(); lastKeyDown=false; pressVisual(false); }});
+		// Ensure state resets if focus leaves the space key
+		els.space.addEventListener('blur', ()=>{ lastKeyDown=false; pressVisual(false); });
 		document.addEventListener('keydown', (e)=>{
 			if(e.code==='Space'){
 				e.preventDefault();
