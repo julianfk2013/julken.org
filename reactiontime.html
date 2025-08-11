@@ -49,7 +49,8 @@
     }
     .stage.ready{background:linear-gradient(180deg,#1a2542,#101a31)}
     .stage.wait{background:linear-gradient(180deg,#1c2130,#141a26)}
-    .stage.go{background:linear-gradient(180deg,#113722,#0c2618)}
+  /* Stronger, more vivid green for Go */
+  .stage.go{background:linear-gradient(180deg,#0fbd53,#0a7a38)}
     .stage.tooSoon{background:linear-gradient(180deg,#3a1422,#290e18)}
     .stage .msg{font-size:22px; text-align:center; padding:0 14px}
     .stage .sub{font-size:13px; color:var(--muted); margin-top:6px}
@@ -219,8 +220,38 @@
       const shareBtn = document.getElementById('shareBtn');
       document.getElementById('yr').textContent = new Date().getFullYear();
 
-      let state = 'idle'; // idle, wait, go, result, tooSoon
-      let timer = 0, startAt = 0, delayT = 0;
+  let state = 'idle'; // idle, wait, go, result, tooSoon
+  // High-precision timing using performance.now() and rAF
+  let waitRAF = 0, goRAF = 0; // requestAnimationFrame ids
+  let startAt = 0, targetAt = 0; // timestamps in ms (perf clock)
+      // Web Audio for the "Go" beep
+      let audioCtx = null; let audioUnlocked = false;
+      function getAudio(){
+        if(!audioCtx){
+          try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
+          catch{ audioCtx = null; }
+        }
+        return audioCtx;
+      }
+      function unlockAudio(){
+        const ctx = getAudio();
+        if(ctx && ctx.state === 'suspended') ctx.resume().catch(()=>{});
+        audioUnlocked = true;
+      }
+      function beep(){
+        const ctx = getAudio();
+        if(!ctx) return;
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(880, ctx.currentTime); // A5
+        g.gain.setValueAtTime(0.001, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + 0.005);
+        g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18);
+        o.connect(g).connect(ctx.destination);
+        o.start();
+        o.stop(ctx.currentTime + 0.2);
+      }
       let history = loadHistory();
 
       renderStats();
@@ -235,31 +266,43 @@
         else if(state==='result'){ pill.textContent='Result'; }
       }
 
-      function start(){
-        clearTimeout(timer);
+  function start(){
+        cancelAnimationFrame(waitRAF);
+        cancelAnimationFrame(goRAF);
         setState('wait');
-        delayT = 1000 + Math.random()*2000;
-        timer = setTimeout(()=>{
-          startAt = performance.now();
-          setState('go');
-          const num = document.getElementById('rtNum');
-          let raf;
-          function loop(){
-            if(state!=='go') return;
-            const v = Math.floor(performance.now() - startAt);
-            if(num) num.textContent = v;
-            raf = requestAnimationFrame(loop);
+        const delay = 1000 + Math.random()*2000; // 1000–3000ms
+        targetAt = performance.now() + delay;
+        const waitLoop = () => {
+          if(state !== 'wait') return; // aborted (tooSoon or reset)
+          const now = performance.now();
+          if (now >= targetAt) {
+            startAt = now;
+            setState('go');
+    if(audioUnlocked) beep();
+            const num = document.getElementById('rtNum');
+            const tick = () => {
+              if(state !== 'go') return;
+              const v = Math.floor(performance.now() - startAt);
+              if(num) num.textContent = v;
+              goRAF = requestAnimationFrame(tick);
+            };
+            goRAF = requestAnimationFrame(tick);
+            return;
           }
-          raf = requestAnimationFrame(loop);
-        }, delayT);
+          waitRAF = requestAnimationFrame(waitLoop);
+        };
+        waitRAF = requestAnimationFrame(waitLoop);
       }
 
       function tooSoon(){
-        clearTimeout(timer);
+        if (state !== 'wait') return;
+        cancelAnimationFrame(waitRAF);
         setState('tooSoon');
       }
 
       function finish(){
+        if (state !== 'go') return;
+        cancelAnimationFrame(goRAF);
         const rt = Math.max(0, Math.floor(performance.now() - startAt));
         setState('result');
         msg.innerHTML = `<div class="rt"><span>${rt}</span><span class="unit">ms</span></div><div class="sub">Click to try again.</div>`;
@@ -294,17 +337,26 @@
         try{ localStorage.setItem('rt_history_v1', JSON.stringify(history)); }catch{}
       }
 
-      stage.addEventListener('click', ()=>{
+      stage.addEventListener('pointerdown', (e)=>{
+        e.preventDefault();
+        unlockAudio();
+        stage.focus({preventScroll:true});
         if(state==='idle') start();
         else if(state==='wait') tooSoon();
         else if(state==='go') finish();
         else if(state==='result' || state==='tooSoon') setState('idle');
       });
 
-      stage.addEventListener('keydown', (e)=>{
+    stage.addEventListener('keydown', (e)=>{
         if(e.code==='Space'){
+          // Avoid auto-repeat triggering multiple actions
+          if (e.repeat) { e.preventDefault(); return; }
           e.preventDefault();
-          stage.click();
+      unlockAudio();
+          if(state==='idle') start();
+          else if(state==='wait') tooSoon();
+          else if(state==='go') finish();
+          else if(state==='result' || state==='tooSoon') setState('idle');
         }
       });
 
