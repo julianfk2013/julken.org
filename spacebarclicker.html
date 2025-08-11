@@ -259,22 +259,39 @@
 			}
 
 		// UI helpers
-		function fmt(n){ return n.toLocaleString(); }
+		function fmt(n){ return Number.isFinite(n) ? n.toLocaleString() : String(n); }
+		function abbr(n){
+			if(!Number.isFinite(n)) return String(n);
+			const sign = n < 0 ? '-' : '';
+			const abs = Math.abs(n);
+			if(abs < 1000) return fmt(n);
+			const units = ['K','M','B','T','Qa','Qi','Sx','Sp','Oc','No','Dc','Ud','Dd','Td','Qd','Qn','Sd','St','Og','Nv','Vg'];
+			let idx = Math.floor(Math.log10(abs) / 3) - 1; // 1 => K
+			idx = Math.min(Math.max(0, idx), units.length - 1);
+			const scale = Math.pow(10, (idx + 1) * 3);
+			let val = abs / scale;
+			let dec = val >= 100 ? 0 : val >= 10 ? 1 : 2;
+			let str = val.toFixed(dec);
+			// strip trailing zeros
+			if(str.indexOf('.') !== -1){ str = str.replace(/\.0+$|(?<=[0-9])0+$/g, ''); str = str.replace(/\.$/, ''); }
+			return sign + str + units[idx];
+		}
 
 		function autoPerSecond(){
 			let base = state.auto || 0;
 			return { base, timed: 0, total: base };
 		}
 		function renderHUD(){
-			// Full values (no abbreviations)
 			const tFull = fmt(state.total);
-			els.total.textContent = tFull; els.total.title = tFull;
-			if(els.counterLarge){ els.counterLarge.textContent = tFull; els.counterLarge.title = tFull; }
+			const tShort = abbr(state.total);
+			els.total.textContent = tShort; els.total.title = tFull;
+			if(els.counterLarge){ els.counterLarge.textContent = tShort; els.counterLarge.title = tFull; }
 			const perFull = fmt(state.per);
+			els.per.textContent = abbr(state.per); els.per.title = perFull;
 			const aps = autoPerSecond();
-			const cpsFull = `${fmt(Math.floor(aps.total))} per second`;
-			els.per.textContent = fmt(state.per); els.per.title = perFull;
-			els.cps.textContent = fmt(Math.floor(aps.total)); els.cps.title = cpsFull;
+			const cpsShort = abbr(aps.total);
+			const cpsFull = `${fmt(aps.total)} per second`;
+			els.cps.textContent = cpsShort; els.cps.title = cpsFull;
 			updateShopAffordability();
 		}
 		function render(){ renderHUD(); renderShop(); }
@@ -289,7 +306,7 @@
 				if(!it) return;
 				const cost = getCost(id);
 				if(btn) btn.disabled = state.total < cost;
-				const desc = row.querySelector('.desc'); if(desc){ desc.textContent = `${it.desc} — Cost: ${fmt(cost)}`; desc.title = `Exact: ${fmt(cost)}`; }
+				const desc = row.querySelector('.desc'); if(desc){ desc.textContent = `${it.desc} — Cost: ${abbr(cost)}`; desc.title = `Exact: ${fmt(cost)}`; }
 				const name = row.querySelector('.name'); if(name){ const owned = state.items[id]||0; name.textContent = `${it.name} ${owned? '×'+owned: ''}`; }
 			});
 		}
@@ -303,7 +320,7 @@
 				const row = document.createElement('div'); row.className='shopItem'; row.setAttribute('data-id', it.id);
 				const meta = document.createElement('div'); meta.className='meta';
 				const name = document.createElement('div'); name.className='name'; name.textContent = `${it.name} ${owned? '×'+owned: ''}`;
-					const desc = document.createElement('div'); desc.className='desc'; desc.textContent = `${it.desc} — Cost: ${fmt(cost)}`; desc.title = `Exact: ${fmt(cost)}`;
+					const desc = document.createElement('div'); desc.className='desc'; desc.textContent = `${it.desc} — Cost: ${abbr(cost)}`; desc.title = `Exact: ${fmt(cost)}`;
 				meta.append(name, desc);
 				const btn = document.createElement('button'); btn.type='button'; btn.className='buy primary'; btn.textContent = 'Buy'; btn.setAttribute('data-id', it.id);
 				btn.disabled = state.total < cost;
@@ -326,8 +343,8 @@
 			// ripple
 			try{ const r=document.createElement('span'); r.className='ripple'; if(x==null||y==null){ const rect=els.space.getBoundingClientRect(); x=rect.left+rect.width/2; y=rect.top+rect.height/2; } r.style.left=x+'px'; r.style.top=y+'px'; document.body.appendChild(r); setTimeout(()=>r.remove(), 520);}catch{}
 			// Achievements
-			if(state.total===100) toast('Milestone: 100!');
-			if(state.total===1000) toast('Milestone: 1,000!');
+			if(state.total===100) toast(`Milestone: ${abbr(100)}!`);
+			if(state.total===1000) toast(`Milestone: ${abbr(1000)}!`);
 		}
 
 			// Auto tick every 100ms (integer carry)
