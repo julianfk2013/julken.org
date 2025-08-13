@@ -97,6 +97,17 @@
     }
     #homeBtn:hover { background:rgba(255,255,255,0.08); }
 
+    /* Shoot button (mobile-friendly) */
+    #shootBtn {
+      position:fixed; bottom:calc(12px + env(safe-area-inset-bottom)); right:calc(12px + env(safe-area-inset-right)); z-index:20;
+      width:56px; height:56px; border-radius:999px; border:1px solid rgba(255,255,255,0.25);
+      background:rgba(0,0,0,0.45); color:#fff; cursor:pointer; font-weight:800; font-size:20px;
+      display:grid; place-items:center; user-select:none; -webkit-user-select:none;
+      backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+      box-shadow:0 0 12px rgba(0,0,0,0.35);
+    }
+    #shootBtn:active { transform:scale(0.96); }
+
     /* Info modal */
     #infoModal { position:fixed; inset:0; display:none; place-items:center; z-index:30; }
     #infoModal.open { display:grid; }
@@ -130,9 +141,10 @@
   <button id="musicToggle" title="Mute music" aria-pressed="false">🔊</button>
   <button id="infoToggle" title="Info and credits" aria-pressed="false">i</button>
   <button id="homeBtn" title="Go to homepage" aria-label="Go to homepage">Home</button>
+  <button id="shootBtn" title="Shoot" aria-label="Shoot">🔫</button>
 <div id="uiOverlay" class="fade-enter">
   <h1>Space Dodgers</h1>
-  <p id="msg">Hold SPACE to thrust up (both modes).<br/>Shooter: click / F to fire at asteroids.<br/><span id="hiLine"></span></p>
+  <p id="msg">Hold SPACE or hold the screen to thrust up (both modes).<br/>Shooter: press the 🔫 button, click, or F to fire at asteroids.<br/><span id="hiLine"></span></p>
 </div>
 <div id="musicCredit">Music: Creo - Flux</div>
 <canvas id="game"></canvas>
@@ -596,6 +608,7 @@ const overlay = document.getElementById('uiOverlay');
 const musicToggle = document.getElementById('musicToggle');
 const infoToggle = document.getElementById('infoToggle');
 const homeBtn = document.getElementById('homeBtn');
+const shootBtn = document.getElementById('shootBtn');
 const msg = document.getElementById('msg');
 const hiLine = document.getElementById('hiLine');
 
@@ -709,7 +722,7 @@ function showStart(){
     <div class="hero">
   <div class="pill">Best: <b>${best||0}</b> • <span class="kbd">1</span>/<span class="kbd">2</span>/<span class="kbd">3</span> to quick start</div>
       <h2 class="logoText floaty">Space Dodgers</h2>
-      <div class="subtitle">Arcade flight. Neon skies. Three ways to survive.</div>
+  <div class="subtitle">Arcade flight. Neon skies. Three ways to survive.</div>
     </div>
 
     <div class="modeGrid">
@@ -746,8 +759,8 @@ function showStart(){
     </div>
 
     <div class="footRow">
-      <span>Hold <span class="kbd">SPACE</span> to thrust</span>
-      <span>Press <span class="kbd">F</span> or click to shoot</span>
+  <span>Hold <span class="kbd">SPACE</span> or hold screen to thrust</span>
+  <span>Tap <span class="kbd">🔫</span>, press <span class="kbd">F</span>, or click to shoot</span>
     </div>
 
     <span id="hiLine" style="display:none;"></span>
@@ -1273,15 +1286,38 @@ addEventListener('keyup', e=>{
   if(isSpace){ holdThrust = false; thrustWarmup = 0; ship._thrustActive = false; if(thrustPlaying){ fadeOutThrustAudio(220); } }
 });
 let pointerHeld=false; // no longer used for thrust; kept for potential future use
+// Pointer interactions: tapping/clicking the screen now controls thrust; dedicated button shoots
 addEventListener('pointerdown', e=>{
-  if(!started){ return; }
-  if(gameOver){ return; }
-  // Mouse/touch no longer controls thrust. It only shoots now (both modes).
+  const target = e.target;
+  // If pressing a UI control, don't treat as thrust
+  const isUi = target && (target.closest?.('#musicToggle, #infoToggle, #homeBtn, #shootBtn, #infoModal, #uiOverlay'));
+  if (isUi) return; // allow default for buttons/modal
+  if(gameOver){ showStart(); return; }
+  if(!started){ gameMode='dodge'; startMode('dodge'); }
   e.preventDefault();
-  shoot();
+  // Engage thrust like holding SPACE
+  holdThrust = true;
+  ship._thrustActive = false;
+  if(!thrustPlaying || thrustSfx.paused){ startThrustAudio(); }
 });
-addEventListener('pointerup', ()=>{ /* no-op for thrust */ });
-addEventListener('pointerleave', ()=>{ /* no-op for thrust */ });
+addEventListener('pointerup', ()=>{ holdThrust = false; thrustWarmup = 0; ship._thrustActive = false; if(thrustPlaying){ fadeOutThrustAudio(220); } });
+addEventListener('pointerleave', ()=>{ holdThrust = false; thrustWarmup = 0; ship._thrustActive = false; if(thrustPlaying){ fadeOutThrustAudio(220); } });
+
+// Shoot button supports tap-to-shoot and hold-to-auto-fire respecting cooldown
+if (shootBtn){
+  let shootHeld=false, shootTimer=0;
+  const shootTick = ()=>{
+    if(!shootHeld) return;
+    const now = performance.now();
+    if (now - lastShotTime >= SHOOT_COOLDOWN_MS){ shoot(); }
+    shootTimer = requestAnimationFrame(shootTick);
+  };
+  const startShoot=()=>{ if(gameOver) return; if(!started){ gameMode='shooter'; startMode('shooter'); } shootHeld=true; shoot(); shootTimer = requestAnimationFrame(shootTick); };
+  const stopShoot=()=>{ shootHeld=false; if(shootTimer) cancelAnimationFrame(shootTimer); shootTimer=0; };
+  shootBtn.addEventListener('pointerdown', (e)=>{ e.preventDefault(); startShoot(); });
+  shootBtn.addEventListener('pointerup', stopShoot);
+  shootBtn.addEventListener('pointerleave', stopShoot);
+}
 // Buttons are dynamically added in showStart/showGameOver and wired there.
 // Music toggle
 if (musicToggle){
