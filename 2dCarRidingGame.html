@@ -87,7 +87,7 @@
     <!-- overlay -->
     <div id="overlay" class="center">
   <h1 id="title">2D Car Dodging Game</h1>
-      <div class="subtitle">A/D to steer • Avoid traffic & obstacles • Use coins for power-ups</div>
+  <div class="subtitle">A/D or Arrow Keys to steer • Avoid traffic & obstacles • Use coins for power-ups</div>
       <div class="row"><button id="start" class="btn">Start Game</button></div>
       <div class="tip">ESC to pause • Fly ignores collisions • Fewer Objects reduces spawns • Coin Rush spawns coins only</div>
     </div>
@@ -150,7 +150,7 @@
       shake: true,
       volume: 0.8,
     dayNightCycle: true,
-  showHit: false // hide hitboxes
+  showHit: true // show hitboxes
     };
 
   // --- Developer Cheat flags ---
@@ -280,18 +280,18 @@
   const keys = {a:false,d:false,w:false,s:false}; let lastSteer = 0;
     window.addEventListener('keydown', e => {
       if (e.repeat) return;
-      if (e.key==='a' || e.key==='A') { keys.a = true; triggerSwerve(-1); }
-      if (e.key==='d' || e.key==='D') { keys.d = true; triggerSwerve(1); }
-  if (e.key==='w' || e.key==='W') { keys.w = true; }
-  if (e.key==='s' || e.key==='S') { keys.s = true; }
+      if (e.key==='a' || e.key==='A' || e.key==='ArrowLeft')  { keys.a = true; triggerSwerve(-1); e.preventDefault(); }
+      if (e.key==='d' || e.key==='D' || e.key==='ArrowRight') { keys.d = true; triggerSwerve(1);  e.preventDefault(); }
+      if (e.key==='w' || e.key==='W' || e.key==='ArrowUp')    { keys.w = true; e.preventDefault(); }
+      if (e.key==='s' || e.key==='S' || e.key==='ArrowDown')  { keys.s = true; e.preventDefault(); }
       if (e.key==='Escape') togglePause();
       if (state==='menu' && (e.key==='Enter' || e.key===' ')) start();
     });
     window.addEventListener('keyup', e => {
-      if (e.key==='a' || e.key==='A') keys.a=false;
-      if (e.key==='d' || e.key==='D') keys.d=false;
-  if (e.key==='w' || e.key==='W') keys.w=false;
-  if (e.key==='s' || e.key==='S') keys.s=false;
+      if (e.key==='a' || e.key==='A' || e.key==='ArrowLeft')  { keys.a=false; e.preventDefault(); }
+      if (e.key==='d' || e.key==='D' || e.key==='ArrowRight') { keys.d=false; e.preventDefault(); }
+      if (e.key==='w' || e.key==='W' || e.key==='ArrowUp')    { keys.w=false; e.preventDefault(); }
+      if (e.key==='s' || e.key==='S' || e.key==='ArrowDown')  { keys.s=false; e.preventDefault(); }
     });
 
     // --- Touch controls mapping ---
@@ -439,7 +439,7 @@
     let baseSpeed=220, speedMul=1, elapsed=0;
     const road={ topW:120, botW:1600 };
 
-  const player={ x:0, vx:0, accel:11, friction:11, tilt:0, maxTilt:0.12, flyTime:0, invuln:0, thrust:0 };
+  const player={ x:0, vx:0, accel:14, friction:28, tilt:0, maxTilt:0.12, flyTime:0, invuln:0, thrust:0 };
 
     const obstacles=[], decors=[], traffic=[], pickups=[];
   let spawnTimer=0, decorTimer=0, trafficTimer=0, pickupTimer=0;
@@ -512,9 +512,8 @@
 
     // --- Projection ---
     function getScale(){
-      // Slight zoom-out as you accelerate forward
-      const t = Math.max(0, Math.min(1, (player.thrust||0) / 0.9));
-      return 0.55 * (1 - 0.06 * t);
+  // Fixed scale so car size doesn't change with acceleration
+  return 0.55;
     }
     function project(x, z){
       const W=canvas.clientWidth,H=canvas.clientHeight;
@@ -687,21 +686,36 @@
       const baseY=H-Math.min(200,H*0.28);
       const lift=player.flyTime>0?40+Math.sin(performance.now()/120)*6:0;
       const carY=baseY-lift;
-  const carWidth=Math.min(130, Math.max(88, W*0.078));
-      const carHeight=carWidth*1.8;
+      // Width: match NPC cars; Height: keep from a slightly larger "before" size (no change to height)
+      const pScale = getScale();
+      const baseWNpc = Math.round(SPRITES_META['car_blue'].w * 1.15);
+      const aspect = (IMAGES['usercar'] && IMAGES['usercar'].naturalWidth && IMAGES['usercar'].naturalHeight)
+        ? (IMAGES['usercar'].naturalHeight / IMAGES['usercar'].naturalWidth)
+        : (SPRITES_META.usercar.h / SPRITES_META.usercar.w);
+      const carWidth = baseWNpc * pScale; // match others' width
+      const beforeFactor = 1.10; // visual height from "before" size (~10% larger look)
+      const carHeight = (baseWNpc * pScale * beforeFactor) * aspect; // don't touch height when shrinking width
       const p=project(player.x,1.0);
       return {cx:p.x, cy:carY, carWidth, carHeight, tilt:(settings.tilt?player.tilt:0), lift};
     }
     function getCarHitboxMeta(){
       const cd = carDrawRect();
-      const wMul = 0.50;
-      const hMul = 0.80; // base shape before bottom-extension adjustments
-      const vBias = 0.03; // align with current getCarRect settings after bottom extension
+      // Build hitbox from the usercar sprite hb proportions to avoid distortion
+      const hb = SPRITES_META.usercar.hb || [0.18,0.18,0.64,0.68];
+      const pseudoW = cd.carWidth * 0.9;
+      const pseudoH = cd.carHeight * 0.9;
       const angle = cd.tilt * (cd.lift>0?0.7:1);
-      const w = cd.carWidth * wMul;
-      const h = cd.carHeight * hMul;
-      const Lx = -cd.carWidth * (wMul*0.5);
-      const Ly = -cd.carHeight * (hMul + vBias);
+  // Slightly narrower and taller while preserving the hitbox center
+  const cxFrac = hb[0] + hb[2]/2;
+  const cyFrac = hb[1] + hb[3]/2;
+  const widthScale = 0.88;   // 12% less wide
+  const heightScale = 1.12;  // 12% taller
+  const wFrac = Math.min(1, Math.max(0, hb[2] * widthScale));
+  const hFrac = Math.min(1, Math.max(0, hb[3] * heightScale));
+  const Lx = -pseudoW/2 + (cxFrac - wFrac/2) * pseudoW;
+  const Ly = -pseudoH   + (cyFrac - hFrac/2) * pseudoH;
+  const w  = wFrac * pseudoW;
+  const h  = hFrac * pseudoH;
       return { cx: cd.cx, cy: cd.cy, angle, w, h, Lx, Ly };
     }
     function getCarRect(){
@@ -723,15 +737,31 @@
   // Headlight beams removed per request
       // body as sprite (keep tilt)
       ctx.save(); ctx.translate(cx, cy); ctx.rotate(cd.tilt*(lift>0?0.7:1));
+      // Flashing when fly is about to end (last 0.8s)
+      let flash = 0;
+      if (player.flyTime > 0 && player.flyTime < 0.8){
+        const t = performance.now()/100;
+        flash = (Math.floor(t)%2===0) ? 1 : 0; // toggle every ~100ms
+      }
       // Use spriteDrawRect logic manually to anchor at player position
       const pseudo = { w: carWidth*0.9, h: carHeight*0.9 };
       if (spritesReady && IMAGES['usercar'] && IMAGES['usercar'].complete) {
         // draw relative to translated origin so rotation centers correctly
-        ctx.drawImage(IMAGES['usercar'], -pseudo.w/2, -pseudo.h, pseudo.w, pseudo.h);
+        if (!flash){
+          ctx.drawImage(IMAGES['usercar'], -pseudo.w/2, -pseudo.h, pseudo.w, pseudo.h);
+        } else {
+          // draw sprite with a quick white tint overlay
+          ctx.drawImage(IMAGES['usercar'], -pseudo.w/2, -pseudo.h, pseudo.w, pseudo.h);
+          ctx.globalCompositeOperation = 'screen';
+          ctx.fillStyle = 'rgba(255,255,255,0.55)';
+          ctx.fillRect(-pseudo.w/2, -pseudo.h, pseudo.w, pseudo.h);
+          ctx.globalCompositeOperation = 'source-over';
+        }
       } else {
         // fallback to vector body if sprite not ready
         const grd=ctx.createLinearGradient(0,-carHeight/2,0,carHeight/2); grd.addColorStop(0,'#5eead4'); grd.addColorStop(1,'#0ea5e9');
         ctx.fillStyle=grd; roundRect(-carWidth/2,-carHeight/2,carWidth,carHeight,14); ctx.fill();
+        if (flash){ ctx.save(); ctx.globalCompositeOperation='screen'; ctx.fillStyle='rgba(255,255,255,0.5)'; roundRect(-carWidth/2,-carHeight/2,carWidth,carHeight,14); ctx.fill(); ctx.restore(); }
         ctx.fillStyle='#0b1220'; roundRect(-carWidth*0.35,-carHeight*0.35,carWidth*0.7,carHeight*0.32,10); ctx.fill();
         ctx.fillStyle='#0f1b33'; roundRect(-carWidth*0.45,-carHeight*0.05,carWidth*0.9,carHeight*0.18,10); ctx.fill();
       }
@@ -871,13 +901,14 @@
       if (steer!==0) triggerSwerve(steer);
       // Apply steering acceleration
       player.vx += steer * player.accel * dt;
-      // When no steer input, decelerate without overshooting and snap tiny values to 0 to avoid idle drift
+      // Small decay when no input: quickly ease to a stop instead of snapping
       if (steer===0){
-        const decel = player.friction * dt;
+        const decel = player.friction * dt; // fairly quick due to higher friction
         if (Math.abs(player.vx) <= decel) player.vx = 0; else player.vx += -Math.sign(player.vx) * decel;
-        if (Math.abs(player.vx) < 0.02) player.vx = 0; // deadzone
+        if (Math.abs(player.vx) < 0.03) player.vx = 0; // tiny deadzone
       }
-  player.vx = clamp(player.vx, -3.0, 3.0);
+      // Tighter clamp for snappier control
+      player.vx = clamp(player.vx, -3.0, 3.0);
       // Keep the car fully within the road edges using visible width (prevents peeking past lines)
       {
         const cd = carDrawRect();

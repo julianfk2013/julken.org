@@ -65,6 +65,16 @@
 			100%{ transform: translate(-50%,-50%) translate(var(--x1, 0px), var(--y1, -80px)); opacity:0; }
 		}
 
+		/* Rain from the sky labels */
+		.rainAdd{position:fixed; top:-24px; left:0; pointer-events:none; z-index:70; color:#fff56a; font-weight:800; font-size:16px; text-shadow:0 2px 8px rgba(0,0,0,.6), 0 0 12px rgba(255,245,150,.45); opacity:0; animation:rainAdd var(--dur, 2.1s) linear forwards; will-change: transform, opacity}
+		@keyframes rainAdd{
+			0%{ transform: translate(0, -30px) rotate(var(--r0, 0deg)); opacity:0; }
+			10%{ opacity:1; }
+			90%{ opacity:1; }
+			100%{ transform: translate(var(--dx, 0px), 120vh) rotate(var(--r1, 360deg)); opacity:0; }
+		}
+		/* removed extra spin animation to avoid transform conflicts */
+
 		/* Shop */
 		.tabs{display:flex; gap:8px; padding:12px 16px; border-bottom:1px solid rgba(255,255,255,.08)}
 		.tab{appearance:none; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:var(--text); padding:8px 12px; border-radius:10px; cursor:pointer; font-weight:600}
@@ -123,6 +133,7 @@
 					<div class="row" style="margin-top:10px">
 						<button id="resetBtn" class="btn danger">Reset</button>
 						<button id="saveBtn" class="btn">Save</button>
+						<button id="rainToggleBtn" class="btn">Number Rain: On</button>
 					</div>
 				</div>
 			</section>
@@ -149,6 +160,7 @@
 			toasts: $('#toasts'),
 				total: $('#total'), per: $('#per'), cps: $('#cps'), counterLarge: $('#counterLarge'),
 			space: $('#spaceKey'), tap: $('#tapBtn'), reset: $('#resetBtn'), save: $('#saveBtn'),
+			rainToggle: $('#rainToggleBtn'),
 				shopBody: $('#shopBody'), tabUp: $('#tabUp'), tabGen: $('#tabGen')
 		};
 
@@ -163,6 +175,7 @@
 					per: 1,
 					auto: 0,
 						infinite: false,
+						numberRain: true,
 					carry: 0,
 					items: {
 						// Upgrades
@@ -312,6 +325,7 @@
 			const cpsShort = isInf ? '∞' : abbr(aps.total);
 			const cpsFull = isInf ? 'Infinite per second' : `${fmt(aps.total)} per second`;
 			els.cps.textContent = cpsShort; els.cps.title = cpsFull;
+			if(els.rainToggle){ els.rainToggle.textContent = `Number Rain: ${state.numberRain? 'On':'Off'}`; }
 			updateShopAffordability();
 		}
 		function render(){ renderHUD(); renderShop(); }
@@ -370,37 +384,75 @@
 				if(x==null||y==null){ const rect=els.space.getBoundingClientRect(); x=rect.left+rect.width/2; y=rect.top+rect.height/2; }
 				// Ripple effect
 				const r=document.createElement('span'); r.className='ripple'; r.style.left=x+'px'; r.style.top=y+'px'; document.body.appendChild(r); setTimeout(()=>r.remove(), 520);
-				// Floating +n
-				const f=document.createElement('div'); f.className='floatAdd';
-				const isInf = !!state.infinite; const addTxt = isInf ? '∞' : '+' + abbr(state.per);
-				f.textContent = addTxt;
-				// Offset so it doesn’t sit under the cursor: 12px right, 8px up
-				f.style.left=(x+12)+'px'; f.style.top=(y-8)+'px';
-				// Random direction and distance using CSS variables
-				const ang = Math.random()*Math.PI*2; // 0..2π
-				const dist = 60 + Math.random()*60; // 60..120px
-				const x1 = Math.cos(ang)*dist; const y1 = Math.sin(ang)*dist * -1; // bias upward visually
-				f.style.setProperty('--x0', '0px');
-				f.style.setProperty('--y0', '0px');
-				f.style.setProperty('--x1', x1.toFixed(1)+'px');
-				f.style.setProperty('--y1', y1.toFixed(1)+'px');
-				// Vary duration slightly for variety
-				const dur = (0.8 + Math.random()*0.5).toFixed(2) + 's';
-				f.style.animationDuration = dur;
-				document.body.appendChild(f);
-				// Clean up after animation ends or timeout
-				f.addEventListener('animationend', ()=>{ try{ f.remove(); }catch{} }, { once:true });
-				setTimeout(()=>{ try{ f.remove(); }catch{} }, 1200);
+				// Visuals based on toggle
+				const txt = state.infinite ? '∞' : '+'+abbr(state.per);
+				if(state.numberRain){
+					spawnRainLabel(txt);
+				}else{
+					// Old float effect with randomized direction and rotation
+					const f=document.createElement('div'); f.className='floatAdd'; f.textContent = txt;
+					f.style.left=(x+12)+'px'; f.style.top=(y-8)+'px';
+					const ang = Math.random()*Math.PI*2; const dist = 60 + Math.random()*60; const x1 = Math.cos(ang)*dist; const y1 = Math.sin(ang)*dist * -1;
+					f.style.setProperty('--x0', '0px'); f.style.setProperty('--y0', '0px'); f.style.setProperty('--x1', x1.toFixed(1)+'px'); f.style.setProperty('--y1', y1.toFixed(1)+'px');
+					const dur = (0.8 + Math.random()*0.5).toFixed(2) + 's'; f.style.animationDuration = dur;
+					const rot = (Math.random()*40-20).toFixed(1); f.style.transform += ` rotate(${rot}deg)`;
+					document.body.appendChild(f);
+					f.addEventListener('animationend', ()=>{ try{ f.remove(); }catch{} }, { once:true }); setTimeout(()=>{ try{ f.remove(); }catch{} }, 1400);
+				}
 			}catch{}
 			// Achievements
 			if(state.total===100) toast(`Milestone: ${abbr(100)}!`);
 			if(state.total===1000) toast(`Milestone: ${abbr(1000)}!`);
 		}
 
+		// Helper: spawn falling label from random x at top
+		function spawnRainLabel(text){
+			try{
+				const d=document.createElement('div'); d.className='rainAdd'; d.textContent=text;
+				const vw = Math.max(document.documentElement.clientWidth||0, window.innerWidth||0);
+				const x = Math.random()*vw; const drift = (Math.random()*2-1) * 200; // -200..200px drift while falling
+				d.style.left = Math.round(x)+'px'; d.style.top = '-24px'; d.style.zIndex = '90'; d.style.setProperty('--dx', drift.toFixed(0)+'px');
+				const dur = (1.7 + Math.random()*1.0).toFixed(2)+'s'; d.style.setProperty('--dur', dur);
+				// Random rotation start/end and spin speed
+				const r0 = (Math.random()*20 - 10).toFixed(1)+'deg';
+				const r1 = (parseFloat(r0) + (Math.random()*120 + 60)).toFixed(1)+'deg';
+				d.style.setProperty('--r0', r0); d.style.setProperty('--r1', r1);
+				const spinDur = (1.2 + Math.random()*1.2).toFixed(2)+'s'; d.style.setProperty('--spinDur', spinDur);
+				document.body.appendChild(d);
+				d.addEventListener('animationend', ()=>{ try{ d.remove(); }catch{} }, { once:true });
+				setTimeout(()=>{ try{ d.remove(); }catch{} }, 4000);
+			}catch{}
+		}
+
 			// Auto tick every 100ms (integer carry)
+			let autoEmitAcc = 0; let lastEmit = performance.now();
 			setInterval(()=>{
 				// per second generators
-				if(state.auto>0){ state.carry += state.auto/10; while(state.carry>=1){ state.total += 1; state.carry -= 1; } }
+				if(state.auto>0){
+					state.carry += state.auto/10;
+					let gained = 0;
+					while(state.carry>=1){ state.total += 1; state.carry -= 1; gained += 1; }
+					if(gained>0){ autoEmitAcc += gained; }
+				}
+				// Emit rain labels periodically for auto income to avoid spam
+				const now = performance.now();
+				if(autoEmitAcc>0 && now - lastEmit > 350){
+					const txt = state.infinite ? '∞' : '+' + abbr(autoEmitAcc);
+					if(state.numberRain){ spawnRainLabel(txt); }
+					else {
+						// Emit a float near the SPACE key for auto when rain is off
+						const rect=els.space.getBoundingClientRect(); const cx=rect.left+rect.width/2; const cy=rect.top+8; // near top of key
+						const f=document.createElement('div'); f.className='floatAdd'; f.textContent = txt;
+						f.style.left=(cx+ (Math.random()*40-20))+'px'; f.style.top=(cy+(Math.random()*10-5))+'px';
+						const ang = -Math.PI/2 + (Math.random()*0.6-0.3); const dist = 50 + Math.random()*40; const x1 = Math.cos(ang)*dist; const y1 = Math.sin(ang)*dist;
+						f.style.setProperty('--x0','0px'); f.style.setProperty('--y0','0px'); f.style.setProperty('--x1', x1.toFixed(1)+'px'); f.style.setProperty('--y1', y1.toFixed(1)+'px');
+						const dur = (0.8 + Math.random()*0.5).toFixed(2)+'s'; f.style.animationDuration = dur;
+						const rot = (Math.random()*40-20).toFixed(1); f.style.transform += ` rotate(${rot}deg)`;
+						document.body.appendChild(f);
+						f.addEventListener('animationend', ()=>{ try{ f.remove(); }catch{} }, { once:true }); setTimeout(()=>{ try{ f.remove(); }catch{} }, 1400);
+					}
+					autoEmitAcc = 0; lastEmit = now;
+				}
 				renderHUD();
 			}, 100);
 
@@ -447,6 +499,7 @@
 		}
 		els.reset.addEventListener('click', ()=>{ if(confirm('Reset progress?')){ hardReset(); }});
 		els.save.addEventListener('click', ()=>{ save(); toast('Saved'); });
+		if(els.rainToggle){ els.rainToggle.addEventListener('click', ()=>{ state.numberRain = !state.numberRain; renderHUD(); save(); }); }
 
 		// Tabs
 		els.tabUp.addEventListener('click', ()=>{ activeTab='up'; els.tabUp.classList.add('active'); els.tabGen.classList.remove('active'); renderShop(); });

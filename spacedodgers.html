@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>Space Dodgers</title>
+<!-- Modern arcade font for the logo -->
+<link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap" rel="stylesheet">
+<style>
+ html,body { margin:0; padding:0; background:#000; color:#fff; font-family:system-ui,Segoe UI,Arial,sans-serif; overflow:hidden; }
+ canvas { display:block; width:100vw; height:100vh; background:radial-gradient(circle at 50% 40%, #0d1b3d, #04070e 70%); }
+  #uiOverlay { position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1.4rem; background:rgba(0,0,0,0.82); z-index:10; text-align:center; padding: max(16px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+ #uiOverlay.hidden { pointer-events:none; opacity:0; transition:opacity .4s; }
+  h1 { margin:0; font-size:clamp(2.2rem,6vw,4rem); letter-spacing:.06em; text-shadow:0 0 18px #4da7ff, 0 0 36px #fff; font-family:'Audiowide', system-ui, sans-serif; }
+ button { font-size:1.2rem; padding:.7rem 2.2rem; border:none; border-radius:10px; background:#1e90ff; color:#fff; cursor:pointer; box-shadow:0 0 16px #1e90ff; font-weight:600; }
+ button:hover { background:#5ab3ff; }
+ #scoreHud { position:fixed; top:10px; left:50%; transform:translateX(-50%); font-size:clamp(1.5rem,4vw,3.2rem); font-weight:700; text-shadow:0 0 10px #000; z-index:5; }
+ #bestHud { position:fixed; top:10px; right:14px; font-size:14px; opacity:.75; }
+ .fade-enter { animation:fade .6s ease; }
+ @keyframes fade { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+ .pulse { animation:pulse 1.2s ease-in-out infinite; }
+ @keyframes pulse { 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.06); } }
+ .flash { animation:flash 90ms linear 2; }
+ @keyframes flash { 0%,100%{ filter:brightness(1); } 50%{ filter:brightness(2); } }
+  #musicCredit { position:fixed; bottom:calc(10px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%); font-size:12px; opacity:0.75; z-index:11; }
+  /* Upgraded UI styling */
+  #uiOverlay .card { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); padding:16px 18px; border-radius:14px; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
+  #uiOverlay .statsRow { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+  #uiOverlay .statCard { min-width:120px; padding:10px 12px; border-radius:10px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); }
+  #uiOverlay .statCard .label { font-size:12px; opacity:0.8; letter-spacing:.06em; text-transform:uppercase; }
+  #uiOverlay .statCard .value { font-size:clamp(1.5rem,4vw,2.4rem); font-weight:800; margin-top:4px; text-shadow:0 0 12px rgba(77,167,255,0.5); }
+  #uiOverlay .bigScore { display:flex; flex-direction:column; align-items:center; gap:6px; margin:4px 0 10px; }
+  #uiOverlay .bigScore .label { font-size:12px; opacity:0.85; letter-spacing:.08em; text-transform:uppercase; }
+  #uiOverlay .bigScore .value { font-size:clamp(2.8rem,7vw,4.6rem); font-weight:900; line-height:1; text-shadow:0 0 18px rgba(90,180,255,0.55), 0 0 36px rgba(255,255,255,0.25); }
+  #uiOverlay .bigScore .sub { font-size:14px; opacity:0.85; }
+  #uiOverlay .badge { display:inline-block; padding:4px 8px; border-radius:999px; background:#20c997; color:#002b23; font-weight:800; font-size:12px; margin-left:8px; box-shadow:0 0 18px rgba(32,201,151,0.6); }
+  #uiOverlay .howto { text-align:left; max-width:min(680px,90vw); margin:8px auto; line-height:1.45; opacity:0.95; }
+  #uiOverlay .howto li { margin:6px 0; }
+  #uiOverlay .btnRow { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+  #uiOverlay .hint { font-size:12px; opacity:0.8; margin-top:4px; }
+  /* Modern start screen */
+  #uiOverlay .hero { display:flex; flex-direction:column; gap:8px; align-items:center; text-align:center; }
+  #uiOverlay .logoText { font-family:'Audiowide', 'Russo One', 'Orbitron', system-ui, sans-serif; font-size:clamp(2.8rem,8vw,5.6rem); font-weight:900; letter-spacing:.08em; margin:0; line-height:1; 
+    background:linear-gradient(92deg,#9be1ff 0%,#4da7ff 35%,#7d8bff 65%,#9be1ff 100%);
+    background-size:200% auto; animation:logoGradient 7s linear infinite, neonPulse 4.5s ease-in-out infinite;
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    text-shadow:0 0 22px rgba(77,167,255,0.55), 0 0 52px rgba(125,139,255,0.35), 0 0 82px rgba(155,235,255,0.25);
+    -webkit-text-stroke: 1px rgba(255,255,255,0.08);
+  }
+  @keyframes logoGradient { 0%{ background-position:0% 50%; } 100%{ background-position:200% 50%; } }
+  @keyframes neonPulse { 0%,100%{ filter:drop-shadow(0 0 10px rgba(77,167,255,0.55)); } 50%{ filter:drop-shadow(0 0 18px rgba(125,139,255,0.75)); } }
+  #uiOverlay .subtitle { opacity:0.9; font-size:14px; }
+  #uiOverlay .pill { display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; font-weight:700; font-size:12px;
+    background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.16); }
+  #uiOverlay .modeGrid { display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:14px; width:min(920px,94vw); }
+  #uiOverlay .modeCard { position:relative; padding:16px; border-radius:16px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.14);
+    text-align:left; cursor:pointer; transition:transform .2s ease, background .2s ease, border-color .2s ease; }
+  #uiOverlay .modeCard:hover { transform:translateY(-3px); background:rgba(255,255,255,0.1); border-color:rgba(255,255,255,0.28); }
+  #uiOverlay .modeTitle { font-weight:900; font-size:1.2rem; margin:0 0 6px; display:flex; align-items:center; gap:8px; }
+  #uiOverlay .modeDesc { opacity:0.9; font-size:0.95rem; }
+  #uiOverlay .kbd { display:inline-block; min-width:22px; padding:2px 6px; border-radius:6px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.18); font-weight:800; font-size:12px; text-align:center; }
+  #uiOverlay .cardFooter { margin-top:10px; display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap; }
+  #uiOverlay .miniBtn { padding:6px 10px; font-size:12px; border-radius:8px; background:#1e90ff; border:none; color:#fff; cursor:pointer; }
+  #uiOverlay .miniBtn.alt { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.16); }
+  #uiOverlay .footRow { margin-top:8px; opacity:0.9; font-size:12px; display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+  @keyframes floaty { 0%{ transform:translateY(0);} 50%{ transform:translateY(-6px);} 100%{ transform:translateY(0);} }
+  #uiOverlay .floaty { animation:floaty 4s ease-in-out infinite; }
+    /* Music toggle button (overlays everything) */
+    #musicToggle {
+      position:fixed; top:calc(10px + env(safe-area-inset-top)); right:calc(10px + env(safe-area-inset-right)); z-index:20;
+      width:40px; height:40px; border-radius:999px; border:1px solid rgba(255,255,255,0.25);
+      background:rgba(0,0,0,0.45); color:#fff; cursor:pointer;
+      display:grid; place-items:center; font-size:18px; line-height:1;
+      backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+      box-shadow:0 0 12px rgba(0,0,0,0.35);
+    }
+    #musicToggle:hover { background:rgba(255,255,255,0.08); }
+
+    /* Info button */
+    #infoToggle {
+      position:fixed; top:calc(10px + env(safe-area-inset-top)); left:calc(10px + env(safe-area-inset-left)); z-index:20;
+      width:40px; height:40px; border-radius:999px; border:1px solid rgba(255,255,255,0.25);
+      background:rgba(0,0,0,0.45); color:#fff; cursor:pointer;
+      display:grid; place-items:center; font-size:18px; line-height:1; font-weight:800;
+      backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+      box-shadow:0 0 12px rgba(0,0,0,0.35);
+    }
+    #infoToggle:hover { background:rgba(255,255,255,0.08); }
+
+    /* Home button */
+    #homeBtn {
+      position:fixed; bottom:calc(12px + env(safe-area-inset-bottom)); left:calc(12px + env(safe-area-inset-left)); z-index:20;
+      border:1px solid rgba(255,255,255,0.25); border-radius:10px; padding:8px 12px;
+      background:rgba(0,0,0,0.45); color:#fff; cursor:pointer; font-weight:600;
+      backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+      box-shadow:0 0 12px rgba(0,0,0,0.35);
+    }
+    #homeBtn:hover { background:rgba(255,255,255,0.08); }
+
+    /* Info modal */
+    #infoModal { position:fixed; inset:0; display:none; place-items:center; z-index:30; }
+    #infoModal.open { display:grid; }
+    #infoModal .backdrop { position:absolute; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(2px); }
+    #infoModal .card { position:relative; z-index:1; width:min(92vw, 560px); max-height:80vh; overflow:auto;
+      background:rgba(20,24,36,0.92); border:1px solid rgba(255,255,255,0.14); border-radius:14px; padding:16px 18px;
+      box-shadow:0 20px 60px rgba(0,0,0,0.5); }
+    #infoModal h3 { margin:0 0 8px; font-family:'Audiowide', system-ui, sans-serif; letter-spacing:.06em; }
+    #infoModal .row { display:flex; gap:10px; flex-wrap:wrap; }
+    #infoModal .kbd { display:inline-block; min-width:22px; padding:2px 6px; border-radius:6px; background:rgba(255,255,255,0.12); border:1px solid rgba(255,255,255,0.18); font-weight:800; font-size:12px; text-align:center; }
+    #infoModal .closeBtn { position:absolute; top:10px; right:10px; background:transparent; color:#fff; border:1px solid rgba(255,255,255,0.25); border-radius:10px; padding:4px 8px; cursor:pointer; }
+    #infoModal .sec { margin:10px 0; }
+
+  /* Responsive adjustments */
+  @media (max-width: 520px) {
+    #uiOverlay .modeGrid { grid-template-columns: 1fr; }
+    #uiOverlay .modeDesc { font-size: 0.9rem; }
+    button { font-size: 1rem; padding: .6rem 1.2rem; }
+    #musicToggle { width:48px; height:48px; font-size:20px; }
+    #uiOverlay .logoText { font-size: clamp(2.2rem, 9vw, 3.6rem); }
+  }
+  @media (max-height: 480px) {
+    #uiOverlay .subtitle { display:none; }
+    #uiOverlay .hero { gap:4px; }
+  }
+</style>
+</head>
+<body>
+<div id="scoreHud">0</div>
+<div id="bestHud"></div>
+  <button id="musicToggle" title="Mute music" aria-pressed="false">🔊</button>
+  <button id="infoToggle" title="Info and credits" aria-pressed="false">i</button>
+  <button id="homeBtn" title="Go to homepage" aria-label="Go to homepage">Home</button>
+<div id="uiOverlay" class="fade-enter">
+  <h1>Space Dodgers</h1>
+  <p id="msg">Hold SPACE to thrust up (both modes).<br/>Shooter: click / F to fire at asteroids.<br/><span id="hiLine"></span></p>
+</div>
+<div id="musicCredit">Music: Creo - Flux</div>
+<canvas id="game"></canvas>
+<!-- Info Modal -->
+<div id="infoModal" aria-hidden="true">
+  <div class="backdrop"></div>
+  <div class="card">
+    <button class="closeBtn" id="infoCloseBtn">Close</button>
+    <h3>Info</h3>
+    <div class="sec">
+      <strong>Credits</strong>
+  <div>Music: Creo — Prophecy (menu), Live (Shooter), Without You (Dodge), Flux (Blackout)</div>
+    </div>
+    <div class="sec">
+      <strong>Controls</strong>
+      <div class="row">
+        <span><span class="kbd">SPACE</span> thrust</span>
+        <span><span class="kbd">F</span> or click shoot</span>
+        <span><span class="kbd">1</span>/<span class="kbd">2</span>/<span class="kbd">3</span> switch modes</span>
+        <span><span class="kbd">🔊</span> button toggles music</span>
+      </div>
+    </div>
+  </div>
+  </div>
+<script>
+// --- Config & State ---
+const cvs = document.getElementById('game');
+const ctx = cvs.getContext('2d');
+let W = innerWidth, H = innerHeight;
+// resize() is defined later (single definition) and registered after it's defined.
+
+// Offscreen mask canvas for Blackout darkness overlay
+let maskCvs = null, maskCtx = null;
+function ensureMask(){
+  if (!maskCvs){ maskCvs = document.createElement('canvas'); maskCtx = maskCvs.getContext('2d'); }
+  if (maskCvs.width !== W || maskCvs.height !== H){ maskCvs.width = W; maskCvs.height = H; }
+}
+
+// Runtime flag
+const settings = { floorKills:false };
+// Hitbox debug removed for release
+let gameMode = 'dodge'; // 'dodge' | 'shooter' | 'blackout'
+// Shooter boss state
+let bossActive = false;
+let boss = null; // {x,y,r,hp,maxHp,vx,vy,rot,throwTimer,throwEvery,bobPhase}
+let bossIndex = 0; // 0-based: 0=>20hp, 1=>40hp, etc.
+let nextBossAt = 100; // score threshold for next boss spawn
+let holdThrust = false; // Space held
+// Background
+let stars = [], meteors = [], nebulas = [];
+let meteorTimerBG = 0;
+function initStarfield(){
+  const count = Math.max(90, Math.round((W*H)/6000));
+  stars.length = 0;
+  for (let i=0;i<count;i++){
+    const layer = Math.random();
+    const r = layer < 0.6 ? 1 : (layer < 0.9 ? 1.5 : 2);
+    const spd = (20 + Math.random()*60) * (0.5 + layer) * (SCALE_X || 1);
+    // subtle color temperature for stars (cool/neutral/warm)
+    let col;
+    if (layer < 0.45) col = [255,255,255]; // neutral white
+    else if (layer < 0.75) col = [180+Math.random()*50, 200+Math.random()*40, 255]; // cool blue
+    else col = [255, 230+Math.random()*20, 170+Math.random()*30]; // warm yellow
+    const glow = layer > 0.9 && Math.random() < 0.6; // some larger stars glow
+    stars.push({ x: Math.random()*W, y: Math.random()*H, r, spd, tw: Math.random()*Math.PI*2, twSpd: 1 + Math.random()*2, col, glow });
+  }
+  // procedural nebulas
+  nebulas.length = 0;
+  const nCount = 2 + Math.floor(Math.random()*3); // 2-4 nebulas
+  for (let i=0;i<nCount;i++){
+    const big = Math.random() < 0.5;
+    const r = (big ? Math.max(W,H)*0.7 : Math.max(W,H)*0.45) * (0.8 + Math.random()*0.6);
+    const palette = [
+      [120,60,200],   // violet
+      [40,120,220],   // blue
+      [200,60,160],   // magenta
+      [40,180,200]    // teal
+    ];
+    const base = palette[Math.floor(Math.random()*palette.length)];
+    nebulas.push({
+      x: Math.random()*W,
+      y: Math.random()*H*0.9,
+      r,
+      base,
+      a: 0.05 + Math.random()*0.07,
+      vx: (Math.random()*2-1) * 6 * (SCALE_X||1),
+      vy: (Math.random()*2-1) * 4 * (SCALE_Y||1),
+      pulse: Math.random()*Math.PI*2,
+      pulseSpd: 0.2 + Math.random()*0.25
+    });
+  }
+  meteors.length = 0; meteorTimerBG = 0;
+}
+
+// Physical constants (base tuned for 480x800 reference)
+// Even slower tuning
+const BASE = { GRAVITY: 600, FLAP: -190, GAP: 260, SPEED: 70, AST_SIZE: 56, PIPE_W: 90, SHIP_W:68, SHIP_H:52 };
+let GRAVITY, FLAP_V, GAP, SPEED, AST_SIZE, PIPE_W, SHIP_W, SHIP_H, SCALE_F=1, SCALE_X=1, SCALE_Y=1;
+let PIPE_HIT_INSET = 0; // horizontal shrink for collision vs visual pipe width
+const SHOOT_COOLDOWN_MS = 180;
+const BULLET_SPEED = 600;
+let startTime = 0; // timestamp when run started
+const START_GRACE_MS = 900; // invulnerability / no-floor-death window
+
+// Blackout mode state
+let flares = []; // collectible flares (lights up temporarily)
+let flareTimer = 0; // spawn timer for flares
+let flareBoost = 0; // 0..1 intensity that widens the light cone
+let flareBoostDecay = 0.35; // per second decay
+function scaleConstants(){
+  SCALE_X = W/480; SCALE_Y = H/800; // treat independently
+  const s = Math.min(SCALE_X, SCALE_Y); // general scale
+  SCALE_F = s;
+  GRAVITY = BASE.GRAVITY * SCALE_Y;
+  FLAP_V = BASE.FLAP * SCALE_Y;
+  // Clamp gap to ensure playable space always exists
+  const desiredGap = BASE.GAP * SCALE_Y;
+  const minGap = Math.max(90, H * 0.18);
+  const maxGap = Math.min(H * 0.65, Math.max(minGap + 20, desiredGap));
+  GAP = Math.min(Math.max(desiredGap, minGap), maxGap);
+  SPEED = BASE.SPEED * SCALE_X;
+  AST_SIZE = BASE.AST_SIZE * s;
+  PIPE_W = Math.max(60, BASE.PIPE_W * s);
+  SHIP_W = BASE.SHIP_W * s;
+  SHIP_H = BASE.SHIP_H * s;
+  PIPE_HIT_INSET = Math.min(PIPE_W * 0.22, 16); // scale inset, capped
+  // Rectangular ship hitbox (axis-aligned)
+  ship.hitW = SHIP_W * 0.65; // a bit inside the sprite for fairness
+  ship.hitH = SHIP_H * 0.55;
+  // Enforce GAP never below ship height + padding (prevents impossible gaps after resizes)
+  const minPlayGap = ship.hitH * 1.4 + 32;
+  if (GAP < minPlayGap) GAP = minPlayGap;
+  // Make overall gap thinner for higher difficulty (then still enforcing safety)
+  GAP *= 0.85;
+  if (GAP < minPlayGap) GAP = minPlayGap;
+}
+// Initialize starfield on first load and on resize
+initStarfield();
+function resize(){
+  W = innerWidth; H = innerHeight; cvs.width = W; cvs.height = H;
+  scaleConstants(); initStarfield(); ensureMask();
+}
+addEventListener('resize', resize);
+
+// Images (may not exist in workspace – add defensive loading)
+function img(src){
+  const i = new Image();
+  i.onerror = ()=>{ i._broken = true; };
+  i.src = src;
+  return i;
+}
+// If these assets aren't present they'll fall back to simple shapes without errors.
+const imgShip = img('spacedodgers_assets/spaceship.png');
+const imgSkyscraper = img('spacedodgers_assets/skyscraper.png');
+// Asteroid image with simple fallback (asteroid / astroid) + cache-bust to avoid stale 404
+let imgAsteroid = new Image();
+const _astCandidates = ['spacedodgers_assets/asteroid.png','spacedodgers_assets/astroid.png'];
+let _astIdx = 0;
+function _tryAst(){
+  if(_astIdx >= _astCandidates.length){ console.warn('[Asteroid] all candidates failed', _astCandidates); imgAsteroid._broken = true; return; }
+  const src = _astCandidates[_astIdx++];
+  imgAsteroid = new Image();
+  imgAsteroid.onload = ()=> console.log('[Asteroid] loaded', src, imgAsteroid.naturalWidth+'x'+imgAsteroid.naturalHeight);
+  imgAsteroid.onerror = ()=>{ console.warn('[Asteroid] failed', src); _tryAst(); };
+  imgAsteroid.src = src + '?v=' + Date.now();
+}
+_tryAst();
+// Boss image
+const imgBoss = img('spacedodgers_assets/bossfight.png');
+
+// --- Audio (graceful fallbacks if files missing) ---
+function loadSfx(path){ const a=new Audio(); a.src=path; a.onerror=()=>console.warn('[SFX missing]',path); return a; }
+const crashSfx = loadSfx('spacedodgers_assets/death.mp3');
+const shotSfx  = loadSfx('spacedodgers_assets/shot.mp3');
+const thrustSfx = loadSfx('spacedodgers_assets/thrust.mp3');
+// Background soundtrack (loops). Uses the soundtrack file in assets.
+const bgm = loadSfx('spacedodgers_assets/soundtrack.mp3');
+const BGM_BASE_VOL = 0.45;
+try{ shotSfx.playbackRate = 1.35; }catch{}
+// Lower SFX volumes; raise music slightly
+let shotBaseVol = 0.12; // shooting
+try{ shotSfx.volume = shotBaseVol; }catch{}
+try{ thrustSfx.loop = true; thrustSfx.volume = 0.55; }catch{}
+try{ crashSfx.volume = 0.28; }catch{}
+try{ bgm.loop = true; bgm.volume = BGM_BASE_VOL; }catch{}
+// When starting thrust, skip the first second of the audio (no delay on lift)
+const THRUST_SKIP_SEC = 1.0; // seconds to skip from the beginning
+let thrustSkipEff = THRUST_SKIP_SEC; // effective skip (clamped by duration when known)
+try{
+  thrustSfx.addEventListener('loadedmetadata', ()=>{
+    if (isFinite(thrustSfx.duration) && thrustSfx.duration > 0){
+      thrustSkipEff = Math.min(THRUST_SKIP_SEC, Math.max(0, thrustSfx.duration - 0.05));
+    }
+  });
+  // Ensure the loop never plays the skipped intro
+  thrustSfx.addEventListener('timeupdate', ()=>{
+    if (thrustPlaying && thrustSfx.currentTime < thrustSkipEff - 0.01){
+      try{ thrustSfx.currentTime = thrustSkipEff; }catch{}
+    }
+  });
+}catch{}
+// Thrust fade helpers
+let thrustBaseVol = (typeof thrustSfx.volume === 'number' ? thrustSfx.volume : 1.0);
+let thrustFadeRaf = null;
+let thrustFadeInRaf = null;
+function cancelThrustFadeIn(){ if (thrustFadeInRaf){ cancelAnimationFrame(thrustFadeInRaf); thrustFadeInRaf = null; } }
+function cancelThrustFade(){ if (thrustFadeRaf){ cancelAnimationFrame(thrustFadeRaf); thrustFadeRaf = null; } }
+function fadeInThrustAudio(ms=1000){
+  cancelThrustFadeIn();
+  const t0 = performance.now();
+  function step(t){
+    const k = Math.min(1, (t - t0) / ms);
+    const vol = thrustBaseVol * k;
+    try { thrustSfx.volume = Math.max(0, Math.min(thrustBaseVol, vol)); } catch{}
+    if (k < 1 && !thrustSfx.paused){ thrustFadeInRaf = requestAnimationFrame(step); }
+    else { thrustFadeInRaf = null; }
+  }
+  thrustFadeInRaf = requestAnimationFrame(step);
+}
+function startThrustAudio(){
+  cancelThrustFade(); cancelThrustFadeIn();
+  try {
+    // Start immediately at the skip point and at base volume
+    thrustSfx.volume = thrustBaseVol;
+    if (thrustSfx.paused) {
+      thrustSfx.currentTime = thrustSkipEff;
+      thrustSfx.play().catch(()=>{});
+    } else if (thrustSfx.currentTime < thrustSkipEff) {
+      thrustSfx.currentTime = thrustSkipEff;
+    }
+  } catch{}
+  thrustPlaying = true;
+}
+function fadeOutThrustAudio(ms=220){
+  if (thrustSfx.paused){ thrustPlaying = false; return; }
+  cancelThrustFade();
+  cancelThrustFadeIn();
+  const startVol = Math.min(typeof thrustSfx.volume === 'number' ? thrustSfx.volume : thrustBaseVol, thrustBaseVol);
+  const t0 = performance.now();
+  function step(t){
+    const k = Math.min(1, (t - t0) / ms);
+    const vol = startVol * (1 - k);
+    try { thrustSfx.volume = Math.max(0, vol); } catch{}
+    if (k < 1 && !thrustSfx.paused){ thrustFadeRaf = requestAnimationFrame(step); }
+    else {
+      try { thrustSfx.pause(); } catch{}
+      try { thrustSfx.volume = thrustBaseVol; } catch{}
+      thrustFadeRaf = null; thrustPlaying = false;
+    }
+  }
+  thrustFadeRaf = requestAnimationFrame(step);
+}
+
+// Background music helpers
+let bgmTriedAutoplay = false;
+function startBgm(){
+  try {
+    if (!bgmTriedAutoplay) bgmTriedAutoplay = true;
+    bgm.loop = true;
+  if (typeof bgm.volume === 'number') bgm.volume = BGM_BASE_VOL;
+  const p = bgm.play();
+  if (typeof bgm.volume === 'number') bgm.volume = BGM_BASE_VOL;
+    if (p && typeof p.catch === 'function') { p.catch(()=>{/* likely blocked by autoplay policy; will retry on first input */}); }
+  } catch{}
+}
+
+function isReady(image){ return image && image.complete && !image._broken && image.naturalWidth > 0; }
+
+// --- Geometry helpers for tilted ship hitbox (OBB) ---
+function getShipTilt(){ return Math.max(-0.6, Math.min(0.6, ship.vy / 600)); }
+function obbAabbIntersect(cx, cy, hx, hy, angle, ax1, ay1, ax2, ay2){
+  // OBB center (cx,cy), half extents (hx,hy), rotation 'angle'
+  // AABB as min/max
+  const c = Math.cos(angle), s = Math.sin(angle);
+  const acx = (ax1 + ax2) * 0.5, acy = (ay1 + ay2) * 0.5;
+  const ahx = Math.max(0, (ax2 - ax1) * 0.5), ahy = Math.max(0, (ay2 - ay1) * 0.5);
+  const dx = cx - acx, dy = cy - acy;
+  // Axes tests: world X and Y (AABB axes)
+  if (Math.abs(dx) > ahx + hx * Math.abs(c) + hy * Math.abs(-s)) return false;
+  if (Math.abs(dy) > ahy + hx * Math.abs(s) + hy * Math.abs(c)) return false;
+  // Axes tests: OBB axes u=(c,s) and v=(-s,c)
+  const du = dx * c + dy * s;
+  const dv = dx * (-s) + dy * c;
+  const rAabbOnU = ahx * Math.abs(c) + ahy * Math.abs(s);
+  const rAabbOnV = ahx * Math.abs(s) + ahy * Math.abs(c);
+  if (Math.abs(du) > rAabbOnU + hx) return false;
+  if (Math.abs(dv) > rAabbOnV + hy) return false;
+  return true;
+}
+function obbCircleIntersect(cx, cy, hx, hy, angle, x2, y2, r){
+  // Transform circle center into OBB local space
+  const c = Math.cos(angle), s = Math.sin(angle);
+  const dx = x2 - cx, dy = y2 - cy;
+  const lx = dx * c + dy * s;
+  const ly = -dx * s + dy * c;
+  const qx = Math.max(-hx, Math.min(hx, lx));
+  const qy = Math.max(-hy, Math.min(hy, ly));
+  const ddx = lx - qx, ddy = ly - qy;
+  return (ddx*ddx + ddy*ddy) <= r*r;
+}
+
+// BGM source helpers
+// Small helper: fade audio to target volume
+let _bgmFadeRaf = null;
+function fadeAudioTo(audio, target, ms=300, done){
+  try{
+    if (_bgmFadeRaf) cancelAnimationFrame(_bgmFadeRaf);
+    const start = performance.now();
+    const from = typeof audio.volume === 'number' ? audio.volume : BGM_BASE_VOL;
+    function step(t){
+      const k = Math.min(1, (t - start)/ms);
+      const v = from + (target - from) * k;
+      try{ audio.volume = Math.max(0, Math.min(1, v)); }catch{}
+      if (k < 1){ _bgmFadeRaf = requestAnimationFrame(step); }
+      else { _bgmFadeRaf = null; if (done) done(); }
+    }
+    _bgmFadeRaf = requestAnimationFrame(step);
+  }catch{ if (done) done(); }
+}
+
+function setMusicCreditFromSrc(src){
+  try{
+    const el = document.getElementById('musicCredit'); if (!el) return;
+    const lower = (src||'').toLowerCase();
+    let name = '';
+    if (lower.includes('prophecy')) name = 'Creo - Prophecy';
+    else if (lower.includes('live')) name = 'Creo - Live';
+    else if (lower.includes('without')) name = 'Creo - Without You';
+  else if (lower.includes('soundtrack')) name = 'Creo - Flux';
+    else name = 'Creo';
+    el.textContent = `Music: ${name}`;
+  }catch{}
+}
+
+function setBgmSource(src){
+  try{
+    if (!src) return;
+    const cur = (bgm.currentSrc || bgm.src || '').toLowerCase();
+    if (cur.endsWith(src.toLowerCase())) return;
+    const wasMuted = !!bgm.muted;
+    const wasPlaying = !bgm.paused;
+    const doSwap = ()=>{
+      bgm.pause(); bgm.src = src; bgm.loop = true;
+      if (typeof bgm.volume === 'number') bgm.volume = BGM_BASE_VOL;
+      bgm.muted = wasMuted;
+      setMusicCreditFromSrc(src);
+      if (wasPlaying && !bgm.muted){
+        bgm.play().catch(()=>{});
+        fadeAudioTo(bgm, BGM_BASE_VOL, 320);
+      }
+    };
+    if (wasPlaying && !bgm.muted){ fadeAudioTo(bgm, 0.0, 220, doSwap); }
+    else { doSwap(); }
+  }catch{}
+}
+function setBgmForMode(mode){
+  if (mode === 'shooter') setBgmSource('spacedodgers_assets/live.mp3');
+  else if (mode === 'blackout') setBgmSource('spacedodgers_assets/soundtrack.mp3');
+  else setBgmSource('spacedodgers_assets/without you.mp3');
+}
+
+// --- Background update/draw ---
+function spawnMeteor(){
+  // spawn from random right/top edge heading down-left
+  const fromTop = Math.random() < 0.5;
+  const speed = (350 + Math.random()*450) * (SCALE_X || 1);
+  let x, y, vx, vy;
+  if (fromTop){ x = Math.random()*W*0.8 + W*0.2; y = -20; vx = -speed * (0.6 + Math.random()*0.5); vy = speed * (0.5 + Math.random()*0.6); }
+  else { x = W + 20; y = Math.random()*H*0.6; vx = -speed * (0.8 + Math.random()*0.6); vy = speed * (0.2 + Math.random()*0.5); }
+  const len = 60 + Math.random()*100;
+  meteors.push({ x, y, vx, vy, len, life: 1.2 });
+}
+function updateBackground(dt){
+  for (const s of stars){ s.x -= s.spd * dt; if (s.x < -4) s.x = W + Math.random()*40; s.tw += s.twSpd * dt; }
+  // drift nebulas slowly and wrap
+  for (const n of nebulas){
+    n.x += n.vx * dt; n.y += n.vy * dt; n.pulse += n.pulseSpd * dt;
+    if (n.x < -n.r) n.x = W + n.r*0.5; else if (n.x > W + n.r) n.x = -n.r*0.5;
+    if (n.y < -n.r*0.3) n.y = H + n.r*0.2; else if (n.y > H + n.r*0.3) n.y = -n.r*0.2;
+  }
+  meteorTimerBG += dt;
+  if (meteorTimerBG > 2 + Math.random()*4){ meteorTimerBG = 0; spawnMeteor(); }
+  for (const m of meteors){ m.x += m.vx*dt; m.y += m.vy*dt; m.life -= dt; }
+  meteors = meteors.filter(m => m.life > 0 && m.x > -200 && m.y < H + 200);
+}
+function drawBackground(){
+  // nebulas (additive blend)
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+  for (const n of nebulas){
+    const pulseK = 0.75 + 0.25 * Math.sin(n.pulse);
+    const a = n.a * pulseK;
+    const g = ctx.createRadialGradient(n.x, n.y, 0, n.x, n.y, n.r);
+    const [r,gc,b] = n.base;
+    g.addColorStop(0, `rgba(${r},${gc},${b},${(a*1.0).toFixed(3)})`);
+    g.addColorStop(0.35, `rgba(${r},${gc},${b},${(a*0.55).toFixed(3)})`);
+    g.addColorStop(1, `rgba(${r},${gc},${b},0)`);
+    ctx.fillStyle = g;
+    ctx.beginPath(); ctx.arc(n.x, n.y, n.r, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+
+  // stars (with subtle colors and occasional glow)
+  ctx.save();
+  for (const s of stars){
+    const tw = 0.5 + 0.5 * Math.sin(s.tw);
+    const alpha = 0.15 + 0.65 * tw;
+    const [cr,cg,cb] = s.col;
+    if (s.glow){ ctx.shadowColor = `rgba(${cr},${cg},${cb},${(alpha*0.9).toFixed(3)})`; ctx.shadowBlur = 6; }
+    else { ctx.shadowBlur = 0; }
+    ctx.fillStyle = `rgba(${cr},${cg},${cb},${alpha.toFixed(3)})`;
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
+  }
+  // shooting stars
+  ctx.lineCap = 'round';
+  for (const m of meteors){
+    const vx = m.vx, vy = m.vy; const vlen = Math.hypot(vx,vy)||1; const dx = -vx/vlen, dy = -vy/vlen;
+    const x2 = m.x + dx * m.len, y2 = m.y + dy * m.len;
+    ctx.strokeStyle = `rgba(200,220,255,${Math.max(0, Math.min(1, m.life))})`;
+    ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(m.x, m.y); ctx.lineTo(x2, y2); ctx.stroke();
+  }
+  ctx.restore();
+
+  // subtle edge vignette to deepen space feel
+  ctx.save();
+  const vg = ctx.createRadialGradient(W*0.5, H*0.45, Math.min(W,H)*0.2, W*0.5, H*0.45, Math.max(W,H)*0.75);
+  vg.addColorStop(0, 'rgba(0,0,0,0)');
+  vg.addColorStop(1, 'rgba(0,0,0,0.45)');
+  ctx.fillStyle = vg; ctx.fillRect(0,0,W,H);
+  ctx.restore();
+}
+
+let ship = { x:0, y:0, vy:0, hitW:32, hitH:18 };
+// firstFlap removed – not needed for Geometry Dash style ship
+let obstacles = [];
+let asteroids = [];
+let bullets = [];
+let lastShotTime = 0;
+let thrustPlaying = false;
+let effects = [];
+let thrustWarmup = 0; // seconds remaining until thrust activates after engage
+let thrustEngage = 0; // 0..1 ramp for thrust smoothing to avoid spikes
+let score=0, best=0, started=false, gameOver=false, lastTime=0, spawnTimer=0, asteroidTimer=0;
+let lastScore = 0; // for game over screen
+let wasNewBest = false;
+// Tiny camera shake for polish (split-second)
+const SHAKE_MAX = 0.12; // seconds
+let camShakeT = 0, camShakeMag = 0;
+function addShake(mag=6, time=0.08){
+  camShakeMag = Math.max(camShakeMag, mag);
+  const t = Math.min(time, SHAKE_MAX);
+  camShakeT = Math.min(SHAKE_MAX, Math.max(camShakeT, t));
+}
+
+try { best = parseInt(localStorage.getItem('sd_best')||'0',10)||0; }catch{}
+
+const hudScore = document.getElementById('scoreHud');
+const bestHud = document.getElementById('bestHud');
+const overlay = document.getElementById('uiOverlay');
+const musicToggle = document.getElementById('musicToggle');
+const infoToggle = document.getElementById('infoToggle');
+const homeBtn = document.getElementById('homeBtn');
+const msg = document.getElementById('msg');
+const hiLine = document.getElementById('hiLine');
+
+function formatHi(){ hiLine.textContent = best?`Best: ${best}`:''; bestHud.textContent = best?`Best: ${best}`:''; }
+
+function reset(){
+  ship.x = W*0.25; ship.y = H*0.5; ship.vy = 0;
+  obstacles.length=0; asteroids.length=0; bullets.length=0; score=0; spawnTimer=0; asteroidTimer=0; started=false; gameOver=false;
+  hudScore.textContent='0';
+  // stop thrust audio on reset
+  try{ cancelThrustFade(); cancelThrustFadeIn(); thrustSfx.pause(); thrustSfx.currentTime = 0; thrustSfx.volume = thrustBaseVol; thrustPlaying=false; }catch{}
+  effects.length = 0;
+  thrustWarmup = 0; ship._thrustActive = false;
+  // reset blackout items
+  flares = []; flareTimer = 0; flareBoost = 0;
+  // reset boss
+  bossActive = false; boss = null;
+  if (gameMode !== 'shooter'){ bossIndex = 0; nextBossAt = 100; }
+  if (gameMode==='dodge' || gameMode==='blackout') {
+    for (let i=0;i<6;i++) addObstacle(W + i* (PIPE_W*4.6));
+  }
+}
+
+function addObstacle(x){
+  // Base margins
+  let margin = Math.max(40, Math.min(140, H * 0.12));
+  const gapPx = Math.max(GAP, (ship.hitH||SHIP_H*0.55) * 1.4 + 32); // never less than safe minimum
+  let usableSpace = H - margin*2 - gapPx;
+  if (usableSpace < 10) { usableSpace = 10; }
+  const offsetGap = Math.random() * usableSpace;
+  let heightTop = Math.round(margin + offsetGap);
+  let heightBot = H - (heightTop + gapPx);
+  if (heightTop < 20) heightTop = 20;
+  if (heightBot < 20) { const diff = 20 - heightBot; heightBot = 20; heightTop = Math.max(20, heightTop - diff); }
+  obstacles.push({x, heightTop, heightBot, passed:false});
+}
+
+function spawnAsteroid(){
+  // random y inside screen (avoid edges a bit)
+  const y = Math.random()*(H-120)+60;
+  const vx = - (SPEED*0.6 + Math.random()*SPEED*0.4);
+  const vy = (Math.random()*60 - 30);
+  asteroids.push({ x: W + AST_SIZE, y, vx, vy, r: AST_SIZE*0.42, rot: Math.random()*Math.PI*2, vr:(Math.random()*2-1)*1.2 });
+}
+
+function startGame(){
+  if(started) return;
+  started=true; overlay.classList.add('hidden'); lastTime=performance.now(); startTime=lastTime;
+  // hide credit during gameplay
+  try{ document.getElementById('musicCredit').style.display = 'none'; }catch{}
+}
+function showGameOver(){
+    // reflect current mute state in the toggle
+    if (musicToggle){
+      const muted = bgm.muted || false;
+      musicToggle.setAttribute('aria-pressed', muted? 'true':'false');
+      musicToggle.textContent = muted? '🔇' : '🔊';
+      musicToggle.title = muted? 'Unmute music' : 'Mute music';
+    }
+  // Menu/lobby music
+  setBgmSource('spacedodgers_assets/prophecy.mp3');
+  overlay.classList.remove('hidden');
+  const headerGO = overlay.querySelector('h1');
+  if (headerGO){ headerGO.textContent='Game Over'; headerGO.style.display='block'; }
+  try{ const credit = document.getElementById('musicCredit'); if (credit) credit.style.display = 'block'; }catch{}
+  lastScore = score;
+  const tip = gameMode==='blackout' ? 'Tip: collect flares to widen your light.' : 'Tip: hold SPACE to control altitude.';
+  const bestLine = best?`<div class="statCard"><div class="label">Best</div><div class="value">${best}</div></div>`:'';
+  const modeName = gameMode.charAt(0).toUpperCase()+gameMode.slice(1);
+  msg.innerHTML = `
+    <div class="bigScore card">
+      <div class="label">Your Score</div>
+      <div class="value">${lastScore}${wasNewBest?'<span class="badge">New Best!</span>':''}</div>
+      <div class="sub">Mode: <b>${modeName}</b></div>
+    </div>
+    <div class="statsRow">
+      <div class="statCard"><div class="label">This Run</div><div class="value">${lastScore}</div></div>
+      ${bestLine}
+    </div>
+    <div class="howto card">
+      ${tip}
+      <ul>
+        <li>Press SPACE to fly. Press F or click to shoot.</li>
+        <li>Press 1 for Dodge (Normal/Blackout), 2 for Shooter.</li>
+      </ul>
+    </div>
+    <div class="btnRow">
+      <button id="startDodgeNormalBtn" class="pulse">Play Dodge (1)</button>
+      <button id="startShooterBtn" class="pulse">Play Shooter (2)</button>
+      <button id="startDodgeBlackoutBtn" class="pulse">Play Blackout (3)</button>
+    </div>
+    <div class="hint">Or press SPACE to start Dodge immediately.</div>
+    <span id="hiLine"></span>
+  `;
+  formatHi();
+  // wire buttons since we replaced innerHTML
+  const startShooterBtn = document.getElementById('startShooterBtn');
+  const startDodgeNormalBtn = document.getElementById('startDodgeNormalBtn');
+  const startDodgeBlackoutBtn = document.getElementById('startDodgeBlackoutBtn');
+  if (startShooterBtn) startShooterBtn.onclick = ()=>{ if(gameOver) { gameOver=false; } startMode('shooter'); };
+  if (startDodgeNormalBtn) startDodgeNormalBtn.onclick = ()=>{ if(gameOver) { gameOver=false; } startMode('dodge'); };
+  if (startDodgeBlackoutBtn) startDodgeBlackoutBtn.onclick = ()=>{ if(gameOver) { gameOver=false; } startMode('blackout'); };
+}
+function showStart(){
+  // Menu/lobby music
+  setBgmSource('spacedodgers_assets/prophecy.mp3');
+  overlay.classList.remove('hidden');
+  const headerStart = overlay.querySelector('h1');
+  if (headerStart) headerStart.style.display = 'none';
+  msg.innerHTML=`
+    <div class="hero">
+  <div class="pill">Best: <b>${best||0}</b> • <span class="kbd">1</span>/<span class="kbd">2</span>/<span class="kbd">3</span> to quick start</div>
+      <h2 class="logoText floaty">Space Dodgers</h2>
+      <div class="subtitle">Arcade flight. Neon skies. Three ways to survive.</div>
+    </div>
+
+    <div class="modeGrid">
+  <div class="modeCard" id="cardDodge">
+        <div class="modeTitle">🌀 Dodge</div>
+        <div class="modeDesc">Weave through skyscrapers. Classic side-scroll challenge.</div>
+        <div class="cardFooter">
+          <div>
+            <span class="kbd">1</span>
+          </div>
+          <div style="display:flex; gap:8px;">
+    <button class="miniBtn alt" id="startDodgeNormalBtn">Play Dodge</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="modeCard" id="cardShooter">
+        <div class="modeTitle">🔫 Shooter</div>
+        <div class="modeDesc">Hold SPACE to fly, click/F to fire. Boss every 100 points.</div>
+        <div class="cardFooter">
+          <div><span class="kbd">2</span></div>
+          <button class="miniBtn" id="startShooterBtn">Play Shooter</button>
+        </div>
+      </div>
+
+  <div class="modeCard" id="cardBlackout">
+        <div class="modeTitle">🌘 Blackout</div>
+        <div class="modeDesc">Fly by headlight in the dark. Collect flares to widen view.</div>
+        <div class="cardFooter">
+          <div><span class="kbd">3</span></div>
+          <button class="miniBtn alt" id="startBlackoutBtn">Play Blackout</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="footRow">
+      <span>Hold <span class="kbd">SPACE</span> to thrust</span>
+      <span>Press <span class="kbd">F</span> or click to shoot</span>
+    </div>
+
+    <span id="hiLine" style="display:none;"></span>
+  `;
+  formatHi();
+  // ensure credit visible on home
+  try{ const credit = document.getElementById('musicCredit'); if (credit) credit.style.display = 'block'; }catch{}
+  // wire buttons since we replaced innerHTML
+  const startShooterBtn = document.getElementById('startShooterBtn');
+  const startDodgeNormalBtn = document.getElementById('startDodgeNormalBtn');
+  const cardDodge = document.getElementById('cardDodge');
+  const cardShooter = document.getElementById('cardShooter');
+  const cardBlackout = document.getElementById('cardBlackout');
+  if (cardDodge) cardDodge.onclick = (e)=>{
+    // avoid double-start if sub-buttons clicked
+    if ((e.target && (e.target.id==='startDodgeNormalBtn'))) return;
+    startMode('dodge');
+  };
+  if (cardShooter) cardShooter.onclick = (e)=>{
+    if (e.target && e.target.id==='startShooterBtn'){ startMode('shooter'); return; }
+    startMode('shooter');
+  };
+  if (cardBlackout) cardBlackout.onclick = (e)=>{
+    if (e.target && e.target.id==='startBlackoutBtn'){ startMode('blackout'); return; }
+    startMode('blackout');
+  };
+  const startBlackoutBtn = document.getElementById('startBlackoutBtn');
+  if (startShooterBtn) startShooterBtn.onclick = ()=> startMode('shooter');
+  if (startDodgeNormalBtn) startDodgeNormalBtn.onclick = ()=> startMode('dodge');
+  if (startBlackoutBtn) startBlackoutBtn.onclick = ()=> startMode('blackout');
+}
+function startMode(mode){
+  gameMode=mode; try{ localStorage.setItem('sd_last_mode', mode); }catch{}
+  setBgmForMode(mode); reset(); startGame();
+}
+
+// Tap flap removed: ascent only via holding SPACE (continuous thrust)
+function flap(){ /* removed (Geometry Dash ship style uses hold) */ }
+function shoot(){
+  if(!started || gameOver) return;
+  const now = performance.now();
+  if(now - lastShotTime < SHOOT_COOLDOWN_MS) return;
+  lastShotTime = now;
+  // Aim bullets in the ship's facing direction (tilt by vertical velocity)
+  const angle = Math.max(-0.6, Math.min(0.6, ship.vy / 600));
+  const cos = Math.cos(angle), sin = Math.sin(angle);
+  const speed = BULLET_SPEED * (SCALE_X||1);
+  const noseX = ship.x + cos * (SHIP_W * 0.55);
+  const noseY = ship.y + sin * (SHIP_W * 0.55);
+  bullets.push({ x: noseX, y: noseY, vx: speed * cos, vy: speed * sin, life: 2.5 });
+  try{ shotSfx.volume = shotBaseVol; shotSfx.currentTime=0; shotSfx.play().catch(()=>{});}catch{}
+}
+
+// Simple explosion particle effect when an asteroid is destroyed
+function spawnExplosion(x, y, baseR){
+  const n = 14 + Math.floor(Math.random()*6);
+  const parts = [];
+  for (let i=0;i<n;i++){
+    const ang = Math.random()*Math.PI*2;
+    const spd = 80 + Math.random()*260;
+    parts.push({
+      x, y,
+      vx: Math.cos(ang)*spd*(SCALE_X||1),
+      vy: Math.sin(ang)*spd*(SCALE_Y||1) - 30,
+      r: Math.max(1.5, baseR*0.12*(0.6+Math.random()*0.9)),
+      life: 0.55 + Math.random()*0.25,
+      a: 1
+    });
+  }
+  effects.push({ type:'explosion', parts });
+  addShake(Math.min(10, Math.max(4, baseR*0.05)), 0.08);
+}
+
+function updateEffects(dt){
+  const next=[];
+  for (const e of effects){
+    if (e.type==='explosion'){
+      for (const p of e.parts){
+        p.x += p.vx*dt; p.y += p.vy*dt;
+        // slight drag and fade
+        p.vx *= 0.98; p.vy = p.vy*0.985 + 30*dt;
+        p.life -= dt; p.a = Math.max(0, p.life/0.6);
+      }
+      e.parts = e.parts.filter(p=> p.life>0);
+      if (e.parts.length){ next.push(e); }
+    }
+  }
+  effects = next;
+}
+
+function drawEffects(){
+  for (const e of effects){
+    if (e.type==='explosion'){
+      ctx.save();
+      for (const p of e.parts){
+        ctx.fillStyle = `rgba(255,200,120,${p.a.toFixed(3)})`;
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
+      }
+      ctx.restore();
+    }
+  }
+}
+
+function update(dt){
+  if(!started || gameOver) return;
+  // Physics (reduced gravity until first actual flap to avoid big early floor bounce)
+  // Geometry Dash ship style: constant gravity + upward thrust while held.
+  const GRAV_A = GRAVITY * 1.25; // stronger gravity for faster fall
+  const THRUST_A = Math.abs(FLAP_V) * 8.6; // stronger upward force for faster climb
+  const DRAG   = 0.035; // slightly less damping to help ascent
+  ship.vy += GRAV_A * dt;
+  if (holdThrust){
+    // Smooth thrust ramp to avoid a sudden spike
+    thrustEngage += dt / 0.2; // ~200ms to full thrust
+    if (thrustEngage > 1) thrustEngage = 1;
+    // apply continuous thrust scaled by ramp
+    ship.vy -= THRUST_A * thrustEngage * dt;
+    // ensure audio is playing (skip intro)
+    if(!thrustPlaying || thrustSfx.paused){ startThrustAudio(); }
+  } else {
+    ship._thrustActive = false; thrustWarmup = 0; thrustEngage = 0;
+    if(thrustPlaying){ fadeOutThrustAudio(240); }
+  }
+  // apply drag to smooth extremes
+  ship.vy *= (1 - DRAG);
+  ship.y += ship.vy*dt;
+  const rHalf = (ship.hitH||SHIP_H*0.55) * 0.5;
+  // Clamp top (no death)
+  if (ship.y < rHalf) { ship.y = rHalf; if (ship.vy < 0) ship.vy = 0; }
+  // Bottom: optionally kill, otherwise bounce/stop
+  if (ship.y > H - rHalf) {
+    ship.y = H - rHalf - 0.5; // slight offset to avoid re-trigger accumulation
+    if (settings.floorKills) {
+      die('floor');
+    } else if (ship.vy > 0) {
+      ship.vy = 0; // hard stop, no bounce
+    }
+  }
+
+  // Clamp extreme vertical velocity (prevents any sudden large launches that might zip off-screen visually)
+  const maxVy = Math.abs(FLAP_V) * 3.6 + GRAVITY * 0.45; // allow faster upward speed before clamping
+  if (ship.vy > maxVy) ship.vy = maxVy;
+  if (ship.vy < -maxVy) ship.vy = -maxVy;
+
+  if (gameMode==='dodge' || gameMode==='blackout'){
+      const dx = SPEED * dt;
+      for (const o of obstacles) { o.x -= dx; }
+      if (obstacles.length) {
+        const last = obstacles[obstacles.length - 1];
+        if (last.x < W - PIPE_W * 4.2) addObstacle(last.x + PIPE_W * 4.2);
+      }
+      while (obstacles.length && obstacles[0].x < -PIPE_W - 10) obstacles.shift();
+      for (const o of obstacles) { if (!o.passed && ship.x > o.x + PIPE_W) { o.passed = true; score++; hudScore.textContent = score; } }
+  }
+
+  // Asteroids (reduced density to make it easier)
+    asteroidTimer += dt;
+    const asteroidInterval = gameMode==='shooter' ? 0.6 : (gameMode==='blackout' ? 2.0 : 3.2);
+    if (asteroidTimer > asteroidInterval){
+      asteroidTimer=0;
+      if (gameMode==='shooter'){
+        if (!bossActive){
+          // Lighter density: 1-2 most of the time, rarely 3
+          spawnAsteroid();
+          if (Math.random()<0.3) spawnAsteroid();
+          if (Math.random()<0.05) spawnAsteroid();
+        }
+      } else if (gameMode==='blackout'){
+        // Gentle density in blackout
+        spawnAsteroid(); if (Math.random() < 0.15) spawnAsteroid();
+      } else if (Math.random() < 0.35) {
+        spawnAsteroid();
+      }
+  }
+  for (const a of asteroids){ a.x += a.vx*dt; a.y += a.vy*dt; a.rot += a.vr*dt; }
+  asteroids = asteroids.filter(a=> a.x > -AST_SIZE*2 && a.y>-AST_SIZE && a.y < H+AST_SIZE);
+  // Hard fail-safe: if ship leaves plausible area or becomes invalid, recenter
+  if(!Number.isFinite(ship.y) || ship.y < -400 || ship.y > H + 400){ ship.y = H*0.5; ship.vy = 0; }
+
+  // Collisions - tilted ship (OBB) vs pipes (AABB columns)
+  if (gameMode==='dodge' || gameMode==='blackout'){
+    const halfW = (ship.hitW||SHIP_W*0.65)*0.5;
+    const halfH = (ship.hitH||SHIP_H*0.55)*0.5;
+    const tilt = getShipTilt();
+    for (const o of obstacles){
+      const ox1 = o.x + PIPE_HIT_INSET, ox2 = o.x + PIPE_W - PIPE_HIT_INSET;
+      // Top column
+      if (obbAabbIntersect(ship.x, ship.y, halfW, halfH, tilt, ox1, 0, ox2, o.heightTop)) { die('obstacle'); break; }
+      // Bottom column
+      const bY = H - o.heightBot;
+      if (obbAabbIntersect(ship.x, ship.y, halfW, halfH, tilt, ox1, bY, ox2, H)) { die('obstacle'); break; }
+    }
+  }
+  // Bullets are active in both modes now (move in 2D and decay life)
+  for (const b of bullets){ b.x += b.vx*dt; b.y += (b.vy||0)*dt; if (b.life!=null) b.life -= dt; }
+  // Bullet vs asteroid (circle vs point approximation) with explosion effect (and boss hits)
+  const remainingAst=[];
+  for (const a of asteroids){
+    let hit=false;
+    for (const b of bullets){
+      if(!b.gone){ const dxB=b.x - a.x, dyB=b.y - a.y; if(dxB*dxB + dyB*dyB < a.r*a.r){ hit=true; b.gone=true; score++; hudScore.textContent=score; spawnExplosion(a.x,a.y,a.r); break; } }
+    }
+    if(!hit) remainingAst.push(a);
+  }
+  asteroids = remainingAst;
+  // Boss spawn and update (shooter)
+  if (gameMode==='shooter'){
+    if (!bossActive && score >= nextBossAt){
+      // Spawn a big asteroid boss
+      bossActive = true;
+      const baseR = AST_SIZE * 1.8;
+      const hp = 20 + bossIndex * 20;
+      boss = { x: W + baseR + 40, y: H*0.5, r: baseR, hp, maxHp: hp, vx: -SPEED*0.4, vy: 0, rot: 0, throwTimer: 0, throwEvery: 1.2, bobPhase: 0 };
+      // Clear existing small asteroids to focus on boss
+      asteroids = [];
+    }
+    if (bossActive && boss){
+      // movement: drift left then hover near 70% width, slow bob up/down
+      boss.x += boss.vx * dt; boss.y += boss.vy * dt; boss.rot += 0.4*dt; boss.bobPhase += dt;
+      const targetX = W * 0.72;
+      if (boss.x < targetX){ boss.vx = 0; boss.x = targetX; }
+      if (boss.vx === 0){ boss.y += Math.sin(boss.bobPhase*1.2) * 30 * dt; }
+      // Throw smaller asteroids at player; disable normal spawns already above
+      boss.throwTimer += dt;
+      const cadence = boss.throwEvery * Math.max(0.5, 1 - bossIndex*0.08);
+      if (boss.throwTimer > cadence){
+        boss.throwTimer = 0;
+        // aim roughly towards ship with some spread
+        const angle = Math.atan2(ship.y - boss.y, (ship.x+80) - boss.x) + (Math.random()*0.4 - 0.2);
+        const spd = SPEED * (0.8 + Math.random()*0.6);
+        // same hitbox as regular asteroids
+        const r = AST_SIZE * 0.42;
+        asteroids.push({ x: boss.x - boss.r*0.6, y: boss.y, vx: Math.cos(angle)*spd, vy: Math.sin(angle)*spd, r, rot: 0, vr:(Math.random()*2-1)*1.5 });
+      }
+      // bullets hit boss (circle vs point)
+      for (const b of bullets){
+        if(!b.gone){ const dx=b.x-boss.x, dy=b.y-boss.y; if(dx*dx+dy*dy < boss.r*boss.r){ b.gone=true; boss.hp -= 1; if (boss.hp <= 0){
+              // boss defeated
+              spawnExplosion(boss.x,boss.y,boss.r);
+              score += 20; hudScore.textContent = score;
+              bossActive=false; boss=null; bossIndex++; nextBossAt += 100; // next threshold
+              // brief grace: clear bullets and any remaining boss-thrown asteroids
+              bullets = bullets.filter(bb=>!bb.gone);
+              asteroids = [];
+              break;
+            } }
+        }
+      }
+    }
+  }
+  bullets = bullets.filter(b=> !b.gone && b.x < W+200 && b.x > -200 && b.y > -200 && b.y < H+200 && (b.life==null || b.life>0));
+  // Ship dies if it hits any remaining asteroid/boss (OBB-circle)
+  {
+    const halfW = (ship.hitW||SHIP_W*0.65)*0.5;
+    const halfH = (ship.hitH||SHIP_H*0.55)*0.5;
+    const tilt = getShipTilt();
+    for (const a of asteroids){
+      if (obbCircleIntersect(ship.x, ship.y, halfW, halfH, tilt, a.x, a.y, a.r)) { die('asteroid'); break; }
+    }
+    if (gameMode==='shooter' && bossActive && boss){
+      if (obbCircleIntersect(ship.x, ship.y, halfW, halfH, tilt, boss.x, boss.y, boss.r)) { die('asteroid'); }
+    }
+  }
+  // Update effects
+  updateEffects(dt);
+  // camera shake decay
+  if (camShakeT > 0){ camShakeT = Math.max(0, camShakeT - dt); camShakeMag *= 0.85; }
+
+  // Blackout systems
+  if (gameMode==='blackout'){
+    // flare spawn
+    flareTimer += dt;
+    const flareInterval = 2.5 + Math.random()*2.0; // 2.5-4.5s
+    if (flareTimer > flareInterval){
+      flareTimer = 0;
+      const fy = Math.random()*(H-160)+80;
+      const fx = W + 40;
+      const vr = 30 + Math.random()*30;
+      flares.push({ x:fx, y:fy, r: 12 + Math.random()*8, vx: -(SPEED*0.9 + Math.random()*SPEED*0.4), a:1, rot:0, vr: (Math.random()<0.5?-1:1)*vr });
+    }
+    for (const f of flares){ f.x += f.vx*dt; f.rot += f.vr*dt; }
+    // collect flare (OBB-circle)
+    const nf=[];
+    for (const f of flares){
+      const halfW = (ship.hitW||SHIP_W*0.65)*0.5;
+      const halfH = (ship.hitH||SHIP_H*0.55)*0.5;
+      const tilt = getShipTilt();
+      if (obbCircleIntersect(ship.x, ship.y, halfW, halfH, tilt, f.x, f.y, f.r)){
+        flareBoost = Math.min(1, flareBoost + 0.75);
+        score += 2; hudScore.textContent = score;
+      } else if (f.x > -40) nf.push(f);
+    }
+    flares = nf;
+    // decay boost
+    if (flareBoost > 0){ flareBoost = Math.max(0, flareBoost - flareBoostDecay * dt); }
+  // (no lightning in space)
+  }
+}
+function die(reason){
+  if(gameOver) return; gameOver=true;
+  addShake(12, 0.12);
+  try{ cancelThrustFade(); if(thrustPlaying){ thrustSfx.pause(); thrustPlaying=false; } thrustSfx.volume = thrustBaseVol; }catch{}
+  try{ crashSfx.currentTime=0; crashSfx.play().catch(()=>{});}catch{}
+  wasNewBest = false;
+  if(score>best){ best=score; wasNewBest = true; try{ localStorage.setItem('sd_best', best); }catch{} }
+  showGameOver();
+}
+
+function draw(){
+  // space background gradient
+  const g = ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#040d22'); g.addColorStop(1,'#090212'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+  // camera shake
+  if (camShakeT > 0){
+    const k = camShakeT; // already decaying in update
+    const dx = (Math.random()*2-1) * camShakeMag * k;
+    const dy = (Math.random()*2-1) * camShakeMag * k;
+    ctx.save(); ctx.translate(dx, dy);
+  } else {
+    ctx.save();
+  }
+  // stars + shooting stars
+  drawBackground();
+
+  // Note: flares will be drawn under the darkness mask later for better realism
+
+  // pipes / skyscrapers
+  for (const o of obstacles){
+    ctx.save();
+    ctx.shadowColor='#1e90ff'; ctx.shadowBlur=12;
+    // top
+  if (isReady(imgSkyscraper)) { ctx.drawImage(imgSkyscraper, o.x, 0, PIPE_W, o.heightTop); }
+  else { ctx.fillStyle='#1e90ff'; ctx.fillRect(o.x,0,PIPE_W,o.heightTop); }
+    // bottom
+    const bY = H - o.heightBot;
+  if (isReady(imgSkyscraper)) { ctx.drawImage(imgSkyscraper, o.x, bY, PIPE_W, o.heightBot); }
+  else { ctx.fillStyle='#1e90ff'; ctx.fillRect(o.x,bY,PIPE_W,o.heightBot); }
+    ctx.restore();
+  }
+
+  // asteroids
+  for (const a of asteroids){
+    ctx.save(); ctx.translate(a.x,a.y); ctx.rotate(a.rot); ctx.shadowColor='#fff'; ctx.shadowBlur=8;
+  if (isReady(imgAsteroid)) { ctx.drawImage(imgAsteroid, -AST_SIZE/2, -AST_SIZE/2, AST_SIZE, AST_SIZE); }
+  else { ctx.fillStyle='#bbb'; ctx.beginPath(); ctx.arc(0,0,AST_SIZE/2,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#444'; ctx.font='10px monospace'; ctx.fillText('A?',-8,4); }
+    ctx.restore();
+  }
+
+  // boss asteroid (shooter)
+  if (gameMode==='shooter' && bossActive && boss){
+    ctx.save(); ctx.translate(boss.x,boss.y); ctx.rotate(boss.rot); ctx.shadowColor='#fff'; ctx.shadowBlur=16;
+    if (isReady(imgBoss)){
+      const d = boss.r*2; ctx.drawImage(imgBoss, -boss.r, -boss.r, d, d);
+    } else {
+      ctx.fillStyle='#cfcfcf'; ctx.beginPath(); ctx.arc(0,0,boss.r,0,Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+    // HP bar
+    const barW = 220, barH = 10; const hpK = Math.max(0, boss.hp)/boss.maxHp;
+    const bx = Math.min(Math.max(20,boss.x - barW/2), W - barW - 20);
+    const by = Math.max(20, boss.y - boss.r - 24);
+    ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillRect(bx,by,barW,barH);
+    ctx.fillStyle='#00ff66'; ctx.fillRect(bx,by,barW*hpK,barH);
+    ctx.strokeStyle='rgba(255,255,255,0.8)'; ctx.strokeRect(bx,by,barW,barH);
+  }
+
+  // explosion effects
+  drawEffects();
+
+  // bullets (both modes) — neon green with glow
+  ctx.save();
+  ctx.fillStyle = '#00ff88';
+  ctx.shadowColor = '#00ff88';
+  ctx.shadowBlur = 12;
+  for (const b of bullets){
+    const ang = Math.atan2(b.vy||0, b.vx||1);
+    ctx.save();
+    ctx.translate(b.x, b.y);
+    ctx.rotate(ang);
+    ctx.fillRect(-6, -2, 14, 4);
+    ctx.restore();
+  }
+  ctx.restore();
+  // ship
+  ctx.save(); ctx.translate(ship.x, ship.y); const tilt = Math.max(-0.6, Math.min(0.6, ship.vy / 600)); ctx.rotate(tilt);
+  if (isReady(imgShip)) { ctx.drawImage(imgShip, -SHIP_W/2, -SHIP_H/2, SHIP_W, SHIP_H); }
+  else { ctx.fillStyle='#4da7ff'; ctx.beginPath(); ctx.ellipse(0,0,SHIP_W/2,SHIP_H/2,0,0,Math.PI*2); ctx.fill(); }
+  // DEBUG: uncomment to visualize collision circle
+  // // Hitbox visual (local ship space):
+  // ctx.strokeStyle='rgba(255,0,0,0.5)'; ctx.strokeRect(- (ship.hitW||SHIP_W*0.65)/2, - (ship.hitH||SHIP_H*0.55)/2, (ship.hitW||SHIP_W*0.65), (ship.hitH||SHIP_H*0.55));
+  ctx.restore();
+
+  // Draw flares and then an opaque darkness mask with a forward-facing cone headlight
+  if (gameMode==='blackout'){
+    // flares as additive glow beneath the mask
+    ctx.save();
+    ctx.globalCompositeOperation = 'lighter';
+    for (const f of flares){
+      const rad = f.r * 2.2;
+      const gr = ctx.createRadialGradient(f.x, f.y, 0, f.x, f.y, rad);
+      gr.addColorStop(0, 'rgba(255,220,120,0.95)');
+      gr.addColorStop(0.6, 'rgba(255,180,80,0.45)');
+      gr.addColorStop(1, 'rgba(255,160,80,0)');
+      ctx.fillStyle = gr;
+      ctx.beginPath(); ctx.arc(f.x, f.y, rad, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = 'rgba(255,240,180,0.9)';
+      ctx.beginPath(); ctx.arc(f.x, f.y, f.r*0.6, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+
+  // Build darkness mask in offscreen canvas and overlay it
+  ensureMask();
+  maskCtx.save();
+  maskCtx.clearRect(0,0,W,H);
+  maskCtx.fillStyle = 'rgba(0,0,0,1)';
+  maskCtx.fillRect(0,0,W,H);
+
+  // Headlight cone parameters (narrow near, wider far like a real flashlight)
+  const baseLen = 640; // beam length (bigger view)
+  const extraLen = 640 * (0.25 + 0.75 * flareBoost);
+  const len = baseLen + extraLen;
+  const nearHalfBase = 28, nearHalfExtra = 52; // slightly wider near ship
+  const farHalfBase = 200, farHalfExtra = 300;  // wider far away
+  const nearHalf = nearHalfBase + nearHalfExtra * (0.25 + 0.75 * flareBoost);
+  const farHalf  = farHalfBase  + farHalfExtra  * (0.25 + 0.75 * flareBoost);
+    // Ship direction: look slightly forward-right (like flying right)
+    const angle = Math.atan2(ship.vy, SPEED) * 0.15; // mostly forward with small tilt by vy
+
+    // Compute cone polygon
+    const sx = ship.x, sy = ship.y;
+    const dx = Math.cos(angle), dy = Math.sin(angle);
+    // Perpendicular for width
+    const px = -dy, py = dx;
+  const noseX = sx + dx * Math.max(18, SHIP_W*0.45);
+  const noseY = sy;
+  const tipX = sx + dx * len, tipY = sy + dy * len;
+  // near segment (small width near the ship)
+  const nLeftX = noseX + px * nearHalf, nLeftY = noseY + py * nearHalf;
+  const nRightX = noseX - px * nearHalf, nRightY = noseY - py * nearHalf;
+  // far segment (larger width at the tip)
+  const fLeftX = tipX + px * farHalf, fLeftY = tipY + py * farHalf;
+  const fRightX = tipX - px * farHalf, fRightY = tipY - py * farHalf;
+
+  maskCtx.globalCompositeOperation = 'destination-out';
+  // Cut a soft cone by drawing a trapezoid (narrow near, wide far) with a fade towards the tip
+  const coneGrad = maskCtx.createLinearGradient(noseX, noseY, tipX, tipY);
+    coneGrad.addColorStop(0, 'rgba(0,0,0,1)');
+  coneGrad.addColorStop(0.16, 'rgba(0,0,0,0.82)');
+    coneGrad.addColorStop(1, 'rgba(0,0,0,0)');
+  maskCtx.fillStyle = coneGrad;
+  maskCtx.beginPath();
+  maskCtx.moveTo(nLeftX, nLeftY);
+  maskCtx.lineTo(nRightX, nRightY);
+  maskCtx.lineTo(fRightX, fRightY);
+  maskCtx.lineTo(fLeftX, fLeftY);
+  maskCtx.closePath();
+  maskCtx.fill();
+
+  // Remove near-circle; only the cone reveals
+
+    maskCtx.restore();
+    // Overlay mask on scene
+    ctx.drawImage(maskCvs, 0, 0);
+
+  // Redraw ship on top of darkness so it's always visible
+  ctx.save();
+  ctx.translate(ship.x, ship.y);
+  const tiltTop = Math.max(-0.6, Math.min(0.6, ship.vy / 600));
+  ctx.rotate(tiltTop);
+  if (isReady(imgShip)) { ctx.drawImage(imgShip, -SHIP_W/2, -SHIP_H/2, SHIP_W, SHIP_H); }
+  else { ctx.fillStyle='#4da7ff'; ctx.beginPath(); ctx.ellipse(0,0,SHIP_W/2,SHIP_H/2,0,0,Math.PI*2); ctx.fill(); }
+  ctx.restore();
+  }
+  // debug hitbox drawing removed for release
+
+  // end of camera shake
+  ctx.restore();
+}
+
+function loop(now){
+  if(!lastTime) lastTime=now;
+  let rawDt = (now-lastTime)/1000;
+  if (rawDt > 0.25) rawDt = 0.016; // clamp big pause
+  const dt = Math.min(0.05, rawDt);
+  lastTime=now;
+  updateBackground(dt); update(dt); draw();
+  requestAnimationFrame(loop);
+}
+
+function primaryAction(){
+  if(gameOver){ showStart(); return; }
+  if(!started){ gameMode='dodge'; startMode('dodge'); return; }
+  // no single-tap flap; user must hold SPACE
+}
+
+// Input
+addEventListener('keydown', e=>{
+  const isSpace = e.code==='Space' || e.key===' ' || e.key==='Spacebar' || e.keyCode===32;
+  if(isSpace){
+    if(!started){ gameMode='dodge'; startMode('dodge'); }
+    holdThrust = true; e.preventDefault();
+  // start audio immediately (skipping first second)
+  ship._thrustActive = false;
+  if(!thrustPlaying || thrustSfx.paused){ startThrustAudio(); }
+  }
+  if (e.code==='KeyI'){
+    e.preventDefault();
+    if (document.getElementById('infoModal')?.classList.contains('open')) closeInfo(); else openInfo();
+  }
+  if (e.key === 'Escape'){
+    if (document.getElementById('infoModal')?.classList.contains('open')) closeInfo();
+  }
+  // mode shortcuts when overlay visible
+  if (!started || gameOver){
+    if (e.key==='1'){ gameMode='dodge'; startMode('dodge'); }
+    if (e.key==='2'){ gameMode='shooter'; startMode('shooter'); }
+    if (e.key==='3'){ gameMode='blackout'; startMode('blackout'); }
+  }
+  // hitbox debug key removed for release
+  if(e.code==='KeyF'){ shoot(); }
+});
+addEventListener('keyup', e=>{
+  const isSpace = e.code==='Space' || e.key===' ' || e.key==='Spacebar' || e.keyCode===32;
+  if(isSpace){ holdThrust = false; thrustWarmup = 0; ship._thrustActive = false; if(thrustPlaying){ fadeOutThrustAudio(220); } }
+});
+let pointerHeld=false; // no longer used for thrust; kept for potential future use
+addEventListener('pointerdown', e=>{
+  if(!started){ return; }
+  if(gameOver){ return; }
+  // Mouse/touch no longer controls thrust. It only shoots now (both modes).
+  e.preventDefault();
+  shoot();
+});
+addEventListener('pointerup', ()=>{ /* no-op for thrust */ });
+addEventListener('pointerleave', ()=>{ /* no-op for thrust */ });
+// Buttons are dynamically added in showStart/showGameOver and wired there.
+// Music toggle
+if (musicToggle){
+  musicToggle.addEventListener('click', ()=>{
+    try{
+      bgm.muted = !bgm.muted;
+      musicToggle.setAttribute('aria-pressed', bgm.muted? 'true':'false');
+      musicToggle.textContent = bgm.muted? '🔇' : '🔊';
+      musicToggle.title = bgm.muted? 'Unmute music' : 'Mute music';
+  try{ localStorage.setItem('sd_music_muted', bgm.muted ? '1' : '0'); }catch{}
+      // If just unmuted and paused due to policy, try play
+      if (!bgm.muted && bgm.paused){ startBgm(); }
+    }catch{}
+  });
+}
+
+// Home button
+if (homeBtn) homeBtn.addEventListener('click', () => {
+  // If a run is active, confirm before leaving
+  if (started && !gameOver) {
+    const leave = confirm('Leave the game and go to the homepage? Your current run will be lost.');
+    if (!leave) return;
+  }
+  window.location.href = 'index.html';
+});
+
+// Info modal
+const infoModal = document.getElementById('infoModal');
+const infoCloseBtn = document.getElementById('infoCloseBtn');
+function openInfo(){ if (!infoModal) return; infoModal.classList.add('open'); infoModal.setAttribute('aria-hidden','false'); }
+function closeInfo(){ if (!infoModal) return; infoModal.classList.remove('open'); infoModal.setAttribute('aria-hidden','true'); }
+if (infoToggle) infoToggle.addEventListener('click', ()=>{ if (infoModal?.classList.contains('open')) closeInfo(); else openInfo(); });
+if (infoCloseBtn) infoCloseBtn.addEventListener('click', closeInfo);
+if (infoModal) infoModal.querySelector('.backdrop')?.addEventListener('click', closeInfo);
+
+// Reset timing after visibility change so we don't accumulate giant dt
+document.addEventListener('visibilitychange', ()=>{
+  if (!document.hidden) { lastTime = performance.now(); }
+  if (document.hidden){
+    // On hide, force thrust off and stop audio cleanly
+    holdThrust = false; thrustWarmup = 0; ship._thrustActive = false;
+    try{ cancelThrustFade(); cancelThrustFadeIn(); thrustSfx.pause(); thrustPlaying=false; thrustSfx.volume = thrustBaseVol; }catch{}
+  }
+});
+// Also clear held state if window loses focus (prevents stuck keys)
+addEventListener('blur', ()=>{
+  holdThrust = false; thrustWarmup = 0; ship._thrustActive = false;
+  try{ cancelThrustFade(); cancelThrustFadeIn(); thrustSfx.pause(); thrustPlaying=false; thrustSfx.volume = thrustBaseVol; }catch{}
+});
+
+// Init
+// Restore music mute, last mode, and hitbox toggle state
+try{
+  const m = localStorage.getItem('sd_music_muted');
+  if (m === '1') bgm.muted = true;
+  musicToggle?.setAttribute('aria-pressed', bgm.muted? 'true':'false');
+  if (musicToggle){ musicToggle.textContent = bgm.muted? '🔇' : '🔊'; musicToggle.title = bgm.muted? 'Unmute music' : 'Mute music'; }
+  const lastMode = localStorage.getItem('sd_last_mode');
+  if (lastMode === 'dodge' || lastMode === 'shooter' || lastMode === 'blackout'){ gameMode = lastMode; }
+  // hitbox debug state removed for release
+}catch{}
+resize(); reset(); formatHi(); showStart(); requestAnimationFrame(loop);
+// Try to autoplay background music on load; if blocked, start on first interaction
+startBgm();
+// Ensure credit matches initial track
+try{ setMusicCreditFromSrc(bgm.src || 'spacedodgers_assets/prophecy.mp3'); }catch{}
+['pointerdown','keydown'].forEach(evt=>{
+  addEventListener(evt, function once(){
+    if (bgm.paused) startBgm();
+    removeEventListener(evt, once);
+  }, { once:true });
+});
+
+</script>
+</body>
+</html>
