@@ -162,7 +162,7 @@
   <button id="musicToggle" title="Mute music" aria-pressed="false">🔊</button>
   <button id="infoToggle" title="Info and credits" aria-pressed="false">i</button>
   <button id="homeBtn" title="Go to homepage" aria-label="Go to homepage">Home</button>
-  <a id="downloadBtn" href="https://github.com/julianfk2013/julken.org/releases/latest/download/Space-Dodgers-Setup-1.1.0.exe" download title="Download the EXE version">Download</a>
+  <a id="downloadBtn" href="https://github.com/julianfk2013/julken.org/releases/latest/download/Space-Dodgers-Setup.exe" download title="Download the EXE version">Download</a>
 <div id="uiOverlay" class="fade-enter">
   <h1>Space Dodger</h1>
   <p id="msg">Hold SPACE to thrust up (both modes).<br/>Shooter: click / F to fire at asteroids.<br/><span id="hiLine"></span></p>
@@ -186,7 +186,7 @@
         <button class="closeSmall" data-close="lag">×</button>
       <h2>Get the Faster Version</h2>
       <p>Web version may be laggy on some devices. Download the Windows EXE for smoother play.</p>
-  <a id="lagDlLink" href="https://github.com/julianfk2013/julken.org/releases/latest/download/Space-Dodgers-Setup-1.1.0.exe" class="dlBtn" download>Download EXE</a>
+  <a id="lagDlLink" href="https://github.com/julianfk2013/julken.org/releases/latest/download/Space-Dodgers-Setup.exe" class="dlBtn" download>Download EXE</a>
       <div class="warn">Windows might show a SmartScreen warning (it doesn't know the file yet). The file is safe – choose More Info → Run anyway.</div>
       </div>
     </div>
@@ -1697,7 +1697,8 @@ document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && lagNotice?.cl
 
 // Auto prompt once after small delay (only first visit)
 try{
-  setTimeout(()=>{ openLagNotice(); }, 3000);
+  // Show download popup immediately on load (no delay / info click needed)
+  requestAnimationFrame(()=> openLagNotice());
 }catch{}
 
 // Info modal
