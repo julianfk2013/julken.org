@@ -1,27 +1,43 @@
-const { app, BrowserWindow } = require('electron');
+const { app, BrowserWindow, dialog } = require('electron');
+const path = require('path');
+const { autoUpdater } = require('electron-updater');
 
 function createWindow() {
   const win = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1280,
+    height: 720,
+    icon: path.join(__dirname, 'build', 'spacedodgers-icon.ico'),
     webPreferences: { nodeIntegration: false, contextIsolation: true },
-    title: "Space Dodgers Test"
+    title: 'Space Dodgers'
   });
+  win.loadFile(path.join(__dirname, 'app', 'spacedodgers.html'));
+}
 
-  // TEST: just show a message instead of loading your game
-  win.loadURL('data:text/html,<h1 style="font-family:sans-serif">Space Dodgers test ✅</h1>');
+function setupAutoUpdates() {
+  autoUpdater.autoDownload = true;                 // download updates in background
+  autoUpdater.checkForUpdatesAndNotify();          // shows OS toast when ready
 
-  // Optional: show DevTools so you can see console if needed
-  win.webContents.openDevTools();
+  autoUpdater.on('update-available', () => console.log('Update available…'));
+  autoUpdater.on('update-not-available', () => console.log('No update.'));
+  autoUpdater.on('error', (e) => console.error('Updater error:', e));
+  autoUpdater.on('download-progress', (p) => console.log(`DL ${Math.round(p.percent)}%`));
+  autoUpdater.on('update-downloaded', () => {
+    const choice = dialog.showMessageBoxSync({
+      type: 'question',
+      buttons: ['Restart now', 'Later'],
+      defaultId: 0,
+      cancelId: 1,
+      title: 'Update ready',
+      message: 'A new version is ready. Restart now to install?'
+    });
+    if (choice === 0) autoUpdater.quitAndInstall();
+  });
 }
 
 app.whenReady().then(() => {
   createWindow();
-  app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
-  });
+  setupAutoUpdates();
+  setInterval(() => autoUpdater.checkForUpdates(), 4 * 60 * 60 * 1000); // re-check every 4h
 });
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') app.quit();
-});
+app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });

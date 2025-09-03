@@ -143,6 +143,17 @@
     #uiOverlay .subtitle { display:none; }
     #uiOverlay .hero { gap:4px; }
   }
+  /* Rift help overlay */
+  #riftHelp { position:fixed; inset:0; display:none; align-items:flex-start; justify-content:center; padding-top:60px; z-index:50; }
+  #riftHelp.open { display:flex; }
+  #riftHelp .backdrop { position:absolute; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); }
+  #riftHelp .panel { position:relative; z-index:1; width:min(94vw,640px); background:rgba(12,22,44,0.92); border:1px solid rgba(90,180,255,0.4); border-radius:18px; padding:26px 30px 34px; box-shadow:0 0 40px -6px rgba(90,180,255,0.7), 0 0 120px -30px rgba(90,180,255,0.8); }
+  #riftHelp h2 { margin:0 0 12px; font-family:'Audiowide',system-ui,sans-serif; letter-spacing:.06em; font-size:1.6rem; background:linear-gradient(120deg,#9be1ff,#4da7ff,#7d8bff); -webkit-background-clip:text; background-clip:text; color:transparent; }
+  #riftHelp ul { margin:10px 0 14px; padding-left:18px; line-height:1.4; font-size:14px; }
+  #riftHelp p { line-height:1.4; font-size:14px; }
+  #riftHelp .btnRow { display:flex; gap:12px; flex-wrap:wrap; margin-top:4px; }
+  #riftHelp button { font-size:14px; padding:10px 18px; border-radius:10px; font-weight:600; }
+  #riftHelp .closeX { position:absolute; top:10px; right:10px; background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.25); color:#fff; width:38px; height:38px; border-radius:12px; cursor:pointer; font-size:16px; }
 </style>
 </head>
 <body>
@@ -153,7 +164,7 @@
   <button id="homeBtn" title="Go to homepage" aria-label="Go to homepage">Home</button>
   <a id="downloadBtn" href="https://github.com/julianfk2013/julken.org/releases/download/v1.0.0/Space.Dodgers.Setup.1.0.0.exe" download title="Download the EXE version">Download</a>
 <div id="uiOverlay" class="fade-enter">
-  <h1>Space Dodgers</h1>
+  <h1>Space Dodger</h1>
   <p id="msg">Hold SPACE to thrust up (both modes).<br/>Shooter: click / F to fire at asteroids.<br/><span id="hiLine"></span></p>
 </div>
 <div id="musicCredit">Music: Creo - Flux</div>
@@ -190,6 +201,27 @@
     </div>
   </div>
   </div>
+<!-- Rift Help Modal -->
+<div id="riftHelp" aria-hidden="true">
+  <div class="backdrop" data-close="rift"></div>
+  <div class="panel">
+    <button class="closeX" data-close="rift" title="Close">×</button>
+    <h2>Rift Runner</h2>
+    <p>Maintain <strong>Stability</strong> by flying through rift gates. Centered passes give big boosts. Miss too many and reality collapses.</p>
+    <ul>
+      <li>Center gate: +20 Stability & 3 score.</li>
+      <li>Near ring: +10 Stability & 1 score.</li>
+      <li>Far off: -25 Stability.</li>
+      <li>Constant drain over time. 0 = collapse.</li>
+      <li>Rift Shards (coming soon) slow time.</li>
+    </ul>
+    <p style="font-size:12px; opacity:0.75;">Tip: Make tiny corrections; anticipate gate alignment.</p>
+    <div class="btnRow">
+      <button id="startRiftRunBtn" style="background:#2d70ff; border:none; color:#fff;">Start Run</button>
+      <button id="closeRiftBtn" style="background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.25); color:#fff;">Maybe Later</button>
+    </div>
+  </div>
+</div>
 <script>
 // --- Config & State ---
 const cvs = document.getElementById('game');
@@ -208,6 +240,7 @@ function ensureMask(){
 const settings = { floorKills:false };
 // Hitbox debug removed for release
 let gameMode = 'dodge'; // 'dodge' | 'shooter' | 'blackout'
+// Added new mode 'rift' (Rift Runner)
 // Shooter boss state
 let bossActive = false;
 let boss = null; // {x,y,r,hp,maxHp,vx,vy,rot,throwTimer,throwEvery,bobPhase}
@@ -523,7 +556,7 @@ function setBgmSource(src){
 }
 function setBgmForMode(mode){
   if (mode === 'shooter') setBgmSource('spacedodgers_assets/live.mp3');
-  else if (mode === 'blackout') setBgmSource('spacedodgers_assets/soundtrack.mp3');
+  else if (mode === 'blackout' || mode==='rift') setBgmSource('spacedodgers_assets/soundtrack.mp3');
   else setBgmSource('spacedodgers_assets/without you.mp3');
 }
 
@@ -668,6 +701,83 @@ function addObstacle(x){
   obstacles.push({x, heightTop, heightBot, passed:false});
 }
 
+// --- Rift Runner Mode Additions ---
+let stability = 100; // 0..100
+let gates = []; // {x,y,gap,scored,type,wobblePhase}
+let gateCounter = 0;
+let perfectGates = 0, totalGates = 0;
+let timeSlowTimer = 0; // seconds left of slow-mo
+let riftPaused = false; // help overlay active
+let riftMeltdown = false; // final 5s collapse phase
+let meltdownTimer = 0; // counts down from 5s
+// Target: ~30s from full (100) to 0 if player does nothing: 100 / 30 ≈ 3.33
+// We'll start slightly lower and ramp to approximate average 3.3/sec
+// Stability drain tuning: target ~30 seconds from 100 -> 0 if player does NOTHING.
+// 100 / 30 ≈ 3.333. Use slight score ramp later; baseline constant for predictability.
+const STABILITY_TARGET_TIME = 30; // seconds to hit 0 (pre-meltdown) doing nothing
+const STABILITY_DRAIN_BASE = 100 / STABILITY_TARGET_TIME; // ≈3.3333 per second
+const STABILITY_PERFECT = 20;
+const STABILITY_NORMAL = 10;
+const STABILITY_MISS = 25; // subtract
+let lastGateScore = -999;
+let gateSpawnTimer = 0; // time-based spawn for rift
+function addGate(x){
+  const gap = 150;
+  // Choose a vertical band: follow ship lightly for fairness
+  const follow = Math.random()<0.55;
+  let baseY = follow ? ship.y + (Math.random()*120-60) : (H*0.3 + Math.random()*H*0.4);
+  baseY = Math.max(90, Math.min(H-90, baseY));
+  // Gate type: normal, vertical oscillate, drift, squeeze (smaller inner ring for higher reward)
+  const r = Math.random();
+  let type='normal';
+  if (r<0.25) type='osc'; else if (r<0.45) type='drift'; else if (r<0.58) type='squeeze';
+  gates.push({ x, y: baseY, gap, scored:false, type, wobblePhase: Math.random()*Math.PI*2 });
+}
+
+// --- Meltdown Alarm (Web Audio minimal) ---
+let meltdownAC=null, meltdownOsc=null, meltdownGain=null, meltdownOsc2=null;
+function startMeltdownAlarm(){
+  try{
+    if (meltdownAC) return;
+    const AC = new (window.AudioContext||window.webkitAudioContext)();
+    const g = AC.createGain(); g.gain.value=0.0001; g.connect(AC.destination);
+    const o = AC.createOscillator(); o.type='sawtooth'; o.frequency.value=420; o.connect(g);
+    const o2 = AC.createOscillator(); o2.type='square'; o2.frequency.value=2.2; // LFO for pulsing
+    const lfoGain = AC.createGain(); lfoGain.gain.value=220; o2.connect(lfoGain); lfoGain.connect(o.frequency);
+    o.start(); o2.start();
+    g.gain.linearRampToValueAtTime(0.18, AC.currentTime+0.4);
+    meltdownAC=AC; meltdownOsc=o; meltdownGain=g; meltdownOsc2=o2;
+  }catch{}
+}
+function stopMeltdownAlarm(){
+  try{
+    if(!meltdownAC) return;
+    meltdownGain.gain.linearRampToValueAtTime(0.00001, meltdownAC.currentTime+0.25);
+    setTimeout(()=>{ try{ meltdownOsc.stop(); meltdownOsc2.stop(); meltdownAC.close(); }catch{} meltdownAC=null; meltdownOsc=null; meltdownGain=null; meltdownOsc2=null; }, 300);
+  }catch{}
+}
+
+function resetRift(){
+  stability = 85; gates.length = 0; gateCounter = 0; perfectGates = 0; totalGates = 0; timeSlowTimer=0; riftPaused=false;
+  lastGateScore = -999; gateSpawnTimer = 0; addGate(W + 280); // ensure first visible gate soon
+  riftMeltdown = false; meltdownTimer = 0; stopMeltdownAlarm();
+}
+// Rift help logic
+let hasShownRiftHelp = false;
+function openRiftHelpOnce(){
+  const rh = document.getElementById('riftHelp');
+  if (!rh) return;
+  riftPaused = true;
+  rh.classList.add('open'); rh.setAttribute('aria-hidden','false');
+  if (!hasShownRiftHelp) hasShownRiftHelp = true;
+}
+function closeRiftHelp(){
+  const rh = document.getElementById('riftHelp');
+  if (!rh) return;
+  rh.classList.remove('open'); rh.setAttribute('aria-hidden','true');
+  riftPaused = false;
+}
+
 function spawnAsteroid(){
   // random y inside screen (avoid edges a bit)
   const y = Math.random()*(H-120)+60;
@@ -681,6 +791,17 @@ function startGame(){
   started=true; overlay.classList.add('hidden'); lastTime=performance.now(); startTime=lastTime;
   // hide credit during gameplay
   try{ document.getElementById('musicCredit').style.display = 'none'; }catch{}
+  // Aggressive fallback: attempt multiple times shortly after start in case styles/caching block first hide
+  let attempts = 0;
+  const hideInterval = setInterval(()=>{
+    attempts++;
+    if (!started || gameOver){ clearInterval(hideInterval); return; }
+    if (overlay && !overlay.classList.contains('hidden')){
+      console.log('[overlay] interval force hide attempt', attempts);
+      forceHideOverlay();
+    }
+    if (attempts > 20){ clearInterval(hideInterval); }
+  }, 120);
 }
 function showGameOver(){
     // reflect current mute state in the toggle
@@ -693,11 +814,14 @@ function showGameOver(){
   // Menu/lobby music
   setBgmSource('spacedodgers_assets/prophecy.mp3');
   overlay.classList.remove('hidden');
+  // restore display in case it was force-hidden
+  overlay.style.display='flex';
+  overlay.setAttribute('aria-hidden','false');
   const headerGO = overlay.querySelector('h1');
   if (headerGO){ headerGO.textContent='Game Over'; headerGO.style.display='block'; }
   try{ const credit = document.getElementById('musicCredit'); if (credit) credit.style.display = 'block'; }catch{}
   lastScore = score;
-  const tip = gameMode==='blackout' ? 'Tip: collect flares to widen your light.' : 'Tip: hold SPACE to control altitude.';
+  const tip = gameMode==='blackout' ? 'Tip: collect flares to widen your light.' : 'Tip: hold SPACE to control altitude. Press 4 for Rift.';
   const bestLine = best?`<div class="statCard"><div class="label">Best</div><div class="value">${best}</div></div>`:'';
   const modeName = gameMode.charAt(0).toUpperCase()+gameMode.slice(1);
   msg.innerHTML = `
@@ -721,6 +845,7 @@ function showGameOver(){
       <button id="startDodgeNormalBtn" class="pulse">Play Dodge (1)</button>
       <button id="startShooterBtn" class="pulse">Play Shooter (2)</button>
       <button id="startDodgeBlackoutBtn" class="pulse">Play Blackout (3)</button>
+      <button id="startRiftOverBtn" class="pulse">Play Rift (4)</button>
     </div>
     <div class="hint">Or press SPACE to start Dodge immediately.</div>
     <span id="hiLine"></span>
@@ -730,20 +855,24 @@ function showGameOver(){
   const startShooterBtn = document.getElementById('startShooterBtn');
   const startDodgeNormalBtn = document.getElementById('startDodgeNormalBtn');
   const startDodgeBlackoutBtn = document.getElementById('startDodgeBlackoutBtn');
+  const startRiftOverBtn = document.getElementById('startRiftOverBtn');
   if (startShooterBtn) startShooterBtn.onclick = ()=>{ if(gameOver) { gameOver=false; } startMode('shooter'); };
   if (startDodgeNormalBtn) startDodgeNormalBtn.onclick = ()=>{ if(gameOver) { gameOver=false; } startMode('dodge'); };
   if (startDodgeBlackoutBtn) startDodgeBlackoutBtn.onclick = ()=>{ if(gameOver) { gameOver=false; } startMode('blackout'); };
+  if (startRiftOverBtn) startRiftOverBtn.onclick = ()=>{ if(gameOver) { gameOver=false; } startMode('rift'); };
 }
 function showStart(){
   // Menu/lobby music
   setBgmSource('spacedodgers_assets/prophecy.mp3');
   overlay.classList.remove('hidden');
+  overlay.style.display='flex';
+  overlay.setAttribute('aria-hidden','false');
   const headerStart = overlay.querySelector('h1');
   if (headerStart) headerStart.style.display = 'none';
   msg.innerHTML=`
     <div class="hero">
-  <div class="pill">Best: <b>${best||0}</b> • <span class="kbd">1</span>/<span class="kbd">2</span>/<span class="kbd">3</span> to quick start</div>
-      <h2 class="logoText floaty">Space Dodgers</h2>
+  <div class="pill">Best: <b>${best||0}</b> • <span class="kbd">1</span>/<span class="kbd">2</span>/<span class="kbd">3</span>/<span class="kbd">4</span> quick start</div>
+  <h2 class="logoText floaty">Space Dodger</h2>
       <div class="subtitle">Arcade flight. Neon skies. Three ways to survive.</div>
     </div>
 
@@ -767,6 +896,15 @@ function showStart(){
         <div class="cardFooter">
           <div><span class="kbd">2</span></div>
           <button class="miniBtn" id="startShooterBtn">Play Shooter</button>
+        </div>
+      </div>
+
+      <div class="modeCard" id="cardRift">
+        <div class="modeTitle">🌀 Rift Runner <span style="font-size:10px;opacity:.7;">New</span></div>
+        <div class="modeDesc">Chain rift gates to keep stability up. Miss and reality collapses.</div>
+        <div class="cardFooter">
+          <div><span class="kbd">4</span></div>
+          <button class="miniBtn" id="startRiftBtn">Play Rift</button>
         </div>
       </div>
 
@@ -796,6 +934,7 @@ function showStart(){
   const cardDodge = document.getElementById('cardDodge');
   const cardShooter = document.getElementById('cardShooter');
   const cardBlackout = document.getElementById('cardBlackout');
+  const cardRift = document.getElementById('cardRift');
   if (cardDodge) cardDodge.onclick = (e)=>{
     // avoid double-start if sub-buttons clicked
     if ((e.target && (e.target.id==='startDodgeNormalBtn'))) return;
@@ -809,15 +948,37 @@ function showStart(){
     if (e.target && e.target.id==='startBlackoutBtn'){ startMode('blackout'); return; }
     startMode('blackout');
   };
+  if (cardRift) cardRift.onclick = (e)=>{
+    if (e.target && e.target.id==='startRiftBtn'){ startMode('rift'); return; }
+    startMode('rift');
+  };
   const startBlackoutBtn = document.getElementById('startBlackoutBtn');
+  const startRiftBtn = document.getElementById('startRiftBtn');
   if (startShooterBtn) startShooterBtn.onclick = ()=> startMode('shooter');
   if (startDodgeNormalBtn) startDodgeNormalBtn.onclick = ()=> startMode('dodge');
   if (startBlackoutBtn) startBlackoutBtn.onclick = ()=> startMode('blackout');
+  if (startRiftBtn) startRiftBtn.onclick = ()=> startMode('rift');
 }
 function startMode(mode){
   gameMode=mode; try{ localStorage.setItem('sd_last_mode', mode); }catch{}
-  setBgmForMode(mode); reset(); startGame();
+  setBgmForMode(mode); reset();
+  if (mode==='rift') resetRift();
+  startGame();
+  if (mode==='rift') openRiftHelpOnce();
+  // Force-hide overlay in case CSS transition class failed
+  if (overlay){ overlay.classList.add('hidden'); overlay.style.display='none'; }
 }
+
+// Force hide utility (can be called repeatedly; idempotent)
+function forceHideOverlay(){
+  if (!overlay) return;
+  overlay.classList.add('hidden');
+  overlay.style.display='none';
+  overlay.setAttribute('aria-hidden','true');
+}
+// Extra safety: hide overlay on ANY key or pointer interaction once game started
+addEventListener('keydown', ()=>{ if (started && !gameOver) forceHideOverlay(); }, { passive:true });
+addEventListener('pointerdown', ()=>{ if (started && !gameOver) forceHideOverlay(); }, { passive:true });
 
 // Tap flap removed: ascent only via holding SPACE (continuous thrust)
 function flap(){ /* removed (Geometry Dash ship style uses hold) */ }
@@ -940,7 +1101,8 @@ function update(dt){
 
   // Asteroids (reduced density to make it easier)
     asteroidTimer += dt;
-    const asteroidInterval = gameMode==='shooter' ? 0.6 : (gameMode==='blackout' ? 2.0 : 3.2);
+  let asteroidInterval = gameMode==='shooter' ? 0.6 : (gameMode==='blackout' ? 2.0 : 3.2);
+  if (gameMode==='rift') asteroidInterval = 4.5; // very low interference
     if (asteroidTimer > asteroidInterval){
       asteroidTimer=0;
       if (gameMode==='shooter'){
@@ -1080,10 +1242,81 @@ function update(dt){
     if (flareBoost > 0){ flareBoost = Math.max(0, flareBoost - flareBoostDecay * dt); }
   // (no lightning in space)
   }
+  // Rift Runner systems (stability & gates)
+  if (gameMode==='rift'){
+    if (riftPaused){ return; }
+    // If meltdown active, just count down
+    if (riftMeltdown){
+      meltdownTimer -= dt;
+      camShakeMag = 70; camShakeT = 0.3; // sustained extreme shake
+      if (meltdownTimer <= 0){ stability = 0; riftMeltdown=false; stopMeltdownAlarm(); die('meltdown'); return; }
+    } else {
+      // Drain escalates slightly with score; design average ~3.3/sec baseline over run
+  // Gentle ramp: + up to 25% by very high score (keeps late-game tension)
+  const ramp = Math.min(0.25, score / 2400 * 0.25);
+  // Removed low-health multiplier to avoid perceived "jump" near 40%.
+  const drainRatePerSec = STABILITY_DRAIN_BASE * (1 + ramp) * (timeSlowTimer>0?0.45:1);
+      const effDrain = drainRatePerSec * dt;
+      stability -= effDrain;
+      // Predict time remaining until meltdown trigger
+      const timeLeft = drainRatePerSec > 0 ? stability / drainRatePerSec : 9999;
+      if (timeLeft < 3 && !gameOver){
+        const pct = Math.max(0, Math.min(1, (3 - timeLeft)/3));
+        camShakeMag = Math.max(camShakeMag, 28 + pct*70); // up to ~98
+        camShakeT = Math.max(camShakeT, 0.18 + pct*0.28);
+      }
+      if (stability <= 0){
+        stability = 0; riftMeltdown = true; meltdownTimer = 5; startMeltdownAlarm();
+        return; // enter meltdown phase instead of immediate death
+      }
+    }
+    if (timeSlowTimer>0){ timeSlowTimer -= dt; if (timeSlowTimer<0) timeSlowTimer=0; }
+    // Spawn cadence: combination of score milestones & time-based to guarantee gates even if player misses scoring
+    const interval = 14 - Math.min(6, Math.floor(score/160));
+    gateSpawnTimer += dt;
+    const timeLimit = 2.8 - Math.min(1.4, score/400); // faster over time
+    if (gateSpawnTimer > timeLimit){
+      gateSpawnTimer = 0; addGate(W + 260 + Math.random()*60);
+    } else if (score>0 && score !== lastGateScore && score % interval === 0){
+      lastGateScore = score; gateSpawnTimer = 0; addGate(W + 220);
+    }
+    // Update gates
+    for (const g of gates){
+      g.x -= SPEED * dt * (1 + Math.max(0,(score-200)/1200));
+      g.wobblePhase += dt;
+      if (g.type==='osc'){
+        g.y += Math.sin(g.wobblePhase*2.2)*28*dt;
+      } else if (g.type==='drift'){
+        g.y += Math.sin(g.wobblePhase*0.8)*14*dt + Math.cos(g.wobblePhase*1.3)*10*dt;
+      }
+      // clamp
+      g.y = Math.max(70, Math.min(H-70, g.y));
+    }
+    for (const g of gates){
+      if (!g.scored && g.x + 50 < ship.x){
+        g.scored = true; totalGates++;
+        const dy = Math.abs(ship.y - g.y);
+        let perfectRadius = 24;
+        if (g.type==='squeeze') perfectRadius = 18; // harder
+        const nearRadius = 64;
+        if (dy < perfectRadius){
+          stability = Math.min(100, stability + STABILITY_PERFECT + (g.type==='squeeze'?5:0));
+          perfectGates++; score += 3 + (g.type==='squeeze'?1:0); hudScore.textContent = score; addShake(4,0.05);
+        } else if (dy < nearRadius){
+          stability = Math.min(100, stability + STABILITY_NORMAL);
+          score += 1; hudScore.textContent = score;
+        } else {
+          stability = Math.max(0, stability - STABILITY_MISS);
+        }
+      }
+    }
+    gates = gates.filter(g=> g.x > -120);
+  }
 }
 function die(reason){
   if(gameOver) return; gameOver=true;
-  addShake(12, 0.12);
+  if (gameMode==='rift'){ camShakeMag = 30; camShakeT = 0.8; } else { addShake(12, 0.12); }
+  stopMeltdownAlarm();
   try{ cancelThrustFade(); if(thrustPlaying){ thrustSfx.pause(); thrustPlaying=false; } thrustSfx.volume = thrustBaseVol; }catch{}
   try{ crashSfx.currentTime=0; crashSfx.play().catch(()=>{});}catch{}
   wasNewBest = false;
@@ -1130,6 +1363,30 @@ function draw(){
     ctx.restore();
   }
 
+  // Rift gates
+  if (gameMode==='rift'){
+    for (const g2 of gates){
+      ctx.save();
+      ctx.translate(g2.x, g2.y);
+  let outerR = 70; let innerR = 28;
+  if (g2.type==='squeeze'){ outerR=60; innerR=22; }
+  const instability = 1 - (stability/100);
+  const jitter = instability*4;
+  const ox = (Math.random()*2-1)*jitter;
+  const oy = (Math.random()*2-1)*jitter;
+  const grd = ctx.createRadialGradient(ox,oy,innerR*0.4,0,0,outerR + instability*18);
+  const coreCol = g2.type==='squeeze' ? 'rgba(255,120,150,' : 'rgba(90,180,255,';
+  grd.addColorStop(0, coreCol + (0.9 - instability*0.3).toFixed(3) + ')');
+  grd.addColorStop(1,'rgba(30,60,120,0)');
+  ctx.globalCompositeOperation='lighter';
+  ctx.fillStyle=grd; ctx.beginPath(); ctx.arc(0,0,outerR + instability*12,0,Math.PI*2); ctx.fill();
+  ctx.globalCompositeOperation='source-over';
+  ctx.strokeStyle=g2.type==='squeeze' ? 'rgba(255,160,200,0.7)' : 'rgba(140,220,255,0.6)';
+  ctx.lineWidth=3; ctx.beginPath(); ctx.arc(0,0,innerR,0,Math.PI*2); ctx.stroke();
+      ctx.restore();
+    }
+  }
+
   // boss asteroid (shooter)
   if (gameMode==='shooter' && bossActive && boss){
     ctx.save(); ctx.translate(boss.x,boss.y); ctx.rotate(boss.rot); ctx.shadowColor='#fff'; ctx.shadowBlur=16;
@@ -1165,6 +1422,87 @@ function draw(){
     ctx.restore();
   }
   ctx.restore();
+
+  // Rift HUD (after ship & blackout mask for clarity)
+  if (gameMode==='rift'){
+    ctx.save();
+    const barW = 220, barH = 16, x = 14, y = 14;
+    ctx.fillStyle='rgba(255,255,255,0.12)'; ctx.fillRect(x-2,y-2,barW+4,barH+4);
+    const pct = stability/100;
+    const grad = ctx.createLinearGradient(x,0,x+barW,0);
+    grad.addColorStop(0,'#2ecc71');
+    grad.addColorStop(Math.min(1,pct*0.7),'#2ecc71');
+    grad.addColorStop(Math.max(0,pct*0.7),'#f1c40f');
+    grad.addColorStop(1,'#e74c3c');
+    ctx.fillStyle=grad; ctx.fillRect(x,y,barW*pct,barH);
+    ctx.strokeStyle='rgba(255,255,255,0.4)'; ctx.strokeRect(x,y,barW,barH);
+    ctx.font='12px system-ui'; ctx.fillStyle='#fff';
+    ctx.fillText('Stability', x, y+barH+12);
+    if (totalGates>0){ const perfPct = Math.round((perfectGates/totalGates)*100); ctx.fillText(`Perfect ${perfPct}%`, x+140, y+barH+12); }
+    if (timeSlowTimer>0){ ctx.fillStyle='#9bdcff'; ctx.fillText('Slow', x+barW+10, y+12); }
+    ctx.restore();
+    // Screen glitch overlay based on instability
+  const instab = riftMeltdown ? 1 : (1 - stability/100);
+    // Ambient shake when very unstable
+  if (!gameOver && !riftMeltdown && instab > 0.55){
+      camShakeMag = Math.max(camShakeMag, 6 + instab*14);
+      camShakeT = Math.min(0.25, Math.max(camShakeT, 0.08 + instab*0.12));
+    }
+    if (instab > 0.12 || (gameOver && gameMode==='rift') || riftMeltdown){
+      ctx.save();
+      // Displaced slices
+      const boost = (gameOver && gameMode==='rift') || riftMeltdown ? 2.2 : 1;
+      const effInstab = Math.min(1, instab * ((gameOver && gameMode==='rift') || riftMeltdown ? 1.8:1));
+      const slices = Math.min(56, (14 + Math.floor(effInstab*46))*boost);
+      for (let i=0;i<slices;i++){
+        if (Math.random() > effInstab*1.05) continue;
+        const h = 6 + Math.random()* ((gameOver && gameMode==='rift') || riftMeltdown ? 90:34);
+        const y0 = Math.random()*(H-h);
+        const xShift = (Math.random()*2-1) * effInstab * ((gameOver && gameMode==='rift') || riftMeltdown ? 220:70);
+        ctx.globalAlpha = 0.18 + effInstab*0.32;
+        ctx.drawImage(cvs, 0, y0, W, h, xShift, y0, W, h);
+      }
+      // RGB channel jitter (simple overlay rectangles simulating chromatic aberration)
+      if (effInstab > 0.25){
+        const off = effInstab * ((gameOver && gameMode==='rift') || riftMeltdown ? 26:8);
+        ctx.globalCompositeOperation='lighter';
+        ctx.globalAlpha = 0.18 + effInstab*0.25;
+        ctx.fillStyle = 'rgba(255,60,120,0.4)'; ctx.fillRect(off,0,W,H);
+        ctx.fillStyle = 'rgba(60,160,255,0.35)'; ctx.fillRect(-off,0,W,H);
+      }
+      // Occasional crack flash
+      if (Math.random() < effInstab*0.22 + (((gameOver && gameMode==='rift') || riftMeltdown)?0.45:0)){
+        ctx.globalCompositeOperation='screen';
+        ctx.strokeStyle = 'rgba(200,240,255,'+(0.35+effInstab*0.5).toFixed(3)+')';
+        ctx.lineWidth = 1 + effInstab*4 + (((gameOver && gameMode==='rift') || riftMeltdown)?4:0);
+        ctx.beginPath();
+        const yA = Math.random()*H, yB = Math.random()*H;
+        ctx.moveTo(0, yA); ctx.lineTo(W*0.33, (yA+yB)/2 + (Math.random()*40-20)); ctx.lineTo(W, yB);
+        ctx.stroke();
+      }
+      if ((gameOver && gameMode==='rift') || riftMeltdown){
+        // White flash pulses & red tint overlay
+        if (Math.random()<0.5){
+          ctx.globalCompositeOperation='overlay';
+          ctx.fillStyle='rgba(255,255,255,'+(0.07+Math.random()*0.18)+')';
+          ctx.fillRect(0,0,W,H);
+        }
+        ctx.globalCompositeOperation='screen';
+        ctx.fillStyle='rgba(255,40,60,'+(0.08+effInstab*0.15)+')';
+        ctx.fillRect(0,0,W,H);
+      }
+      ctx.restore();
+      if (riftMeltdown){
+        ctx.save();
+        ctx.font='bold 64px Audiowide,system-ui';
+        ctx.fillStyle='rgba(255,60,80,0.9)';
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        const warn = 'MELTDOWN';
+        ctx.fillText(warn, W/2 + (Math.random()*8-4), H/2 + (Math.random()*8-4));
+        ctx.restore();
+      }
+    }
+  }
   // ship
   ctx.save(); ctx.translate(ship.x, ship.y); const tilt = Math.max(-0.6, Math.min(0.6, ship.vy / 600)); ctx.rotate(tilt);
   if (isReady(imgShip)) { ctx.drawImage(imgShip, -SHIP_W/2, -SHIP_H/2, SHIP_W, SHIP_H); }
@@ -1267,6 +1605,11 @@ function loop(now){
   if (rawDt > 0.25) rawDt = 0.016; // clamp big pause
   const dt = Math.min(0.05, rawDt);
   lastTime=now;
+  // Safety: if game started and overlay somehow still visible, force hide it
+  if (started && !gameOver && overlay && !overlay.classList.contains('hidden')){
+    console.log('[overlay] safety hide triggered');
+    forceHideOverlay();
+  }
   updateBackground(dt); update(dt); draw();
   requestAnimationFrame(loop);
 }
@@ -1299,7 +1642,9 @@ addEventListener('keydown', e=>{
     if (e.key==='1'){ gameMode='dodge'; startMode('dodge'); }
     if (e.key==='2'){ gameMode='shooter'; startMode('shooter'); }
     if (e.key==='3'){ gameMode='blackout'; startMode('blackout'); }
+    if (e.key==='4'){ gameMode='rift'; startMode('rift'); }
   }
+  if (e.key==='Escape' && document.getElementById('riftHelp')?.classList.contains('open')){ closeRiftHelp(); }
   // hitbox debug key removed for release
   if(e.code==='KeyF'){ shoot(); }
 });
@@ -1401,6 +1746,20 @@ try{ setMusicCreditFromSrc(bgm.src || 'spacedodgers_assets/prophecy.mp3'); }catc
     removeEventListener(evt, once);
   }, { once:true });
 });
+// Fallback: hide overlay on first canvas click if game already started
+document.addEventListener('click', (e)=>{
+  if (started && !gameOver && overlay && !overlay.classList.contains('hidden')){
+  forceHideOverlay();
+  }
+});
+
+// Wire rift help buttons & backdrop
+const riftHelp = document.getElementById('riftHelp');
+if (riftHelp){
+  riftHelp.addEventListener('click', (e)=>{ if(e.target && e.target.dataset.close==='rift'){ closeRiftHelp(); }});
+  document.getElementById('startRiftRunBtn')?.addEventListener('click', ()=>{ closeRiftHelp(); });
+  document.getElementById('closeRiftBtn')?.addEventListener('click', ()=>{ closeRiftHelp(); });
+}
 
 </script>
 </body>
