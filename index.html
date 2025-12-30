@@ -2,10 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Julken — Games Hub</title>
-    <link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
-    <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="favicon_16x16.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="favicon_32x32.png" />
+    <link rel="icon" type="image/png" sizes="256x256" href="favicon_256x256.png" />
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
 
@@ -14,6 +15,10 @@
             --panel: #0f172a;
             --panel-2: #0b1320;
             --text: #e5e7eb;
+            --sai-top: env(safe-area-inset-top, 0px);
+            --sai-right: env(safe-area-inset-right, 0px);
+            --sai-bottom: env(safe-area-inset-bottom, 0px);
+            --sai-left: env(safe-area-inset-left, 0px);
             --muted: #9ca3af;
             --accent: #38bdf8;
             --good: #22c55e;
@@ -44,35 +49,315 @@
         .aurora::after { width: 55vw; height: 55vw; right: -8vw; top: 30vh; background: radial-gradient(closest-side, rgba(236,72,153,.18), rgba(236,72,153,0) 70%); animation: auroraB 26s ease-in-out infinite alternate; }
         @keyframes auroraA { from { transform: translateY(-6vh);} to { transform: translateY(6vh);} }
         @keyframes auroraB { from { transform: translateY(5vh);} to { transform: translateY(-5vh);} }
+        @keyframes title-glow {
+            0%, 100% { filter: drop-shadow(0 0 20px rgba(56, 189, 248, 0.5)); }
+            50% { filter: drop-shadow(0 0 30px rgba(56, 189, 248, 0.8)); }
+        }
+        @keyframes scanlines { from { transform: translateY(0); } to { transform: translateY(10px); } }
+        @keyframes shine { from { transform: translateX(-100%) rotate(45deg); } to { transform: translateX(100%) rotate(45deg); } }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4); }
+            50% { box-shadow: 0 4px 20px rgba(245, 158, 11, 0.6); }
+        }
 
         /* Header */
         header {
-            position: sticky; top: 0; z-index: 10;
+            position: sticky;
+            top: 0;
+            top: max(0px, var(--sai-top));
+            z-index: 10;
+            -webkit-backdrop-filter: blur(10px);
             backdrop-filter: blur(10px);
             background: rgba(10, 15, 31, 0.55);
             border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding-top: max(12px, var(--sai-top));
         }
-    .nav { max-width: 1100px; margin: 0 auto; padding: 10px 16px; display:flex; align-items:center; justify-content:center; }
+        .nav {
+            max-width: 1100px; margin: 0 auto; padding: 12px 16px;
+            display:flex; align-items:center; gap: 20px;
+        }
         .brand { display:flex; align-items:center; gap: 10px; }
         .brand img { width: 34px; height: 34px; border-radius: 8px; box-shadow: 0 6px 18px rgba(0,0,0,0.35); }
-        .brand .title { font-weight: 700; letter-spacing: .3px; }
-    .nav a.btn { display:none; }
+        .brand .title { font-weight: 700; letter-spacing: .3px; white-space: nowrap; }
+
+        /* Search Bar */
+        .search-container {
+            position: relative;
+            flex: 1;
+            max-width: 400px;
+        }
+        #searchInput {
+            width: 100%;
+            padding: 10px 40px 10px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(56, 189, 248, 0.2);
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 14px;
+            font-family: inherit;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #searchInput:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        /* Filter Pills */
+        .filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .filter-pill {
+            padding: 6px 14px;
+            border: 2px solid rgba(56, 189, 248, 0.2);
+            background: rgba(56, 189, 248, 0.05);
+            color: var(--muted);
+            border-radius: 999px;
+            font-size: 13px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .filter-pill:hover {
+            border-color: rgba(56, 189, 248, 0.5);
+            background: rgba(56, 189, 248, 0.1);
+            transform: translateY(-2px);
+        }
+        .filter-pill.active {
+            border-color: var(--accent);
+            background: linear-gradient(180deg, rgba(56, 189, 248, 0.2), rgba(56, 189, 248, 0.1));
+            color: var(--accent);
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
+        }
 
         /* Hero */
-    .hero { position: relative; z-index: 1; max-width: 1100px; margin: 24px auto 12px; padding: 22px 16px 0; text-align: center; }
-        .hero h1 { margin: 0 0 10px; font-size: clamp(28px, 6vw, 44px); letter-spacing: .4px; }
-        .hero p { margin: 0; color: var(--muted); font-size: clamp(14px, 2.6vw, 18px); }
+        .hero { position: relative; z-index: 1; max-width: 1100px; margin: 24px auto 12px; padding: 60px 16px 40px; text-align: center; }
+        .hero-title { margin: 0 0 16px; font-size: clamp(36px, 8vw, 72px); font-weight: 700; }
+        .gradient-text {
+            background: linear-gradient(135deg, #38bdf8, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: title-glow 3s ease-in-out infinite;
+        }
+        .hero-subtitle { font-size: clamp(16px, 3vw, 22px); margin: 0 0 40px; color: var(--muted); }
+
+        /* Animated stats */
+        .stats-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            padding: 30px;
+            background: linear-gradient(180deg, rgba(56, 189, 248, 0.05), rgba(56, 189, 248, 0.02));
+            border: 2px solid rgba(56, 189, 248, 0.2);
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 16px 40px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .stat-card { text-align: center; }
+        .stat-value {
+            font-size: clamp(32px, 5vw, 48px);
+            font-weight: 700;
+            color: var(--accent);
+            line-height: 1;
+            text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+        }
+        .stat-label {
+            font-size: 14px;
+            color: var(--muted);
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .stat-separator { font-size: 24px; color: rgba(56, 189, 248, 0.3); }
+
+        /* Featured Game */
+        .featured-game {
+            position: relative; z-index: 1;
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 16px;
+        }
+        .featured-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 16px;
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+        .featured-content {
+            background: linear-gradient(180deg, var(--panel), var(--panel-2));
+            border: 2px solid rgba(56, 189, 248, 0.3);
+            border-radius: 20px;
+            padding: 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 40px;
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                0 0 40px rgba(56, 189, 248, 0.15),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        .featured-content::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(255, 255, 255, 0) 0px,
+                rgba(255, 255, 255, 0.03) 1px,
+                rgba(255, 255, 255, 0) 2px
+            );
+            pointer-events: none;
+            animation: scanlines 8s linear infinite;
+        }
+        .featured-info { flex: 1; }
+        .featured-info h2 {
+            margin: 0 0 12px;
+            font-size: clamp(28px, 5vw, 42px);
+            background: linear-gradient(135deg, #38bdf8, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .featured-description {
+            color: var(--muted);
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0 0 20px;
+        }
+        .featured-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+        .featured-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            align-items: center;
+        }
+        .btn-featured {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px 32px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 600;
+            text-decoration: none;
+            box-shadow:
+                0 8px 24px rgba(34, 197, 94, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.2);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-featured::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: rotate(45deg);
+            animation: shine 3s ease-in-out infinite;
+        }
+        .btn-featured:hover {
+            transform: translateY(-4px);
+            box-shadow:
+                0 12px 32px rgba(34, 197, 94, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+        .btn-featured .arrow { transition: transform 0.3s; }
+        .btn-featured:hover .arrow { transform: translateX(4px); }
+        .featured-stats-mini {
+            display: flex;
+            gap: 16px;
+            font-size: 14px;
+            color: var(--muted);
+        }
 
         /* Grid */
         .grid { position: relative; z-index: 1; max-width: 1100px; margin: 16px auto; padding: 0 16px 24px; display: grid; gap: 16px; grid-template-columns: repeat(12, 1fr); }
         .col-4 { grid-column: span 4; }
         .col-6 { grid-column: span 6; }
         .col-12 { grid-column: span 12; }
-        @media (max-width: 900px) { .col-4, .col-6 { grid-column: span 6; } }
-        @media (max-width: 620px) { .col-4, .col-6 { grid-column: span 12; } }
 
-        .card { background: linear-gradient(180deg, var(--panel), var(--panel-2)); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; box-shadow: var(--shadow); overflow: clip; display:flex; flex-direction:column; min-height: 120px; }
-        .card .body { padding: 14px; display:flex; flex-direction:column; gap:10px; }
+        .card {
+            background: linear-gradient(180deg, var(--panel), var(--panel-2));
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+            overflow: clip;
+            display:flex;
+            flex-direction:column;
+            min-height: 120px;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 16px;
+            background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(139, 92, 246, 0.1));
+            opacity: 0;
+            transition: opacity 0.4s;
+            pointer-events: none;
+        }
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: rgba(56, 189, 248, 0.4);
+            box-shadow:
+                0 20px 60px rgba(0, 0, 0, 0.5),
+                0 0 40px rgba(56, 189, 248, 0.3);
+        }
+        .card:hover::before { opacity: 1; }
+        .card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(255, 255, 255, 0) 0px,
+                rgba(255, 255, 255, 0.02) 1px,
+                rgba(255, 255, 255, 0) 2px
+            );
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.4s;
+            border-radius: 16px;
+        }
+        .card:hover::after { opacity: 1; }
+        .card.hidden { display: none; }
+
+        .card .body { padding: 14px; display:flex; flex-direction:column; gap:10px; position: relative; z-index: 1; }
         .card h3 { margin: 0; font-size: 18px; letter-spacing: .3px; }
         .card p { margin: 0; color: var(--muted); font-size: 14px; }
         .card .actions { margin-top: auto; display:flex; gap: 8px; flex-wrap: wrap; }
@@ -80,14 +365,81 @@
         .btn:hover { border-color: rgba(255,255,255,0.22); }
         .btn.primary { background: linear-gradient(180deg, #22c55e, #16a34a); border: 0; color: #fff; }
         .btn.accent { background: linear-gradient(180deg, #38bdf8, #0ea5e9); border: 0; color: #001018; }
-    .thumb { height: 120px; background: radial-gradient(200px 120px at 30% 40%, rgba(255,255,255,0.06), rgba(255,255,255,0) 60%), linear-gradient(180deg, #0b1320, #0a0f1f); display:grid; place-items:center; color:#c7e9ff; font-weight:700; letter-spacing: .3px; font-size: 18px; }
+        .thumb {
+            height: 120px;
+            background: radial-gradient(200px 120px at 30% 40%, rgba(255,255,255,0.06), rgba(255,255,255,0) 60%), linear-gradient(180deg, #0b1320, #0a0f1f);
+            display:grid;
+            place-items:center;
+            color:#c7e9ff;
+            font-weight:700;
+            letter-spacing: .3px;
+            font-size: 18px;
+            position: relative;
+            overflow: hidden;
+        }
+        .thumb::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 30% 40%, rgba(56, 189, 248, 0.2), rgba(139, 92, 246, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+        .card:hover .thumb::before { opacity: 1; }
+        .thumb span {
+            position: relative;
+            z-index: 1;
+            transition: transform 0.4s;
+        }
+        .card:hover .thumb span { transform: scale(1.05); }
         .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
         .badge { display:inline-block; padding: 3px 8px; border-radius: 999px; font-size: 12px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); color: var(--muted); }
+        .badge-new {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #fff;
+            border-color: transparent;
+        }
+
+        /* No results */
+        .no-results {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--muted);
+        }
+        .no-results h3 {
+            font-size: 24px;
+            margin: 0 0 8px;
+            color: var(--text);
+        }
 
         footer { position: relative; z-index:1; max-width:1100px; margin: 0 auto; padding: 12px 16px 32px; color: var(--muted); text-align:center; }
 
+        /* Responsive */
+        @media (max-width: 900px) {
+            .col-4, .col-6 { grid-column: span 6; }
+            .nav { flex-direction: column; gap: 12px; }
+            .search-container { max-width: 100%; }
+            .featured-content {
+                flex-direction: column;
+                padding: 30px 24px;
+                gap: 24px;
+            }
+            .featured-actions { width: 100%; }
+            .btn-featured {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+        @media (max-width: 620px) {
+            .col-4, .col-6 { grid-column: span 12; }
+            .stat-separator { display: none; }
+            .stats-container { flex-direction: column; gap: 20px; }
+        }
+
         @media (prefers-reduced-motion: reduce) {
             .aurora::before, .aurora::after { animation: none !important; }
+            * { animation-duration: 0.01ms !important; }
         }
     </style>
 </head>
@@ -98,22 +450,71 @@
     <header>
         <nav class="nav" aria-label="Main">
             <div class="brand">
-                <img src="LogO.png" alt="Julken logo" />
+                <img src="julken_circle.png" alt="Julken logo" />
                 <div class="title">Julken's Gaming Hub</div>
+            </div>
+
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Search games..." />
+                <span class="search-icon">🔍</span>
+            </div>
+
+            <div class="filters">
+                <button class="filter-pill active" data-filter="all">All</button>
+                <button class="filter-pill" data-filter="arcade">Arcade</button>
+                <button class="filter-pill" data-filter="puzzle">Puzzle</button>
+                <button class="filter-pill" data-filter="challenge">Challenge</button>
+                <button class="filter-pill" data-filter="fun">Fun</button>
             </div>
         </nav>
     </header>
 
     <section class="hero" aria-label="Intro">
-        <h1>Play small web games</h1>
-        <p>Quick, fun, and free. New stuff drops often — bookmark and check back.</p>
-        <p>Test</p>
+        <img src="julken_circle.png" alt="Julken logo" style="width: 150px; height: 150px; margin: 0 auto 24px; display: block; border-radius: 50%; box-shadow: 0 0 40px rgba(56, 189, 248, 0.6), 0 8px 32px rgba(0, 0, 0, 0.4);" />
+        <h1 class="hero-title">
+            <span class="gradient-text">Julken's Gaming Hub</span>
+        </h1>
+        <p class="hero-subtitle">Play small web games — Quick, fun, and free</p>
+
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-value" data-target="9">0</div>
+                <div class="stat-label">Games</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="featured-game" aria-labelledby="featured-title">
+        <div class="featured-badge">⭐ Featured Game</div>
+
+        <div class="featured-content">
+            <div class="featured-info">
+                <h2 id="featured-title">Galactic Assault</h2>
+                <p class="featured-description">
+                    Our most epic space shooter! Vertical scrolling action with 12 enemy types,
+                    5 epic boss battles, 20 weapons, shop upgrades, and achievements.
+                    Multiple game modes including survival and time attack.
+                </p>
+                <div class="featured-badges">
+                    <span class="badge badge-new">New</span>
+                    <span class="badge">Arcade</span>
+                </div>
+            </div>
+
+            <div class="featured-actions">
+                <a href="galacticbreakout.html" class="btn-featured">
+                    <span>Play Now</span>
+                    <span class="arrow">→</span>
+                </a>
+                <div class="featured-stats-mini">
+                    <span>🎮 Most Played</span>
+                    <span>⭐ 4.9/5</span>
+                </div>
+            </div>
+        </div>
     </section>
 
     <main class="grid">
-        <!-- Games grid -->
-    <!-- Space Dodgers moved to end of list -->
-
         <article class="card col-4" aria-labelledby="g1">
             <div class="thumb" aria-hidden="true">
                 <span>Spacebar Clicker</span>
@@ -156,7 +557,7 @@
             </div>
         </article>
 
-    <article class="card col-4" aria-labelledby="g4">
+        <article class="card col-4" aria-labelledby="g4">
             <div class="thumb" aria-hidden="true">
                 <span>Magic 8 Ball</span>
             </div>
@@ -170,7 +571,7 @@
             </div>
         </article>
 
-    <article class="card col-4" aria-labelledby="g5">
+        <article class="card col-4" aria-labelledby="g5">
             <div class="thumb" aria-hidden="true">
                 <span>Guessing Game</span>
             </div>
@@ -196,7 +597,6 @@
             </div>
         </article>
 
-        <!-- Reaction Time Test (moved up into games) -->
         <article class="card col-4" aria-labelledby="g7">
             <a href="reactiontime.html" style="text-decoration:none; color:inherit">
                 <div class="thumb" aria-hidden="true"><span>Reaction Time</span></div>
@@ -211,37 +611,35 @@
             </a>
         </article>
 
-        <!-- Space Dodgers (moved to be last) -->
         <article class="card col-4" aria-labelledby="g-sd">
             <div class="thumb" aria-hidden="true">
                 <span>Space Dodgers</span>
             </div>
             <div class="body">
-                <h3 id="g-sd">Space Dodgers <span class="badge">New</span> <span class="badge">Beta</span></h3>
+                <h3 id="g-sd">Space Dodgers <span class="badge">Beta</span></h3>
                 <p>Hold to fly, shoot asteroids, and face bosses. Three modes.</p>
                 <div class="actions">
                     <a href="spacedodgers.html" class="btn primary">Play</a>
                     <a href="https://github.com/julianfk2013/julken.org/releases/download/v1.1.1/Space-Dodgers-Setup-1.1.1.exe" class="btn accent" download>Download</a>
-                    <div style="font-size:10px; opacity:0.65; margin-top:4px;">If Windows warns it’s unknown, click More Info → Run anyway (safe).</div>
+                    <div style="font-size:10px; opacity:0.65; margin-top:4px;">If Windows warns it's unknown, click More Info → Run anyway (safe).</div>
                     <span class="badge">Arcade</span>
                 </div>
             </div>
         </article>
 
-        <!-- Updates / News -->
-    <section class="card col-4" aria-labelledby="news">
+        <!-- News / Info Cards -->
+        <section class="card col-4" aria-labelledby="news">
             <div class="body">
                 <h3 id="news">Latest News</h3>
-        <p>We have revamped all games for a cleaner look, smoother play, and better effects.</p>
+                <p>We have revamped all games for a cleaner look, smoother play, and better effects.</p>
                 <div style="margin-top:8px; color: var(--muted); font-size: 12px;">Updated <span id="updatedDate">today</span>.</div>
             </div>
         </section>
 
-    <section class="card col-4" aria-labelledby="notice">
+        <section class="card col-4" aria-labelledby="notice">
             <div class="body">
                 <h3 id="notice">Friendly Note</h3>
                 <p>Have fun and share with friends. Play responsibly during school hours.</p>
-                
             </div>
         </section>
     </main>
@@ -253,36 +651,328 @@
     <script>
     (function(){
         'use strict';
+
         // Footer year & updated date
-        const y = document.getElementById('year'); if (y) y.textContent = new Date().getFullYear();
-        const u = document.getElementById('updatedDate'); if (u) {
-            // Static date of latest revamp; adjust as needed
+        const y = document.getElementById('year');
+        if (y) y.textContent = new Date().getFullYear();
+
+        const u = document.getElementById('updatedDate');
+        if (u) {
             const d = new Date('2025-08-10T00:00:00');
             const now = new Date();
             const sameDay = d.toDateString() === now.toDateString();
             u.textContent = sameDay ? 'today' : d.toLocaleDateString();
         }
 
-        // Background stars + light galaxy (reused, slightly simplified)
-        const canvas = document.getElementById('bgCanvas'); if (!canvas) return;
-        const ctx = canvas.getContext('2d'); if (!ctx) return;
-        const DPR = Math.min(2, window.devicePixelRatio||1);
-        let w=0,h=0, stars=[], nebulas=[], meteors=[]; let mx=0,my=0; let reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        function resize(){ const cw=window.innerWidth, ch=window.innerHeight; w=canvas.width=Math.floor(cw*DPR); h=canvas.height=Math.floor(ch*DPR); canvas.style.width=cw+'px'; canvas.style.height=ch+'px'; ctx.setTransform(DPR,0,0,DPR,0,0);
-            const starCount=Math.floor((cw*ch)/11000), nebCount=Math.max(2,Math.floor((cw*ch)/520000));
-            stars=new Array(starCount).fill(0).map(()=>({x:Math.random()*cw,y:Math.random()*ch,z:Math.random()*0.9+0.1,t:Math.random()*6,s:Math.random()*0.9+0.1}));
-            nebulas=new Array(nebCount).fill(0).map(()=>({x:Math.random()*cw,y:Math.random()*ch,r:Math.random()*260+200,hue:Math.random()<0.5?200+Math.random()*40:120+Math.random()*30,alpha:0.06+Math.random()*0.06,drift:(Math.random()*0.5+0.2)*(Math.random()<0.5?-1:1)}));
-            meteors.length=0;
-        }
-        resize(); window.addEventListener('resize', resize);
-        window.addEventListener('mousemove', (e)=>{ const cx=window.innerWidth/2, cy=window.innerHeight/2; mx=(e.clientX-cx)/cx; my=(e.clientY-cy)/cy; });
+        // Animated counter
+        function animateCounters() {
+            const counters = document.querySelectorAll('.stat-value');
+            const duration = 2000;
 
-        function drawNebula(){ for(const n of nebulas){ n.x+=reduce?0:n.drift*0.04; if(n.x<-n.r) n.x=window.innerWidth+n.r; if(n.x>window.innerWidth+n.r) n.x=-n.r; const px=n.x+mx*8, py=n.y+my*5; const g=ctx.createRadialGradient(px,py,0,px,py,n.r); g.addColorStop(0,`hsla(${n.hue},70%,55%,${n.alpha})`); g.addColorStop(1,'rgba(0,0,0,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(px,py,n.r,0,Math.PI*2); ctx.fill(); } }
-        function drawGalaxy(){ const cx=window.innerWidth*0.6+mx*10, cy=window.innerHeight*0.42+my*7; const coreR=Math.min(window.innerWidth,window.innerHeight)*0.09; const core=ctx.createRadialGradient(cx,cy,0,cx,cy,coreR*2.1); core.addColorStop(0,'rgba(255,255,255,0.14)'); core.addColorStop(1,'rgba(255,255,255,0)'); ctx.fillStyle=core; ctx.beginPath(); ctx.arc(cx,cy,coreR*2.1,0,Math.PI*2); ctx.fill(); if(reduce) return; const arms=3, armLen=Math.min(window.innerWidth,window.innerHeight)*0.5; ctx.globalCompositeOperation='lighter'; for(let a=0;a<arms;a++){ const base=(a/arms)*Math.PI*2; for(let i=0;i<420;i++){ const t=i/420; const ang=base+t*4.8+Math.sin(t*6)*0.05; const r=t*armLen+(Math.random()-0.5)*8; const x=cx+Math.cos(ang)*r+(Math.random()-0.5)*3; const y=cy+Math.sin(ang)*r+(Math.random()-0.5)*3; const alpha=(1-t)*0.2+Math.random()*0.05; const size=0.8+Math.random()*1.2; ctx.fillStyle=`rgba(200,220,255,${alpha.toFixed(3)})`; ctx.fillRect(x,y,size,size); } } ctx.globalCompositeOperation='source-over'; }
-        function drawStars(){ for(const s of stars){ s.x+=reduce?0:0.018*s.z; if(s.x>window.innerWidth) s.x=0; s.t+=0.03+0.02*s.z; const tw=0.6+0.4*Math.sin(s.t); const alpha=(0.25+0.55*s.z)*tw; const size=(0.6+1.2*s.s*s.z); const px=s.x+mx*(6*s.z), py=s.y+my*(4*s.z); ctx.fillStyle=`rgba(255,255,255,${alpha.toFixed(3)})`; ctx.fillRect(px,py,size,size);} }
-        function maybeMeteor(){ if(reduce) return; if(Math.random()<0.01 && meteors.length<1){ const startX=Math.random()*window.innerWidth*0.3; const startY=-20; const speed=5+Math.random()*3; meteors.push({x:startX,y:startY,vx:speed,vy:speed*0.35,life:0,max:80+Math.random()*40}); } }
-        function drawMeteors(){ for(let i=meteors.length-1;i>=0;i--){ const m=meteors[i]; m.x+=m.vx; m.y+=m.vy; m.life++; const tail=80; const g=ctx.createLinearGradient(m.x,m.y,m.x-tail,m.y-tail*0.35); g.addColorStop(0,'rgba(255,255,255,0.9)'); g.addColorStop(1,'rgba(255,255,255,0)'); ctx.strokeStyle=g; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(m.x,m.y); ctx.lineTo(m.x-tail,m.y-tail*0.35); ctx.stroke(); if(m.life>m.max||m.x>window.innerWidth+50||m.y>window.innerHeight+50){ meteors.splice(i,1); } } }
-        function tick(){ ctx.clearRect(0,0,canvas.width,canvas.height); drawNebula(); drawGalaxy(); drawStars(); maybeMeteor(); drawMeteors(); requestAnimationFrame(tick); }
+            counters.forEach(counter => {
+                const target = parseInt(counter.dataset.target);
+                const start = 0;
+                const increment = target / (duration / 16);
+                let current = start;
+
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        counter.textContent = target >= 1000
+                            ? (target / 1000).toFixed(1) + 'K+'
+                            : target + (counter.dataset.target === '98' ? '%' : '');
+                        clearInterval(timer);
+                    } else {
+                        counter.textContent = Math.floor(current);
+                    }
+                }, 16);
+            });
+        }
+
+        // Trigger animation when hero is in view
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateCounters();
+                    observer.disconnect();
+                }
+            });
+        }, { threshold: 0.5 });
+
+        const heroSection = document.querySelector('.hero');
+        if (heroSection) observer.observe(heroSection);
+
+        // Search and Filter Functionality
+        const searchInput = document.getElementById('searchInput');
+        const filterPills = document.querySelectorAll('.filter-pill');
+        const gameCards = document.querySelectorAll('.grid .card[aria-labelledby]');
+
+        let currentFilter = 'all';
+        let currentSearch = '';
+
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                currentSearch = e.target.value.toLowerCase().trim();
+                filterGames();
+            });
+        }
+
+        filterPills.forEach(pill => {
+            pill.addEventListener('click', () => {
+                filterPills.forEach(p => p.classList.remove('active'));
+                pill.classList.add('active');
+                currentFilter = pill.dataset.filter;
+                filterGames();
+            });
+        });
+
+        function filterGames() {
+            let visibleCount = 0;
+
+            gameCards.forEach(card => {
+                const title = card.querySelector('h3').textContent.toLowerCase();
+                const badges = Array.from(card.querySelectorAll('.badge'))
+                    .map(b => b.textContent.toLowerCase());
+
+                const searchMatch = currentSearch === '' || title.includes(currentSearch);
+                const filterMatch = currentFilter === 'all' ||
+                    badges.some(badge => badge.includes(currentFilter.toLowerCase()));
+
+                if (searchMatch && filterMatch) {
+                    card.classList.remove('hidden');
+                    visibleCount++;
+                } else {
+                    card.classList.add('hidden');
+                }
+            });
+
+            let noResultsMsg = document.querySelector('.no-results');
+            if (visibleCount === 0) {
+                if (!noResultsMsg) {
+                    noResultsMsg = document.createElement('div');
+                    noResultsMsg.className = 'no-results col-12';
+                    noResultsMsg.innerHTML = `
+                        <h3>No games found</h3>
+                        <p>Try adjusting your search or filter</p>
+                    `;
+                    document.querySelector('.grid').appendChild(noResultsMsg);
+                }
+            } else {
+                if (noResultsMsg) {
+                    noResultsMsg.remove();
+                }
+            }
+        }
+
+        // Enhanced Background Canvas
+        const canvas = document.getElementById('bgCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        const DPR = Math.min(2, window.devicePixelRatio || 1);
+        let w = 0, h = 0;
+        let stars = [], nebulas = [], meteors = [], particles = [];
+        let mx = 0, my = 0;
+        let reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        function resize() {
+            const cw = window.innerWidth, ch = window.innerHeight;
+            w = canvas.width = Math.floor(cw * DPR);
+            h = canvas.height = Math.floor(ch * DPR);
+            canvas.style.width = cw + 'px';
+            canvas.style.height = ch + 'px';
+            ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+
+            const starCount = Math.floor((cw * ch) / 8000);
+            const nebCount = Math.max(3, Math.floor((cw * ch) / 400000));
+
+            stars = new Array(starCount).fill(0).map(() => ({
+                x: Math.random() * cw,
+                y: Math.random() * ch,
+                z: Math.random() * 0.9 + 0.1,
+                t: Math.random() * 6,
+                s: Math.random() * 0.9 + 0.1
+            }));
+
+            nebulas = new Array(nebCount).fill(0).map(() => ({
+                x: Math.random() * cw,
+                y: Math.random() * ch,
+                r: Math.random() * 300 + 250,
+                hue: Math.random() < 0.33 ? 200 + Math.random() * 40 :
+                     Math.random() < 0.5 ? 280 + Math.random() * 30 :
+                     320 + Math.random() * 30,
+                alpha: 0.08 + Math.random() * 0.08,
+                drift: (Math.random() * 0.6 + 0.3) * (Math.random() < 0.5 ? -1 : 1)
+            }));
+
+            meteors.length = 0;
+            particles.length = 0;
+        }
+
+        resize();
+        window.addEventListener('resize', resize);
+        window.addEventListener('mousemove', (e) => {
+            const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+            mx = (e.clientX - cx) / cx;
+            my = (e.clientY - cy) / cy;
+        });
+
+        function drawNebula() {
+            for (const n of nebulas) {
+                n.x += reduce ? 0 : n.drift * 0.05;
+                if (n.x < -n.r) n.x = window.innerWidth + n.r;
+                if (n.x > window.innerWidth + n.r) n.x = -n.r;
+
+                const px = n.x + mx * 10, py = n.y + my * 6;
+                const g = ctx.createRadialGradient(px, py, 0, px, py, n.r);
+                g.addColorStop(0, `hsla(${n.hue}, 70%, 55%, ${n.alpha})`);
+                g.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                ctx.fillStyle = g;
+                ctx.beginPath();
+                ctx.arc(px, py, n.r, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function drawGalaxy() {
+            const cx = window.innerWidth * 0.65 + mx * 12;
+            const cy = window.innerHeight * 0.45 + my * 8;
+            const coreR = Math.min(window.innerWidth, window.innerHeight) * 0.11;
+
+            const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreR * 2.3);
+            core.addColorStop(0, 'rgba(255, 255, 255, 0.18)');
+            core.addColorStop(0.5, 'rgba(200, 220, 255, 0.08)');
+            core.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = core;
+            ctx.beginPath();
+            ctx.arc(cx, cy, coreR * 2.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (reduce) return;
+
+            const arms = 3, armLen = Math.min(window.innerWidth, window.innerHeight) * 0.55;
+            ctx.globalCompositeOperation = 'lighter';
+            for (let a = 0; a < arms; a++) {
+                const base = (a / arms) * Math.PI * 2;
+                for (let i = 0; i < 500; i++) {
+                    const t = i / 500;
+                    const ang = base + t * 5.2 + Math.sin(t * 7) * 0.06;
+                    const r = t * armLen + (Math.random() - 0.5) * 10;
+                    const x = cx + Math.cos(ang) * r + (Math.random() - 0.5) * 4;
+                    const y = cy + Math.sin(ang) * r + (Math.random() - 0.5) * 4;
+                    const alpha = (1 - t) * 0.25 + Math.random() * 0.06;
+                    const size = 0.9 + Math.random() * 1.4;
+                    ctx.fillStyle = `rgba(200, 220, 255, ${alpha.toFixed(3)})`;
+                    ctx.fillRect(x, y, size, size);
+                }
+            }
+            ctx.globalCompositeOperation = 'source-over';
+        }
+
+        function drawStars() {
+            for (const s of stars) {
+                s.x += reduce ? 0 : 0.02 * s.z;
+                if (s.x > window.innerWidth) s.x = 0;
+                s.t += 0.04 + 0.03 * s.z;
+
+                const tw = 0.5 + 0.5 * Math.sin(s.t);
+                const alpha = (0.3 + 0.6 * s.z) * tw;
+                const size = (0.7 + 1.4 * s.s * s.z);
+                const px = s.x + mx * (7 * s.z), py = s.y + my * (5 * s.z);
+
+                ctx.fillStyle = `rgba(255, 255, 255, ${alpha.toFixed(3)})`;
+                ctx.fillRect(px, py, size, size);
+            }
+        }
+
+        function maybeMeteor() {
+            if (reduce) return;
+            if (Math.random() < 0.015 && meteors.length < 2) {
+                const startX = Math.random() * window.innerWidth * 0.4;
+                const startY = -20;
+                const speed = 6 + Math.random() * 4;
+                meteors.push({
+                    x: startX,
+                    y: startY,
+                    vx: speed,
+                    vy: speed * 0.4,
+                    life: 0,
+                    max: 90 + Math.random() * 50
+                });
+            }
+        }
+
+        function drawMeteors() {
+            for (let i = meteors.length - 1; i >= 0; i--) {
+                const m = meteors[i];
+                m.x += m.vx;
+                m.y += m.vy;
+                m.life++;
+
+                const tail = 100;
+                const g = ctx.createLinearGradient(m.x, m.y, m.x - tail, m.y - tail * 0.4);
+                g.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
+                g.addColorStop(0.3, 'rgba(120, 200, 255, 0.6)');
+                g.addColorStop(1, 'rgba(255, 255, 255, 0)');
+                ctx.strokeStyle = g;
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.moveTo(m.x, m.y);
+                ctx.lineTo(m.x - tail, m.y - tail * 0.4);
+                ctx.stroke();
+
+                if (m.life > m.max || m.x > window.innerWidth + 50 || m.y > window.innerHeight + 50) {
+                    meteors.splice(i, 1);
+                }
+            }
+        }
+
+        function maybeParticle() {
+            if (reduce) return;
+            if (Math.random() < 0.02 && particles.length < 20) {
+                particles.push({
+                    x: Math.random() * window.innerWidth,
+                    y: window.innerHeight + 10,
+                    vy: -(0.5 + Math.random() * 1),
+                    size: 1 + Math.random() * 2,
+                    alpha: 0.3 + Math.random() * 0.4,
+                    life: 0,
+                    maxLife: 200 + Math.random() * 200
+                });
+            }
+        }
+
+        function drawParticles() {
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.y += p.vy;
+                p.life++;
+
+                const fadeAlpha = p.life < 50 ? p.life / 50 :
+                                  p.life > p.maxLife - 50 ? (p.maxLife - p.life) / 50 : 1;
+
+                ctx.fillStyle = `rgba(56, 189, 248, ${(p.alpha * fadeAlpha).toFixed(3)})`;
+                ctx.fillRect(p.x, p.y, p.size, p.size);
+
+                if (p.life > p.maxLife || p.y < -10) {
+                    particles.splice(i, 1);
+                }
+            }
+        }
+
+        function tick() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawNebula();
+            drawGalaxy();
+            drawStars();
+            maybeMeteor();
+            drawMeteors();
+            maybeParticle();
+            drawParticles();
+            requestAnimationFrame(tick);
+        }
+
         requestAnimationFrame(tick);
     })();
     </script>

@@ -2,21 +2,30 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>2D Car Riding game</title>
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon_16x16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon_32x32.png" />
+  <link rel="icon" type="image/png" sizes="256x256" href="favicon_256x256.png" />
   <style>
+    :root {
+      --sai-top: env(safe-area-inset-top, 0px);
+      --sai-right: env(safe-area-inset-right, 0px);
+      --sai-bottom: env(safe-area-inset-bottom, 0px);
+      --sai-left: env(safe-area-inset-left, 0px);
+    }
     /* ===== Base Layout ===== */
     html, body { margin: 0; height: 100%; overflow: hidden; background: #0e0f14; }
   #game { display:block; touch-action:none; user-select:none; -webkit-user-select:none; }
     #ui { position: fixed; inset: 0; pointer-events: none; color: #fff; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
   #overlay { z-index: 2; pointer-events: auto; }
   #shop { z-index: 1; }
-    .hud { position: absolute; left: 16px; top: 12px; background: rgba(0,0,0,.35); padding: 8px 12px; border-radius: 10px; backdrop-filter: blur(2px); font-weight: 600; }
+    .hud { position: absolute; left: max(16px, var(--sai-left)); top: max(12px, var(--sai-top)); background: rgba(0,0,0,.35); padding: 8px 12px; border-radius: 10px; -webkit-backdrop-filter: blur(2px); backdrop-filter: blur(2px); font-weight: 600; }
     .hud span { min-width: 36px; display: inline-block; text-align: right; }
     .center { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); text-align: center; }
     .btn { pointer-events: auto; padding: 10px 16px; border-radius: 12px; border: none; background: #4ade80; color: #04210f; font-weight: 800; cursor: pointer; box-shadow: 0 6px 18px rgba(0,0,0,.35); }
     .tip { opacity: .85; margin-top: 6px; }
-    #shop { position: absolute; right: 12px; top: 12px; background: rgba(0,0,0,.45); padding: 10px; border-radius: 12px; pointer-events: auto; display: grid; gap: 8px; min-width: 280px; }
+    #shop { position: absolute; right: max(12px, var(--sai-right)); top: max(12px, var(--sai-top)); background: rgba(0,0,0,.45); padding: 10px; border-radius: 12px; pointer-events: auto; display: grid; gap: 8px; min-width: 280px; }
     #shop h3 { margin: 0 0 6px 0; font-size: 14px; opacity: .9; }
     #shop button { padding: 8px 10px; border-radius: 10px; border: none; font-weight: 700; cursor: pointer; }
     #shop button:disabled { opacity: .45; cursor: not-allowed; }
@@ -51,16 +60,38 @@
     #touchControls .tc-btn { width:68px; height:68px; border-radius:50%; border:none; background:rgba(17,24,39,.55); color:#fff; font-weight:900; font-size:22px; box-shadow:0 8px 24px rgba(0,0,0,.35); backdrop-filter: blur(4px); touch-action:none; user-select:none; -webkit-user-select:none; }
     #touchControls .tc-btn:active { transform: scale(0.96); }
     #touchControls .tc-small { position:absolute; top:14px; right:14px; width:44px; height:44px; border-radius:10px; border:none; background:rgba(17,24,39,.55); color:#fff; font-weight:800; font-size:18px; pointer-events:auto; touch-action:none; }
+    /* Mobile Breakpoints */
+    @media (max-width: 768px) {
+      input, select, textarea { font-size: 16px !important; }
+      #overlay .btn { font-size: 16px; }
+    }
+
+    @media (max-width: 414px) {
+      #overlay h1 { font-size: clamp(24px, 6vw, 32px); }
+      #minimap { width: 160px; height: 88px; }
+    }
+
+    @media (max-width: 375px) {
+      #overlay .btn { font-size: 14px; padding: 10px 14px; }
+      .hud { font-size: 11px; padding: 6px 8px; }
+    }
+
     @media (pointer: coarse), (max-width: 860px) {
       #touchControls { display:block; }
       #pauseHint { display:none; }
-  .hud { left:8px; top:8px; padding:6px 8px; font-size:12px; }
+  .hud { left:max(8px, var(--sai-left)); top:max(8px, var(--sai-top)); padding:6px 8px; font-size:12px; }
   /* Hide the power-ups on mobile by default; we can expose later if desired */
-  #shop { display:none !important; right:8px; top:8px; min-width:auto; width:min(70vw, 320px); grid-template-columns: 1fr; gap:6px; }
+  #shop { display:none !important; right:max(8px, var(--sai-right)); top:max(8px, var(--sai-top)); min-width:auto; width:min(70vw, 320px); grid-template-columns: 1fr; gap:6px; }
   #shop button { font-size:13px; padding:8px 10px; }
   #overlay .row .btn { font-size:16px; padding:12px 16px; }
-  #minimap { right:8px; bottom:8px; width:180px; height:96px; }
+  #minimap { right:max(8px, var(--sai-right)); bottom:max(8px, var(--sai-bottom)); width:180px; height:96px; }
   /* (DevTools UI removed) */
+    }
+
+    /* Touch device optimizations */
+    @media (hover: none) and (pointer: coarse) {
+      .btn { min-height: 48px; min-width: 48px; }
+      #touchControls .tc-btn { width: 72px; height: 72px; }
     }
   </style>
 </head>

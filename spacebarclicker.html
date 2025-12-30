@@ -2,14 +2,19 @@
 <html lang="en">
 <head>
 	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 	<title>Spacebar Clicker</title>
-	<link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png" />
-	<link rel="icon" type="image/png" sizes="16x16" href="favicon-16x16.png" />
+	<link rel="icon" type="image/png" sizes="16x16" href="favicon_16x16.png" />
+	<link rel="icon" type="image/png" sizes="32x32" href="favicon_32x32.png" />
+	<link rel="icon" type="image/png" sizes="256x256" href="favicon_256x256.png" />
 	<style>
 		:root {
 			--bg: #0b1020; --panel: #0f172a; --panel-2: #0b1320; --text: #e5e7eb; --muted:#9ca3af;
 			--accent:#38bdf8; --good:#22c55e; --warn:#f59e0b; --bad:#ef4444; --shadow: 0 16px 40px rgba(0,0,0,0.45);
+			--sai-top: env(safe-area-inset-top, 0px);
+			--sai-right: env(safe-area-inset-right, 0px);
+			--sai-bottom: env(safe-area-inset-bottom, 0px);
+			--sai-left: env(safe-area-inset-left, 0px);
 		}
 		*{box-sizing:border-box}
 		html,body{height:100%}
@@ -25,8 +30,8 @@
 		@keyframes aurA{from{transform:translateY(-6vh)} to{transform:translateY(6vh)}}
 		@keyframes aurB{from{transform:translateY(5vh)} to{transform:translateY(-5vh)}}
 
-		header{position:sticky; top:0; z-index:10; backdrop-filter: blur(10px); background: rgba(10,15,31,0.55); border-bottom:1px solid rgba(255,255,255,0.08)}
-		.nav{max-width:1100px; margin:0 auto; padding:10px 16px; display:flex; justify-content:space-between; align-items:center}
+		header{position:sticky; top:0; top: max(0px, var(--sai-top)); z-index:10; -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); background: rgba(10,15,31,0.55); border-bottom:1px solid rgba(255,255,255,0.08); padding-top: max(0px, var(--sai-top))}
+		.nav{max-width:1100px; margin:0 auto; padding:10px max(16px, var(--sai-right)) 10px max(16px, var(--sai-left)); display:flex; justify-content:space-between; align-items:center}
 		.brand{display:flex; align-items:center; gap:10px}
 		.brand .dot{width:10px; height:10px; border-radius:50%; background:linear-gradient(135deg,#38bdf8,#0ea5e9); box-shadow:0 0 10px rgba(56,189,248,.7)}
 		.brand .title{font-weight:700; letter-spacing:.3px}
@@ -94,6 +99,34 @@
 
 		.toasts{position:fixed; right:12px; top:12px; z-index:60}
 		.toast{background:rgba(17,24,39,.9); color:#e5e7eb; border:1px solid rgba(255,255,255,.12); border-radius:10px; padding:8px 12px; margin-bottom:8px; box-shadow:0 10px 24px rgba(0,0,0,.35)}
+
+		/* Mobile Breakpoints */
+		@media (max-width: 768px) {
+			.counterLarge { font-size: clamp(32px, 10vw, 56px); }
+			.stats { gap: 8px; }
+			.stat { min-width: 100px; padding: 8px 10px; }
+			input, select, textarea { font-size: 16px !important; } /* Prevents iOS zoom */
+		}
+
+		@media (max-width: 414px) {
+			.nav { padding: 10px max(12px, var(--sai-right)) 10px max(12px, var(--sai-left)); }
+			.wrap { padding: 0 12px; }
+			.spaceKey { padding: 24px; font-size: 24px; }
+			.stats { flex-direction: column; }
+			.stat { min-width: auto; width: 100%; }
+		}
+
+		@media (max-width: 375px) {
+			.counterLarge { font-size: clamp(28px, 8vw, 48px); }
+			body { font-size: 14px; }
+			.btn { font-size: 14px; padding: 10px 14px; }
+		}
+
+		/* Touch device optimizations */
+		@media (hover: none) and (pointer: coarse) {
+			button, .btn, .tapBtn { min-height: 48px; min-width: 48px; padding: 14px 18px; }
+			.spaceKey { min-height: 80px; }
+		}
 	</style>
 </head>
 <body>
