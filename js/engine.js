@@ -1,7 +1,3 @@
-// Galactic Breakout DELUXE - Game Engine
-// Physics, Particles, Audio, and Asset Management
-
-// ===== Particle System =====
 class Particle {
   constructor(x, y, vx, vy, color, size, lifetime = 1000) {
     this.x = x;
@@ -18,7 +14,7 @@ class Particle {
   update(dt) {
     this.x += this.vx * dt;
     this.y += this.vy * dt;
-    this.vy += CONFIG.GRAVITY * dt; // Apply gravity
+    this.vy += CONFIG.GRAVITY * dt;
     this.age += dt * 1000;
     if (this.age >= this.lifetime) {
       this.dead = true;
@@ -51,7 +47,7 @@ const ParticleSystem = {
       const angle = Math.random() * Math.PI * 2;
       const speed = 50 + Math.random() * 150;
       const vx = Math.cos(angle) * speed;
-      const vy = Math.sin(angle) * speed - 100; // Upward bias
+      const vy = Math.sin(angle) * speed - 100;
       const size = 2 + Math.random() * 4;
       this.particles.push(new Particle(x, y, vx, vy, color, size, 1000));
     }
@@ -79,9 +75,7 @@ const ParticleSystem = {
   },
 };
 
-// ===== Physics Engine =====
 const Physics = {
-  // Circle-Rectangle collision (ball-brick)
   circleRectCollision(circle, rect) {
     const closestX = Math.max(rect.x, Math.min(circle.x, rect.x + rect.width));
     const closestY = Math.max(rect.y, Math.min(circle.y, rect.y + rect.height));
@@ -91,7 +85,6 @@ const Physics = {
     return distSq < circle.radius * circle.radius;
   },
 
-  // Rectangle-Rectangle collision (AABB)
   rectRectCollision(rect1, rect2) {
     return (
       rect1.x < rect2.x + rect2.width &&
@@ -101,7 +94,6 @@ const Physics = {
     );
   },
 
-  // Point-Rectangle collision
   pointRectCollision(point, rect) {
     return (
       point.x >= rect.x &&
@@ -111,7 +103,6 @@ const Physics = {
     );
   },
 
-  // Reflect velocity off surface
   reflect(velocity, normal) {
     const dot = velocity.x * normal.x + velocity.y * normal.y;
     return {
@@ -120,34 +111,29 @@ const Physics = {
     };
   },
 
-  // Calculate bounce angle based on paddle hit position
   calculateBounceAngle(ballX, paddleX, paddleWidth) {
     const relativeIntersect = (ballX - (paddleX + paddleWidth / 2)) / (paddleWidth / 2);
     const bounceAngle = relativeIntersect * (CONFIG.BALL_MAX_ANGLE * Math.PI / 180);
     return bounceAngle;
   },
 
-  // Normalize vector
   normalize(vec) {
     const mag = Math.sqrt(vec.x * vec.x + vec.y * vec.y);
     if (mag === 0) return { x: 0, y: 0 };
     return { x: vec.x / mag, y: vec.y / mag };
   },
 
-  // Distance between two points
   distance(x1, y1, x2, y2) {
     const dx = x2 - x1;
     const dy = y2 - y1;
     return Math.sqrt(dx * dx + dy * dy);
   },
 
-  // Clamp value between min and max
   clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
   },
 };
 
-// ===== Audio Manager =====
 const AudioManager = {
   sounds: {},
   music: null,
@@ -157,7 +143,6 @@ const AudioManager = {
   totalFiles: 0,
 
   init() {
-    // Production: console.log removed
     this.settings = Storage.getSettings();
     this.initialized = true;
   },
@@ -165,7 +150,7 @@ const AudioManager = {
   loadSound(name, src) {
     if (!this.initialized) {
       console.error('❌ AudioManager.init() must be called before loading sounds!');
-      this.init(); // Auto-init if forgotten
+      this.init();
     }
 
     this.totalFiles++;
@@ -173,7 +158,6 @@ const AudioManager = {
 
     audio.addEventListener('canplaythrough', () => {
       this.filesLoaded++;
-      // Production: console.log removed
       audio.volume = this.settings.sfxVolume;
       this.sounds[name] = audio;
     }, { once: true });
@@ -191,7 +175,7 @@ const AudioManager = {
   loadMusic(src) {
     if (!this.initialized) {
       console.error('❌ AudioManager.init() must be called before loading music!');
-      this.init(); // Auto-init if forgotten
+      this.init();
     }
 
     this.totalFiles++;
@@ -201,7 +185,6 @@ const AudioManager = {
 
     this.music.addEventListener('canplaythrough', () => {
       this.filesLoaded++;
-      // Production: console.log removed
     }, { once: true });
 
     this.music.addEventListener('error', (e) => {
@@ -246,7 +229,7 @@ const AudioManager = {
     }
 
     this.music.play()
-      .then(() => {}) // Production: console.log removed
+      .then(() => {})
       .catch((e) => {
         console.error('❌ Failed to play music:', e.message);
         if (e.name === 'NotAllowedError') {
@@ -258,7 +241,6 @@ const AudioManager = {
   pauseMusic() {
     if (this.music) {
       this.music.pause();
-      // Production: console.log removed
     }
   },
 
@@ -270,10 +252,10 @@ const AudioManager = {
 
     if (this.music.paused) {
       this.playMusic();
-      return true; // Music is now playing
+      return true;
     } else {
       this.pauseMusic();
-      return false; // Music is now paused
+      return false;
     }
   },
 
@@ -286,7 +268,6 @@ const AudioManager = {
       this.music.volume = volume;
     }
     Storage.setSetting('musicVolume', volume);
-    // Production: console.log removed
   },
 
   setSFXVolume(volume) {
@@ -298,12 +279,9 @@ const AudioManager = {
       sound.volume = volume;
     });
     Storage.setSetting('sfxVolume', volume);
-    // Production: console.log removed
   },
 
-  // Diagnostic method
   getStatus() {
-    // Production: console.log removed (diagnostic method)
     return {
       initialized: this.initialized,
       filesLoaded: this.filesLoaded,
@@ -315,51 +293,12 @@ const AudioManager = {
   }
 };
 
-// ===== Asset Loader =====
-// NOTE: AssetLoader is now defined in galacticassault-assets.js
-// This old implementation is commented out to avoid conflicts
-/*
-const AssetLoader = {
-  images: {},
-  loaded: 0,
-  total: 0,
-
-  loadImage(name, src) {
-    this.total++;
-    const img = new Image();
-    img.onload = () => {
-      this.loaded++;
-      this.images[name] = img;
-    };
-    img.onerror = () => {
-      console.warn(`Failed to load image: ${src}`);
-      this.loaded++;
-    };
-    img.src = src;
-  },
-
-  getImage(name) {
-    return this.images[name] || null;
-  },
-
-  isReady() {
-    return this.loaded >= this.total;
-  },
-
-  getProgress() {
-    return this.total > 0 ? this.loaded / this.total : 1;
-  },
-};
-*/
-
-// ===== Background Effects =====
 const BackgroundEffects = {
   stars: [],
   meteors: [],
   time: 0,
 
   init(width, height) {
-    // Create starfield (3 layers for parallax)
     this.stars = [];
     for (let i = 0; i < 150; i++) {
       this.stars.push({
@@ -367,7 +306,7 @@ const BackgroundEffects = {
         y: Math.random() * height,
         size: Math.random() * 2 + 0.5,
         speed: Math.random() * 0.5 + 0.1,
-        layer: Math.floor(Math.random() * 3), // 0, 1, 2
+        layer: Math.floor(Math.random() * 3),
         twinkle: Math.random() * Math.PI * 2,
       });
     }
@@ -376,7 +315,6 @@ const BackgroundEffects = {
   update(dt, width, height) {
     this.time += dt;
 
-    // Update stars
     this.stars.forEach(star => {
       star.x -= star.speed * star.layer * 20 * dt;
       if (star.x < -10) {
@@ -386,7 +324,6 @@ const BackgroundEffects = {
       star.twinkle += dt * 2;
     });
 
-    // Spawn meteors randomly
     if (Math.random() < 0.002) {
       this.meteors.push({
         x: Math.random() * width * 0.3,
@@ -398,7 +335,6 @@ const BackgroundEffects = {
       });
     }
 
-    // Update meteors
     for (let i = this.meteors.length - 1; i >= 0; i--) {
       const m = this.meteors[i];
       m.x += m.vx * dt;
@@ -411,7 +347,6 @@ const BackgroundEffects = {
   },
 
   draw(ctx, width, height) {
-    // Draw stars
     this.stars.forEach(star => {
       const alpha = 0.3 + Math.sin(star.twinkle) * 0.3;
       const brightness = 200 + Math.sin(star.twinkle) * 55;
@@ -419,7 +354,6 @@ const BackgroundEffects = {
       ctx.fillRect(star.x, star.y, star.size, star.size);
     });
 
-    // Draw meteors
     this.meteors.forEach(m => {
       const alpha = 1 - m.life / m.maxLife;
       const gradient = ctx.createLinearGradient(m.x, m.y, m.x - 80, m.y - 80 * (m.vy / m.vx));
@@ -435,7 +369,6 @@ const BackgroundEffects = {
   },
 };
 
-// ===== Screen Shake =====
 const ScreenShake = {
   intensity: 0,
   duration: 0,

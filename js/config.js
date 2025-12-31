@@ -1,96 +1,75 @@
-// Galactic Assault - Classic Space Shooter Configuration
-// Complete game constants, enemy types, weapons, power-ups, formations
-
 const CONFIG = {
-  // Canvas dimensions
   WIDTH: 1200,
   HEIGHT: 800,
 
-  // Player ship
   PLAYER_WIDTH: 64,
   PLAYER_HEIGHT: 64,
   PLAYER_SPEED: 350,
-  PLAYER_FIRE_RATE: 150, // ms between shots (rapid fire when holding)
+  PLAYER_FIRE_RATE: 150,
   PLAYER_MAX_HP: 100,
   PLAYER_START_SHIELDS: 0,
-  PLAYER_RESPAWN_INVULNERABILITY: 3000, // 3 seconds
+  PLAYER_RESPAWN_INVULNERABILITY: 3000,
 
-  // Player weapons
   BULLET_WIDTH: 8,
   BULLET_HEIGHT: 20,
   BULLET_SPEED: 700,
   BULLET_DAMAGE: 15,
 
-  // Spread shot
-  SPREAD_ANGLE: 0.3, // radians
+  SPREAD_ANGLE: 0.3,
   SPREAD_BULLETS: 3,
 
-  // Laser
   LASER_WIDTH: 12,
   LASER_HEIGHT: 40,
-  LASER_DAMAGE: 8, // per frame
-  LASER_DURATION: 100, // frames
+  LASER_DAMAGE: 8,
+  LASER_DURATION: 100,
 
-  // Missiles
   MISSILE_WIDTH: 16,
   MISSILE_HEIGHT: 32,
   MISSILE_SPEED: 500,
   MISSILE_DAMAGE: 40,
   MISSILE_TURN_SPEED: 4,
 
-  // Enemies
-  ENEMY_SPAWN_INTERVAL: 1500, // ms
+  ENEMY_SPAWN_INTERVAL: 1500,
   ENEMY_BULLET_SPEED: 350,
   ENEMY_BULLET_DAMAGE: 10,
   ENEMY_BASE_SCORE: 100,
 
-  // Waves
-  WAVE_CLEAR_DELAY: 3000, // ms before next wave
+  WAVE_CLEAR_DELAY: 3000,
   BOSS_EVERY_N_WAVES: 5,
   ENEMIES_PER_WAVE_BASE: 8,
   ENEMIES_PER_WAVE_INCREMENT: 3,
 
-  // Power-ups
   POWERUP_DROP_CHANCE: 0.25,
   POWERUP_FALL_SPEED: 120,
-  POWERUP_LIFETIME: 8000, // ms before disappearing
+  POWERUP_LIFETIME: 8000,
 
-  // Physics & effects
   GRAVITY: 0,
   PARTICLE_LIFETIME: 1200,
   SCREEN_SHAKE_DECAY: 0.9,
 
-  // Scrolling background
   STAR_LAYERS: 3,
   STAR_SPEED_BASE: 30,
   STAR_COUNT_PER_LAYER: 60,
 
-  // Formations
-  FORMATION_SPAWN_DELAY: 300, // ms between ships in formation
+  FORMATION_SPAWN_DELAY: 300,
 
-  // Difficulty scaling
-  DIFFICULTY_SCALE_RATE: 0.15, // 15% increase per wave
+  DIFFICULTY_SCALE_RATE: 0.15,
   MAX_DIFFICULTY_MULTIPLIER: 3.0,
 };
 
-// Enemy types - 15 unique enemies
 const ENEMY_TYPES = {
-  // Basic enemies (Waves 1-3)
   SCOUT: 0,
   FIGHTER: 1,
   INTERCEPTOR: 2,
 
-  // Medium enemies (Waves 4-6)
   HEAVY: 3,
   BOMBER: 4,
   GUNSHIP: 5,
 
-  // Advanced enemies (Waves 7-9)
   ELITE: 6,
   KAMIKAZE: 7,
   SPLITTER: 8,
 
-  // Special enemies (Waves 10+)
   SHIELDED: 9,
   DODGER: 10,
   SPAWNER: 11,
@@ -99,7 +78,6 @@ const ENEMY_TYPES = {
   BOSS_MINION: 14,
 };
 
-// Enemy properties - detailed stats for each type
 const ENEMY_PROPS = {
   [ENEMY_TYPES.SCOUT]: {
     hp: 20,
@@ -112,7 +90,7 @@ const ENEMY_PROPS = {
     width: 48,
     height: 48,
     name: 'Scout',
-    points: [0, -24, -20, 24, 20, 24], // Triangle shape
+    points: [0, -24, -20, 24, 20, 24],
   },
 
   [ENEMY_TYPES.FIGHTER]: {
@@ -295,7 +273,7 @@ const ENEMY_PROPS = {
     shootPattern: 'double',
     movePattern: 'straight',
     color: '#1e293b',
-    armor: 10, // Reduces damage
+    armor: 10,
     width: 72,
     height: 72,
     name: 'Armored',
@@ -317,9 +295,7 @@ const ENEMY_PROPS = {
   },
 };
 
-// Power-up types - 20 different power-ups
 const POWERUP_TYPES = {
-  // Weapons (Duration-based)
   SPREAD_SHOT: 0,
   RAPID_FIRE: 1,
   LASER_BEAM: 2,
@@ -328,7 +304,6 @@ const POWERUP_TYPES = {
   TRIPLE_SHOT: 5,
   WAVE_BEAM: 6,
 
-  // Instant effects
   SMART_BOMB: 7,
   NUKE: 8,
   LIGHTNING_STORM: 9,
@@ -336,19 +311,16 @@ const POWERUP_TYPES = {
   SHIELD_RESTORE: 11,
   HEALTH_PACK: 12,
 
-  // Defensive (Duration-based)
   FORCE_FIELD: 13,
   PHASE_SHIELD: 14,
   MAGNET: 15,
   INVINCIBILITY: 16,
 
-  // Score/Utility
   SCORE_MULTIPLIER: 17,
   COIN_RAIN: 18,
   EXTRA_LIFE: 19,
 };
 
-// Power-up properties
 const POWERUP_PROPS = {
   [POWERUP_TYPES.SPREAD_SHOT]: {
     name: 'Spread Shot',
@@ -511,7 +483,6 @@ const POWERUP_PROPS = {
   },
 };
 
-// Formation patterns for enemy spawning
 const FORMATIONS = {
   V_FORMATION: 'v_formation',
   LINE: 'line',
@@ -525,7 +496,6 @@ const FORMATIONS = {
   SPIRAL: 'spiral',
 };
 
-// Formation definitions
 const FORMATION_PATTERNS = {
   [FORMATIONS.V_FORMATION]: {
     positions: [
@@ -675,7 +645,6 @@ const FORMATION_PATTERNS = {
   },
 };
 
-// Boss configurations - 5 unique bosses
 const BOSS_CONFIGS = {
   1: {
     name: 'Sentinel Prime',
@@ -750,7 +719,6 @@ const BOSS_CONFIGS = {
   },
 };
 
-// Shop upgrades
 const SHOP_UPGRADES = {
   BIGGER_SHIP_1: { name: 'Reinforced Hull I', cost: 150, desc: 'Ship +15% larger, +15 max HP', hpBonus: 15, sizeBonus: 0.15 },
   BIGGER_SHIP_2: { name: 'Reinforced Hull II', cost: 300, desc: 'Ship +30% larger, +30 max HP', hpBonus: 30, sizeBonus: 0.30, requires: ['BIGGER_SHIP_1'] },
@@ -779,23 +747,19 @@ const SHOP_UPGRADES = {
   EXTRA_LIFE_START: { name: 'Emergency Systems', cost: 1000, desc: 'Revive once per game', revive: true },
 };
 
-// Achievements
 const ACHIEVEMENTS = [
-  // Beginner
   { id: 'first_kill', name: 'First Blood', desc: 'Destroy your first enemy', reward: 25, tier: 'bronze' },
   { id: 'wave_5', name: 'Wave Warrior', desc: 'Reach wave 5', reward: 50, tier: 'bronze' },
   { id: 'first_boss', name: 'Boss Slayer', desc: 'Defeat your first boss', reward: 100, tier: 'bronze' },
   { id: 'streak_10', name: 'Combo Starter', desc: 'Get 10 kill streak', reward: 50, tier: 'bronze' },
   { id: 'power_collect', name: 'Powered Up', desc: 'Collect 10 power-ups', reward: 30, tier: 'bronze' },
 
-  // Intermediate
   { id: 'wave_10', name: 'Wave Master', desc: 'Reach wave 10', reward: 100, tier: 'silver' },
   { id: 'enemies_100', name: 'Centurion', desc: 'Destroy 100 enemies', reward: 100, tier: 'silver' },
   { id: 'streak_50', name: 'Combo Master', desc: 'Get 50 kill streak', reward: 200, tier: 'silver' },
   { id: 'perfect_wave', name: 'Untouchable', desc: 'Clear wave without damage', reward: 150, tier: 'silver' },
   { id: 'all_bosses', name: 'Boss Hunter', desc: 'Defeat all 5 bosses', reward: 300, tier: 'silver' },
 
-  // Advanced
   { id: 'wave_20', name: 'Wave Legend', desc: 'Reach wave 20', reward: 250, tier: 'gold' },
   { id: 'enemies_500', name: 'Ace Pilot', desc: 'Destroy 500 enemies', reward: 300, tier: 'gold' },
   { id: 'score_100k', name: 'High Scorer', desc: 'Score 100,000 points', reward: 400, tier: 'gold' },

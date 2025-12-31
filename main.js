@@ -14,8 +14,8 @@ function createWindow() {
 }
 
 function setupAutoUpdates() {
-  autoUpdater.autoDownload = true;                 // download updates in background
-  autoUpdater.checkForUpdatesAndNotify();          // shows OS toast when ready
+  autoUpdater.autoDownload = true;
+  autoUpdater.checkForUpdatesAndNotify();
 
   autoUpdater.on('update-available', () => console.log('Update available…'));
   autoUpdater.on('update-not-available', () => console.log('No update.'));
@@ -37,7 +37,7 @@ function setupAutoUpdates() {
 app.whenReady().then(() => {
   createWindow();
   setupAutoUpdates();
-  setInterval(() => autoUpdater.checkForUpdates(), 4 * 60 * 60 * 1000); // re-check every 4h
+  setInterval(() => autoUpdater.checkForUpdates(), 4 * 60 * 60 * 1000);
 });
 
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });

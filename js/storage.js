@@ -1,11 +1,7 @@
-// Galactic Breakout DELUXE - LocalStorage Management
-// Handles all persistent data storage
-
 const Storage = {
-  // Storage keys
   KEYS: {
     HIGH_SCORE: 'gb_high_score',
-    HIGH_SCORES: 'gb_high_scores', // Array of top 10
+    HIGH_SCORES: 'gb_high_scores',
     BEST_COMBO: 'gb_best_combo',
     TOTAL_BRICKS: 'gb_total_bricks',
     BOSSES_DEFEATED: 'gb_bosses_defeated',
@@ -18,21 +14,18 @@ const Storage = {
     DAILY_DATE: 'gb_daily_date',
   },
 
-  // Get value from localStorage with default
   get(key, defaultValue = null) {
     try {
       const value = localStorage.getItem(key);
       if (!value) return defaultValue;
       return JSON.parse(value);
     } catch (e) {
-      // Bug #11: Clear corrupted localStorage data
       console.warn(`Storage get error for ${key}, clearing corrupted data:`, e);
       localStorage.removeItem(key);
       return defaultValue;
     }
   },
 
-  // Set value in localStorage
   set(key, value) {
     try {
       localStorage.setItem(key, JSON.stringify(value));
@@ -43,7 +36,6 @@ const Storage = {
     }
   },
 
-  // Remove key from localStorage
   remove(key) {
     try {
       localStorage.removeItem(key);
@@ -54,7 +46,6 @@ const Storage = {
     }
   },
 
-  // High score management
   getHighScore() {
     return this.get(this.KEYS.HIGH_SCORE, 0);
   },
@@ -69,7 +60,6 @@ const Storage = {
     return false;
   },
 
-  // Top 10 high scores
   getHighScores() {
     return this.get(this.KEYS.HIGH_SCORES, []);
   },
@@ -85,7 +75,6 @@ const Storage = {
     this.set(this.KEYS.HIGH_SCORES, scores.slice(0, 10));
   },
 
-  // Best combo
   getBestCombo() {
     return this.get(this.KEYS.BEST_COMBO, 1.0);
   },
@@ -99,7 +88,6 @@ const Storage = {
     return false;
   },
 
-  // Total bricks destroyed
   getTotalBricks() {
     return this.get(this.KEYS.TOTAL_BRICKS, 0);
   },
@@ -110,7 +98,6 @@ const Storage = {
     return total;
   },
 
-  // Bosses defeated
   getBossesDefeated() {
     return this.get(this.KEYS.BOSSES_DEFEATED, []);
   },
@@ -123,7 +110,6 @@ const Storage = {
     }
   },
 
-  // Total coins
   getTotalCoins() {
     return this.get(this.KEYS.TOTAL_COINS, 0);
   },
@@ -143,7 +129,6 @@ const Storage = {
     return false;
   },
 
-  // Achievements
   getAchievements() {
     return this.get(this.KEYS.ACHIEVEMENTS, []);
   },
@@ -162,7 +147,6 @@ const Storage = {
     return false;
   },
 
-  // Shop upgrades
   getUpgrades() {
     return this.get(this.KEYS.UPGRADES, []);
   },
@@ -181,12 +165,11 @@ const Storage = {
     return false;
   },
 
-  // Settings
   getSettings() {
     return this.get(this.KEYS.SETTINGS, {
       musicVolume: 0.5,
       sfxVolume: 0.7,
-      particleQuality: 'high', // low, medium, high
+      particleQuality: 'high',
       showFPS: false,
     });
   },
@@ -197,7 +180,6 @@ const Storage = {
     this.set(this.KEYS.SETTINGS, settings);
   },
 
-  // Game statistics
   getStats() {
     return this.get(this.KEYS.STATS, {
       gamesPlayed: 0,
@@ -231,7 +213,6 @@ const Storage = {
     this.set(this.KEYS.STATS, stats);
   },
 
-  // Daily challenge
   getDailyScore() {
     const date = this.get(this.KEYS.DAILY_DATE);
     const today = new Date().toDateString();
@@ -252,7 +233,6 @@ const Storage = {
     return false;
   },
 
-  // Reset all data (for testing)
   resetAll() {
     if (confirm('Reset all game data? This cannot be undone!')) {
       Object.values(this.KEYS).forEach(key => this.remove(key));
