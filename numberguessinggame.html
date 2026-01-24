@@ -9,16 +9,16 @@
     <link rel="icon" type="image/png" sizes="256x256" href="favicon_256x256.png" />
     <style>
         :root {
-            --bg: #0f172a;            /* slate-900 */
-            --panel: #111827;         /* gray-900 */
-            --panel-2: #0b1220;       /* darker */
-            --text: #e5e7eb;          /* gray-200 */
-            --muted: #9ca3af;         /* gray-400 */
-            --primary: #22c55e;       /* green-500 */
-            --primary-600: #16a34a;   /* green-600 */
-            --accent: #38bdf8;        /* sky-400 */
-            --warn: #f59e0b;          /* amber-500 */
-            --danger: #ef4444;        /* red-500 */
+            --bg: #0f172a;            
+            --panel: #111827;         
+            --panel-2: #0b1220;       
+            --text: #e5e7eb;          
+            --muted: #9ca3af;         
+            --primary: #22c55e;       
+            --primary-600: #16a34a;   
+            --accent: #38bdf8;        
+            --warn: #f59e0b;          
+            --danger: #ef4444;        
             --shadow: 0 10px 30px rgba(0,0,0,0.35);
             --sai-top: env(safe-area-inset-top, 0px);
             --sai-right: env(safe-area-inset-right, 0px);
@@ -41,7 +41,6 @@
             padding: 24px;
         }
 
-            /* Animated starfield canvas */
             #bgCanvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; display: block; will-change: transform; }
 
         .app {
@@ -124,7 +123,7 @@
             font-size: 14px;
         }
 
-            /* Heat gauge under feedback */
+            
             .heatbar { position: relative; height: 10px; border-radius: 999px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.10); overflow: hidden; margin-top: 8px; }
             .heatfill { height: 100%; width: 0%; background: linear-gradient(90deg, #38bdf8, #22c55e, #f59e0b, #ef4444); transition: width .35s ease; }
 
@@ -152,7 +151,7 @@
 
         .footer-note { color: var(--muted); font-size: 12px; text-align: center; padding-top: 8px; }
 
-            /* Decorative floating orbs background */
+            
             .decor { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
             .decor::before, .decor::after { content: ""; position: absolute; border-radius: 50%; filter: blur(40px); opacity: .5; }
             .decor::before { width: 520px; height: 520px; left: -140px; top: -120px; background: radial-gradient(circle, rgba(56,189,248,.18), transparent 60%); animation: floatA 14s ease-in-out infinite; }
@@ -160,7 +159,7 @@
             @keyframes floatA { 0%,100% { transform: translate(0,0);} 50% { transform: translate(18px,-14px);} }
             @keyframes floatB { 0%,100% { transform: translate(0,0);} 50% { transform: translate(-16px,20px);} }
 
-            /* Confetti */
+            
             #fxLayer { position: fixed; inset: 0; pointer-events: none; z-index: 2; overflow: hidden; }
             .confetti { position: absolute; width: 8px; height: 12px; opacity: .95; will-change: transform, opacity; }
             @keyframes confettiFall {
@@ -168,7 +167,7 @@
                 100% { transform: translate3d(var(--x,0), 110vh, 0) rotate(360deg); opacity: 0; }
             }
 
-            /* Aurora background layer */
+            
             .aurora { position: fixed; inset: -20% -10% 0 -10%; z-index: 0; pointer-events: none; opacity: 0.65; filter: blur(22px) saturate(1.1); mix-blend-mode: screen; }
             .aurora::before, .aurora::after { content:""; position:absolute; inset:auto; border-radius:50%;}
             .aurora::before { width: 60vw; height: 60vw; left: -10vw; top: 10vh; background: radial-gradient(closest-side, rgba(59,130,246,.20), rgba(59,130,246,0) 70%); animation: auroraA 22s ease-in-out infinite alternate; }
@@ -176,35 +175,35 @@
             @keyframes auroraA { from { transform: translateY(-6vh);} to { transform: translateY(6vh);} }
             @keyframes auroraB { from { transform: translateY(5vh);} to { transform: translateY(-5vh);} }
 
-            /* Toasts */
+            
             .toast { background: rgba(17,24,39,0.85); color: #e5e7eb; border: 1px solid rgba(255,255,255,0.10); border-radius: 10px; padding: 8px 12px; margin-bottom: 8px; box-shadow: 0 10px 24px rgba(0,0,0,0.35); }
 
-            /* Attempts ring (conic progress) */
+            
             .attempts-wrap { display: inline-flex; align-items: center; gap: 8px; }
             .attempts-ring { --deg: 0deg; --ringColor: #22c55e; width: 40px; height: 40px; border-radius: 50%; background: conic-gradient(var(--ringColor) var(--deg), rgba(255,255,255,0.10) 0); display: grid; place-items: center; box-shadow: inset 0 0 0 2px rgba(255,255,255,0.08); }
             .attempts-ring .ring-center { width: 28px; height: 28px; border-radius: 50%; background: rgba(0,0,0,0.35); display: grid; place-items: center; font-size: 12px; color: var(--text); }
 
-            /* Button ripple effect */
+            
             .btn { position: relative; overflow: hidden; }
             .ripple-ink { position: absolute; border-radius: 50%; transform: scale(0); background: rgba(255,255,255,0.35); animation: ripple .6s ease-out forwards; pointer-events: none; }
             @keyframes ripple { to { transform: scale(4); opacity: 0; } }
 
-            /* Feedback animations */
+            
             .shake { animation: shake .4s; }
             @keyframes shake { 10%, 90% { transform: translateX(-1px);} 20%, 80% { transform: translateX(2px);} 30%, 50%, 70% { transform: translateX(-4px);} 40%, 60% { transform: translateX(4px);} }
             .pulse-success { animation: pulseS 0.6s ease-out; }
             @keyframes pulseS { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.5);} 100% { box-shadow: 0 0 0 12px rgba(34,197,94,0); } }
 
-            /* Hint pulse when affordable */
+            
             .hint-ready { box-shadow: 0 0 0 0 rgba(245,158,11,0.5); animation: hintPulse 1.6s infinite; }
             @keyframes hintPulse { 0% { box-shadow: 0 0 0 0 rgba(245,158,11,0.5);} 70% { box-shadow: 0 0 0 10px rgba(245,158,11,0);} 100% { box-shadow: 0 0 0 0 rgba(245,158,11,0);} }
 
-            /* Impossible mode aura */
+            
             .mode-impossible .card { box-shadow: 0 0 0 1px rgba(168,85,247,0.35) inset, 0 0 24px rgba(168,85,247,0.18), var(--shadow); }
-            /* Extreme mode aura */
+            
             .mode-extreme .card { box-shadow: 0 0 0 1px rgba(236,72,153,0.35) inset, 0 0 28px rgba(236,72,153,0.22), var(--shadow); }
 
-            /* Mobile Breakpoints */
+            
             @media (max-width: 768px) {
                 .grid { grid-template-columns: 1fr; gap: 12px; }
                 input, select, textarea { font-size: 16px !important; }
@@ -221,7 +220,7 @@
                 .btn { font-size: 14px; padding: 10px 14px; }
             }
 
-            /* Touch device optimizations */
+            
             @media (hover: none) and (pointer: coarse) {
                 button, .btn { min-height: 48px; min-width: 48px; padding: 14px 18px; }
                 #guessInput { min-height: 48px; font-size: 16px; }
@@ -233,7 +232,7 @@
             <div class="decor" aria-hidden="true"></div>
     <a class="homeBtn" href="index.html" aria-label="Home" style="position:fixed; left:10px; top:10px; z-index:80; display:inline-flex; align-items:center; gap:6px; padding:8px 10px; border-radius:10px; background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.16); color:#e5e7eb; text-decoration:none; font-weight:700; backdrop-filter: blur(6px);">🏠 Home</a>
     <main class="app" aria-label="Number Guessing Game">
-        <!-- Left: Game panel -->
+        
         <section class="card" aria-labelledby="game-title">
             <header class="header">
                 <h1 id="game-title" class="title">Number Guessing Game</h1>
@@ -299,7 +298,7 @@
             </div>
         </section>
 
-        <!-- Right: Stats panel -->
+        
         <aside class="card" aria-labelledby="stats-title">
             <header class="header">
                 <h2 id="stats-title" class="title">Stats & Wallet</h2>
@@ -330,7 +329,7 @@
     <div id="toastLayer" aria-live="polite" aria-atomic="true" style="position:fixed; right:12px; top:12px; z-index:60;"></div>
     <div class="aurora" aria-hidden="true"></div>
 
-    <!-- Rules Modal -->
+    
     <div id="rulesModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="rulesTitle" aria-hidden="true">
         <div class="card modal">
             <header class="header">
@@ -359,7 +358,7 @@
         </div>
     </div>
 
-    <!-- Settings Modal -->
+    
     <div id="settingsModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="settingsTitle" aria-hidden="true">
         <div class="card modal">
             <header class="header">
@@ -390,7 +389,7 @@
         </div>
     </div>
 
-    <!-- Achievements Modal -->
+    
     <div id="achievementsModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="achievementsTitle" aria-hidden="true">
         <div class="card modal">
             <header class="header">
@@ -399,7 +398,7 @@
             </header>
             <div class="body">
                 <ul id="achievementsList" style="list-style:none; padding-left:0; display:grid; gap:8px;">
-                    <!-- Populated by script -->
+                    
                 </ul>
                 <div class="row" style="justify-content:flex-end; margin-top:10px;">
                     <button id="closeAchievements" class="btn btn-primary">Close</button>
@@ -412,7 +411,7 @@
         (function () {
             'use strict';
 
-            // --- Utilities ---
+            
             const $ = (sel) => document.querySelector(sel);
             const clamp = (n, min, max) => Math.min(Math.max(n, min), max);
 
@@ -423,7 +422,7 @@
                 set(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch {} }
             };
 
-            // --- Elements ---
+            
             const els = {
                 difficulty: $('#difficulty'),
                 startBtn: $('#startBtn'),
@@ -468,7 +467,7 @@
                 toastLayer: $('#toastLayer'),
             };
 
-            // --- Game Config ---
+            
                                     const DIFFICULTY = {
                                         easy:   { min: 1, max: 50, tries: 6,  bonus: 1 },
                                         normal: { min: 1, max: 100, tries: 8, bonus: 2 },
@@ -477,7 +476,7 @@
                                     extreme: { min: 1, max: 1000000, tries: 50, bonus: 10 },
                                     };
 
-            // --- Persistent state ---
+            
             const state = {
                 running: false,
                 min: 1,
@@ -498,7 +497,7 @@
                 fxOn: storage.get('ng_fx', true),
                 reducedMotion: storage.get('ng_reduced', false),
                 achieve: storage.get('ng_achieve', {}),
-                results: storage.get('ng_results', []), // recent 30 results: 1 win / 0 loss
+                results: storage.get('ng_results', []), 
             };
 
             const sfx = {
@@ -506,7 +505,7 @@
                 play(audio) { try { if (state.soundOn) audio.currentTime = 0, audio.play(); } catch {} }
             };
 
-                    // Expose a cheat in the console: type `cheat` (getter) or call `cheatFn()`
+                    
                     function revealSecret() {
                         if (Number.isFinite(state.secret) && state.secret > 0) {
                             console.log('%cCheat: Secret number is ' + state.secret,'color:#22c55e;font-weight:bold');
@@ -518,8 +517,8 @@
                     try { Object.defineProperty(window, 'cheat', { configurable: true, get: revealSecret }); } catch {}
                     window.cheatFn = () => revealSecret();
 
-                    // Ultra top-secret token setter
-                    // Usage in console: __JULKEN_ORG__ULTRA_TOP_SECRET_DO_NOT_SHARE__SET_PLAYER_TOKENS_V1__2025_08_10__(1234)
+                    
+                    
                     const __TOP_SECRET_CMD__ = '__JULKEN_ORG__ULTRA_TOP_SECRET_DO_NOT_SHARE__SET_PLAYER_TOKENS_V1__2025_08_10__';
                     window[__TOP_SECRET_CMD__] = function(amount) {
                         const val = Number(amount);
@@ -536,7 +535,7 @@
                         return state.tokens;
                     };
 
-                    // Short no-parentheses setter: use `t$ = 1234` to set tokens, and `t$` to read current tokens
+                    
                     try {
                         Object.defineProperty(window, 't$', {
                             configurable: true,
@@ -559,7 +558,7 @@
                         });
                     } catch {}
 
-            // --- UI helpers ---
+            
             function setFeedback(msg, tone = 'info') {
                 els.feedback.textContent = msg;
                 const palette = {
@@ -608,7 +607,7 @@
                 if (els.hintLastDigit) els.hintLastDigit.classList.toggle('hint-ready', canLastDigit);
                 if (els.hintDigitSum) els.hintDigitSum.classList.toggle('hint-ready', canDigitSum);
 
-                // Attempts ring progress + color
+                
                 if (els.attemptsRing) {
                     const total = Math.max(1, state.totalTries || 0);
                     const left = clamp(state.triesLeft || 0, 0, total);
@@ -621,7 +620,7 @@
                     els.attemptsRing.style.setProperty('--ringColor', ringColor);
                 }
 
-                // Auras on body per mode
+                
                 document.body.classList.toggle('mode-impossible', state.difficulty === 'impossible');
                 document.body.classList.toggle('mode-extreme', state.difficulty === 'extreme');
             }
@@ -642,7 +641,7 @@
             }
 
             function seededRandom(seed) {
-                // Mulberry32
+                
                 let t = seed >>> 0;
                 return function() {
                     t += 0x6D2B79F5;
@@ -656,7 +655,7 @@
                 const cfg = DIFFICULTY[state.difficulty];
                 state.min = cfg.min; state.max = cfg.max;
                 if (state.daily) {
-                    const daySeed = Math.floor(Date.now() / 86400000); // days since epoch
+                    const daySeed = Math.floor(Date.now() / 86400000); 
                     const rng = seededRandom(daySeed + (state.difficulty.charCodeAt(0) << 8));
                     state.secret = Math.floor(rng() * (cfg.max - cfg.min + 1)) + cfg.min;
                 } else {
@@ -690,7 +689,7 @@
                 els.guessInput.max = String(state.max);
                 els.guessInput.placeholder = `Enter a number ${state.min}–${state.max}`;
                 els.guessInput.focus();
-                // reset heat bar at round start
+                
                 if (els.heatfill) els.heatfill.style.width = '0%';
                 maybeUnlock('first_start', 'First Steps', 'Started your first round!');
                 renderHistory();
@@ -717,17 +716,17 @@
                     setFeedback(`Out of tries. The number was ${sec}. Better luck next time.`, 'bad');
                     state.streak = 0;
                 }
-                // Clear secret to avoid confusion after round end
+                
                 state.secret = 0;
                 persistStats();
                 updateStatsUI();
                 updateGameUI();
                 state.results.push(win ? 1 : 0);
                 drawStatsChart();
-                // reset heat bar after round ends
+                
                 if (els.heatfill) els.heatfill.style.width = '0%';
             }
-            /* removed duplicate cheat and endGame */
+            
 
             function makeGuess() {
                 if (!state.running) return;
@@ -746,7 +745,7 @@
                 updateGameUI();
 
                 if (v === state.secret) {
-                    // show full heat before finishing
+                    
                     if (els.heatfill) els.heatfill.style.width = '100%';
                     endGame(true);
                     return;
@@ -757,7 +756,7 @@
                 const tail = state.triesLeft > 0 ? `${state.triesLeft} attempt${state.triesLeft===1?'':'s'} left.` : 'No attempts left.';
                 setFeedback(`${highLow}. ${heat}. ${tail}`, state.triesLeft ? 'info' : 'bad');
 
-                // update heat gauge width based on closeness
+                
                 if (els.heatfill) {
                     const span = Math.max(1, state.max - state.min);
                     const dist = Math.abs(v - state.secret);
@@ -766,20 +765,20 @@
                     els.heatfill.style.width = width + '%';
                 }
 
-                // shake feedback on miss
+                
                 els.feedback.classList.remove('shake');
-                // force reflow to restart animation
+                
                 void els.feedback.offsetWidth;
                 els.feedback.classList.add('shake');
 
-                // history record
+                
                 renderHistory();
                 updateRangeBar();
 
                 if (state.triesLeft === 0) endGame(false);
             }
 
-            // Achievements + Toasts
+            
             function toast(msg) {
                 if (!els.toastLayer) return;
                 const d = document.createElement('div');
@@ -839,7 +838,7 @@
                 ctx.stroke();
             }
 
-            // --- Hints ---
+            
             function pay(cost) {
                 if (state.tokens < cost) {
                     setFeedback(`Not enough tokens for that hint.`, 'warn');
@@ -860,7 +859,7 @@
             function hintNarrow() {
                 if (!state.running) return;
                 if (!pay(2)) return;
-                // Compute a narrower window around the secret: shrink current range by ~60%
+                
                 const span = state.max - state.min;
                 const windowSize = Math.max(5, Math.floor(span * 0.4));
                 const half = Math.floor(windowSize / 2);
@@ -900,11 +899,11 @@
                 }).join(' · ');
             }
 
-            // --- Modal ---
+            
             function openModal() { els.rulesModal.style.display = 'flex'; els.rulesModal.setAttribute('aria-hidden', 'false'); }
             function closeModal() { els.rulesModal.style.display = 'none'; els.rulesModal.setAttribute('aria-hidden', 'true'); }
 
-                    // --- FX ---
+                    
                     function confettiBurst(count = 80) {
                         const layer = document.getElementById('fxLayer');
                         if (!layer) return;
@@ -925,7 +924,7 @@
                         }
                     }
 
-            // --- Events ---
+            
             els.startBtn.addEventListener('click', startGame);
             els.resetBtn.addEventListener('click', () => { if (!state.running) return; startGame(); });
             els.guessBtn.addEventListener('click', makeGuess);
@@ -953,7 +952,7 @@
                 }
             });
 
-            // Settings & Achievements
+            
             const openSettings = () => { els.settingsModal.style.display = 'flex'; els.settingsModal.setAttribute('aria-hidden','false'); };
             const closeSettingsFn = () => { els.settingsModal.style.display = 'none'; els.settingsModal.setAttribute('aria-hidden','true'); };
             const openAchievements = () => { els.achievementsModal.style.display = 'flex'; els.achievementsModal.setAttribute('aria-hidden','false'); renderAchievements(); };
@@ -965,13 +964,13 @@
             if (els.closeAchievements) els.closeAchievements.addEventListener('click', closeAchievementsFn);
             if (els.achievementsModal) els.achievementsModal.addEventListener('click', (e)=>{ if (e.target===els.achievementsModal) closeAchievementsFn(); });
 
-            // Settings binds
+            
             if (els.dailyToggle) els.dailyToggle.addEventListener('change', (e)=>{ state.daily = e.target.checked; persistStats(); });
             if (els.themeSelect) els.themeSelect.addEventListener('change', (e)=>{ state.theme = e.target.value; applyTheme(); persistStats(); });
             if (els.fxToggle) els.fxToggle.addEventListener('change', (e)=>{ state.fxOn = e.target.checked; applyFxToggle(); persistStats(); });
             if (els.reducedMotionToggle) els.reducedMotionToggle.addEventListener('change', (e)=>{ state.reducedMotion = e.target.checked; applyReducedMotion(); persistStats(); });
 
-            // Button ripple effect (event delegation)
+            
             document.addEventListener('click', (e) => {
                 const t = e.target;
                 if (!(t instanceof Element)) return;
@@ -991,12 +990,12 @@
                 setTimeout(() => ink.remove(), 650);
             });
 
-            // --- Init ---
+            
             updateStatsUI();
             updateGameUI();
             setFeedback('Pick a difficulty and press Start to play.', 'info');
 
-            // Apply settings on load
+            
             applyTheme();
             applyFxToggle();
             applyReducedMotion();
@@ -1029,30 +1028,30 @@
             }
             function applyReducedMotion() {
                 document.body.style.setProperty('--reduced', state.reducedMotion ? '1' : '0');
-                // Optionally reduce star speed or pause meteors if needed in future
+                
             }
 
-            // Helper: success pulse
+            
             function pulseSuccess(el) {
                 if (!el) return;
                 el.classList.remove('pulse-success');
-                void el.offsetWidth; // reflow
+                void el.offsetWidth; 
                 el.classList.add('pulse-success');
                 setTimeout(() => el.classList.remove('pulse-success'), 620);
             }
 
-            // Background starfield with twinkles, meteors and parallax
+            
             (function startStarfield() {
                 const canvas = els.bgCanvas;
                 if (!canvas) return;
                 const ctx = canvas.getContext('2d');
                 if (!ctx) return;
 
-                // DPR scaling for crispness
+                
                 const DPR = Math.min(2, window.devicePixelRatio || 1);
                 let w = 0, h = 0;
                 let stars = [], meteors = [], nebulas = [];
-                let mouseX = 0, mouseY = 0; // for parallax
+                let mouseX = 0, mouseY = 0; 
 
                 function resize() {
                     const cw = window.innerWidth;
@@ -1063,35 +1062,35 @@
                     canvas.style.height = ch + 'px';
                     ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
 
-                    // Density scales with area
+                    
                     const starCount = Math.floor((cw * ch) / 8500);
                     const nebCount = Math.max(2, Math.floor((cw * ch) / 400000));
                     stars = new Array(starCount).fill(0).map(() => ({
                         x: Math.random() * cw,
                         y: Math.random() * ch,
-                        z: Math.random() * 0.9 + 0.1, // depth
-                        t: Math.random() * Math.PI * 2, // twinkle phase
-                        s: Math.random() * 0.9 + 0.1, // size factor
+                        z: Math.random() * 0.9 + 0.1, 
+                        t: Math.random() * Math.PI * 2, 
+                        s: Math.random() * 0.9 + 0.1, 
                     }));
                     nebulas = new Array(nebCount).fill(0).map(() => ({
                         x: Math.random() * cw,
                         y: Math.random() * ch,
                         r: Math.random() * 300 + 220,
-                        hue: Math.random() < 0.5 ? 200 + Math.random() * 40 : 120 + Math.random() * 30, // blue/green
+                        hue: Math.random() < 0.5 ? 200 + Math.random() * 40 : 120 + Math.random() * 30, 
                         alpha: 0.08 + Math.random() * 0.08,
                         drift: (Math.random() * 0.6 + 0.2) * (Math.random() < 0.5 ? -1 : 1),
                     }));
-                    meteors.length = 0; // clear
+                    meteors.length = 0; 
                 }
                 resize();
                 window.addEventListener('resize', resize);
 
-                // Mouse parallax
+                
                 window.addEventListener('mousemove', (e) => {
                     const cx = window.innerWidth / 2;
                     const cy = window.innerHeight / 2;
-                    mouseX = (e.clientX - cx) / cx; // -1..1
-                    mouseY = (e.clientY - cy) / cy; // -1..1
+                    mouseX = (e.clientX - cx) / cx; 
+                    mouseY = (e.clientY - cy) / cy; 
                 });
 
                 function maybeSpawnMeteor() {
@@ -1123,25 +1122,25 @@
                 }
 
                 function drawGalaxy() {
-                    // Center galaxy roughly behind main app
+                    
                     const cx = window.innerWidth * 0.52 + mouseX * 12;
                     const cy = window.innerHeight * 0.45 + mouseY * 8;
                     const coreR = Math.min(window.innerWidth, window.innerHeight) * 0.10;
-                    // Core glow
+                    
                     const core = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreR * 2.2);
                     core.addColorStop(0, 'rgba(255,255,255,0.18)');
                     core.addColorStop(1, 'rgba(255,255,255,0)');
                     ctx.fillStyle = core; ctx.beginPath(); ctx.arc(cx, cy, coreR * 2.2, 0, Math.PI*2); ctx.fill();
 
-                    // Spiral arms
+                    
                     const arms = 4;
                     const armLen = Math.min(window.innerWidth, window.innerHeight) * 0.55;
                     ctx.globalCompositeOperation = 'lighter';
                     for (let a = 0; a < arms; a++) {
                         const baseAngle = (a / arms) * Math.PI * 2;
                         for (let i = 0; i < 800; i++) {
-                            const t = i / 800; // 0..1 along the arm
-                            const angle = baseAngle + t * 5.2 + Math.sin(t * 6) * 0.05; // spiral twist
+                            const t = i / 800; 
+                            const angle = baseAngle + t * 5.2 + Math.sin(t * 6) * 0.05; 
                             const r = t * armLen + (Math.random() - 0.5) * 8;
                             const x = cx + Math.cos(angle) * r + (Math.random() - 0.5) * 3;
                             const y = cy + Math.sin(angle) * r + (Math.random() - 0.5) * 3;
@@ -1156,7 +1155,7 @@
 
                 function drawStars(t) {
                     for (const s of stars) {
-                        // gentle drift + wrap
+                        
                         s.x += 0.02 * s.z;
                         if (s.x > window.innerWidth) s.x = 0;
                         s.t += 0.03 + 0.02 * s.z;

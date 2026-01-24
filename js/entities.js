@@ -1,7 +1,3 @@
-// Galactic Assault - Space Shooter Entities
-// Player, Bullet, Enemy, EnemyBullet, PowerUp, Boss, Coin classes
-
-// ===== Player =====
 class Player {
   constructor(x, y) {
     this.x = x;
@@ -22,7 +18,6 @@ class Player {
   }
 
   update(dt, keys, mouseX, canvasWidth, canvasHeight) {
-    // Keyboard movement
     this.vx = 0;
     this.vy = 0;
 
@@ -31,24 +26,20 @@ class Player {
     if (keys['ArrowUp'] || keys['KeyW']) this.vy = -this.speed;
     if (keys['ArrowDown'] || keys['KeyS']) this.vy = this.speed;
 
-    // Mouse movement (optional - comment out if keyboard-only)
     if (mouseX !== null && mouseX !== undefined) {
       const targetX = mouseX - this.width / 2;
       const dx = targetX - this.x;
       if (Math.abs(dx) > 5) {
-        this.vx = dx * 8; // Smooth mouse follow
+        this.vx = dx * 8;
       }
     }
 
-    // Update position
     this.x += this.vx * dt;
     this.y += this.vy * dt;
 
-    // Clamp to screen
     this.x = Physics.clamp(this.x, 0, canvasWidth - this.width);
     this.y = Physics.clamp(this.y, 0, canvasHeight - this.height);
 
-    // Update timers
     this.lastShot += dt * 1000;
 
     if (this.glowIntensity > 0) {
@@ -66,7 +57,7 @@ class Player {
   shoot() {
     if (this.lastShot >= this.fireRate) {
       this.lastShot = 0;
-      return true; // Can shoot
+      return true;
     }
     return false;
   }
@@ -77,7 +68,7 @@ class Player {
     if (this.shields > 0) {
       this.shields -= amount;
       if (this.shields < 0) {
-        this.hp += this.shields; // Overflow damage to HP
+        this.hp += this.shields;
         this.shields = 0;
       }
     } else {
@@ -86,9 +77,9 @@ class Player {
 
     this.glowIntensity = 1;
     this.invulnerable = true;
-    this.invulnerableTimer = 1; // 1 second invulnerability
+    this.invulnerableTimer = 1;
 
-    return this.hp <= 0; // Return true if dead
+    return this.hp <= 0;
   }
 
   heal(amount) {
@@ -100,39 +91,33 @@ class Player {
   }
 
   draw(ctx) {
-    // Invulnerability flicker
     if (this.invulnerable && Math.floor(Date.now() / 100) % 2 === 0) {
       ctx.globalAlpha = 0.5;
     }
 
-    // Glow effect
     if (this.glowIntensity > 0) {
       ctx.shadowBlur = 20 * this.glowIntensity;
       ctx.shadowColor = '#ef4444';
     }
 
-    // Draw player ship (triangle)
     ctx.fillStyle = '#38bdf8';
     ctx.beginPath();
-    ctx.moveTo(this.x + this.width / 2, this.y); // Top point
-    ctx.lineTo(this.x, this.y + this.height); // Bottom left
-    ctx.lineTo(this.x + this.width, this.y + this.height); // Bottom right
+    ctx.moveTo(this.x + this.width / 2, this.y);
+    ctx.lineTo(this.x, this.y + this.height);
+    ctx.lineTo(this.x + this.width, this.y + this.height);
     ctx.closePath();
     ctx.fill();
 
-    // Ship outline
     ctx.strokeStyle = '#0ea5e9';
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Engine glow
     ctx.fillStyle = '#f97316';
     ctx.fillRect(this.x + this.width / 2 - 3, this.y + this.height, 6, 8);
 
     ctx.shadowBlur = 0;
     ctx.globalAlpha = 1;
 
-    // Draw shield if active
     if (this.shields > 0) {
       ctx.strokeStyle = `rgba(34, 197, 94, ${this.shields / 100})`;
       ctx.lineWidth = 3;
@@ -160,7 +145,6 @@ class Player {
   }
 }
 
-// ===== Bullet =====
 class Bullet {
   constructor(x, y, type = 'normal') {
     this.x = x;
@@ -175,7 +159,6 @@ class Bullet {
     this.destroyed = false;
     this.trail = [];
 
-    // Type-specific properties
     if (type === 'laser') {
       this.height = 30;
       this.damage = 5;
@@ -190,7 +173,6 @@ class Bullet {
   }
 
   update(dt, enemies = []) {
-    // Homing missiles track nearest enemy
     if (this.type === 'homing' && enemies.length > 0) {
       const nearest = this.findNearestEnemy(enemies);
       if (nearest) {
@@ -202,11 +184,9 @@ class Bullet {
       }
     }
 
-    // Update position
     this.x += this.vx * dt;
     this.y += this.vy * dt;
 
-    // Add trail
     this.trail.push({ x: this.x, y: this.y, life: 0.3 });
     if (this.trail.length > 5) {
       this.trail.shift();
@@ -229,7 +209,6 @@ class Bullet {
   }
 
   draw(ctx) {
-    // Draw trail
     this.trail.forEach((t, i) => {
       const alpha = (i / this.trail.length) * t.life;
       ctx.fillStyle = `rgba(56, 189, 248, ${alpha})`;
@@ -237,7 +216,6 @@ class Bullet {
       ctx.fillRect(t.x - size / 2, t.y, size, this.height * 0.5);
     });
 
-    // Draw bullet
     if (this.type === 'laser') {
       ctx.fillStyle = '#22c55e';
     } else if (this.type === 'homing') {
@@ -250,7 +228,6 @@ class Bullet {
 
     ctx.fillRect(this.x - this.width / 2, this.y, this.width, this.height);
 
-    // Bullet glow
     if (this.type !== 'normal') {
       ctx.shadowBlur = 10;
       ctx.shadowColor = ctx.fillStyle;
@@ -269,7 +246,6 @@ class Bullet {
   }
 }
 
-// ===== Enemy =====
 class Enemy {
   constructor(x, y, type) {
     this.x = x;
@@ -283,7 +259,7 @@ class Enemy {
     this.speed = this.props.speed;
     this.destroyed = false;
     this.shootTimer = 0;
-    this.pattern = 'straight'; // straight, sine, zigzag, dive
+    this.pattern = 'straight';
     this.moveTimer = 0;
     this.dodgeTimer = 0;
     this.teleportTimer = 0;
@@ -291,7 +267,6 @@ class Enemy {
     this.vx = 0;
     this.vy = this.speed;
 
-    // Type-specific setup
     if (type === ENEMY_TYPES.KAMIKAZE) {
       this.pattern = 'dive';
     } else if (type === ENEMY_TYPES.DODGER) {
@@ -302,7 +277,6 @@ class Enemy {
   update(dt, playerX, canvasWidth) {
     if (this.destroyed) return;
 
-    // Movement patterns
     this.moveTimer += dt;
 
     if (this.pattern === 'straight') {
@@ -315,25 +289,20 @@ class Enemy {
       this.vy = this.speed * 0.8;
       this.vx = Math.sign(Math.sin(this.moveTimer * 2)) * 80;
     } else if (this.pattern === 'dive' && playerX !== undefined) {
-      // Kamikaze - dive at player
       const dx = playerX - this.x;
       const angle = Math.atan2(this.speed * 1.5, dx);
       this.vx = Math.cos(angle) * this.speed * 1.5;
       this.vy = this.speed * 1.5;
     }
 
-    // Update position
     this.x += this.vx * dt;
     this.y += this.vy * dt;
 
-    // Keep on screen horizontally
     if (this.x < 0) this.x = 0;
     if (this.x + this.width > canvasWidth) this.x = canvasWidth - this.width;
 
-    // Shooting
     this.shootTimer += dt;
 
-    // Special behaviors
     if (this.type === ENEMY_TYPES.DODGER) {
       this.dodgeTimer += dt;
     }
@@ -364,7 +333,7 @@ class Enemy {
     this.hp -= amount;
     if (this.hp <= 0) {
       this.destroyed = true;
-      return true; // Enemy destroyed
+      return true;
     }
     return false;
   }
@@ -372,7 +341,6 @@ class Enemy {
   draw(ctx) {
     if (this.destroyed) return;
 
-    // Determine color brightness based on HP
     let color = this.props.color;
     if (this.hp < this.maxHp) {
       const ratio = this.hp / this.maxHp;
@@ -382,21 +350,18 @@ class Enemy {
       color = `rgb(${Math.floor(r * ratio)}, ${Math.floor(g * ratio)}, ${Math.floor(b * ratio)})`;
     }
 
-    // Draw enemy ship (inverted triangle)
     ctx.fillStyle = color;
     ctx.beginPath();
-    ctx.moveTo(this.x + this.width / 2, this.y + this.height); // Bottom point
-    ctx.lineTo(this.x, this.y); // Top left
-    ctx.lineTo(this.x + this.width, this.y); // Top right
+    ctx.moveTo(this.x + this.width / 2, this.y + this.height);
+    ctx.lineTo(this.x, this.y);
+    ctx.lineTo(this.x + this.width, this.y);
     ctx.closePath();
     ctx.fill();
 
-    // Enemy outline
     ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    // Type indicators
     if (this.type === ENEMY_TYPES.SHIELDED && this.hp > 1) {
       ctx.strokeStyle = 'rgba(34, 197, 94, 0.6)';
       ctx.lineWidth = 2;
@@ -435,7 +400,6 @@ class Enemy {
   }
 }
 
-// ===== EnemyBullet =====
 class EnemyBullet {
   constructor(x, y, vx = 0, vy = CONFIG.ENEMY_BULLET_SPEED) {
     this.x = x;
@@ -457,7 +421,6 @@ class EnemyBullet {
     ctx.fillStyle = '#ef4444';
     ctx.fillRect(this.x - this.width / 2, this.y, this.width, this.height);
 
-    // Bullet glow
     ctx.shadowBlur = 8;
     ctx.shadowColor = '#ef4444';
     ctx.fillRect(this.x - this.width / 2, this.y, this.width, this.height);
@@ -474,7 +437,6 @@ class EnemyBullet {
   }
 }
 
-// ===== PowerUp =====
 class PowerUp {
   constructor(x, y, type) {
     this.x = x;
@@ -498,19 +460,16 @@ class PowerUp {
     ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
     ctx.rotate(this.rotation);
 
-    // Draw power-up box
     const gradient = ctx.createLinearGradient(-this.width / 2, -this.height / 2, this.width / 2, this.height / 2);
     gradient.addColorStop(0, this.props.color);
     gradient.addColorStop(1, '#ffffff');
     ctx.fillStyle = gradient;
     ctx.fillRect(-this.width / 2, -this.height / 2, this.width, this.height);
 
-    // Border
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 2;
     ctx.strokeRect(-this.width / 2, -this.height / 2, this.width, this.height);
 
-    // Icon
     ctx.fillStyle = '#fff';
     ctx.font = '24px Arial';
     ctx.textAlign = 'center';
@@ -530,7 +489,6 @@ class PowerUp {
   }
 }
 
-// ===== Boss =====
 class Boss {
   constructor(level, config) {
     this.level = level;
@@ -549,20 +507,17 @@ class Boss {
   }
 
   update(dt, canvasWidth, playerX) {
-    // Movement
     this.x += this.vx * dt;
     if (this.x <= 0 || this.x + this.width >= canvasWidth) {
       this.vx = -this.vx;
     }
 
-    // Attack
     this.attackTimer += dt * 1000;
     if (this.attackTimer >= this.config.attackInterval) {
       this.attack(playerX);
       this.attackTimer = 0;
     }
 
-    // Update projectiles
     for (let i = this.projectiles.length - 1; i >= 0; i--) {
       const proj = this.projectiles[i];
       proj.x += proj.vx * dt;
@@ -572,7 +527,6 @@ class Boss {
       }
     }
 
-    // Phase transitions
     const hpRatio = this.hp / this.maxHp;
     if (hpRatio <= 0.66 && this.phase === 1) this.phase = 2;
     if (hpRatio <= 0.33 && this.phase === 2) this.phase = 3;
@@ -585,20 +539,18 @@ class Boss {
     const bottomY = this.y + this.height;
 
     if (pattern === 'spread3') {
-      // Single bullet with random horizontal direction (human-like imperfect aim)
-      const randomAngle = (Math.random() - 0.5) * 4; // Random angle -2 to 2
+      const randomAngle = (Math.random() - 0.5) * 4;
       this.projectiles.push({
         x: centerX,
         y: bottomY,
-        vx: randomAngle * (60 + Math.random() * 40), // Random speed variation
+        vx: randomAngle * (60 + Math.random() * 40),
         vy: speed,
         width: 12,
         height: 20,
       });
     } else if (pattern === 'rapidfire') {
-      // Single bullet aimed roughly at player with inaccuracy
       if (playerX !== undefined) {
-        const inaccuracy = (Math.random() - 0.5) * 150; // Imperfect aim
+        const inaccuracy = (Math.random() - 0.5) * 150;
         const dx = playerX + inaccuracy - centerX;
         const angle = Math.atan2(speed, dx);
         this.projectiles.push({
@@ -611,7 +563,6 @@ class Boss {
         });
       }
     } else if (pattern === 'missiles') {
-      // Single homing missile with random starting offset
       const randomX = (Math.random() - 0.5) * 80;
       const randomVx = (Math.random() - 0.5) * 60;
       this.projectiles.push({
@@ -624,7 +575,6 @@ class Boss {
         homing: true,
       });
     } else if (pattern === 'drones') {
-      // Single drone with random position and velocity
       const randomX = (Math.random() - 0.5) * 100;
       const randomVx = (Math.random() - 0.5) * 80;
       this.projectiles.push({
@@ -637,40 +587,34 @@ class Boss {
         isDrone: true,
       });
     } else if (pattern === 'all') {
-      // Final boss - use all patterns
       const patterns = ['spread3', 'rapidfire', 'missiles', 'drones'];
       const randomPattern = patterns[Math.floor(Math.random() * patterns.length)];
       this.config.pattern = randomPattern;
       this.attack(playerX);
-      this.config.pattern = 'all'; // Reset
+      this.config.pattern = 'all';
     }
   }
 
   draw(ctx) {
-    // Boss body
     const gradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height);
     gradient.addColorStop(0, this.config.color);
     gradient.addColorStop(1, '#000');
     ctx.fillStyle = gradient;
     ctx.fillRect(this.x, this.y, this.width, this.height);
 
-    // Boss outline
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 4;
     ctx.strokeRect(this.x, this.y, this.width, this.height);
 
-    // Boss details (engines)
     ctx.fillStyle = '#ef4444';
     ctx.fillRect(this.x + 20, this.y + this.height - 10, 15, 10);
     ctx.fillRect(this.x + this.width - 35, this.y + this.height - 10, 15, 10);
 
-    // Boss name
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 18px Arial';
     ctx.textAlign = 'center';
     ctx.fillText(this.config.name, this.x + this.width / 2, this.y - 15);
 
-    // HP bar
     const barWidth = this.width;
     const barHeight = 8;
     const barX = this.x;
@@ -687,7 +631,6 @@ class Boss {
     ctx.lineWidth = 2;
     ctx.strokeRect(barX, barY, barWidth, barHeight);
 
-    // Draw projectiles
     this.projectiles.forEach(proj => {
       if (proj.isDrone) {
         ctx.fillStyle = '#8b5cf6';
@@ -721,7 +664,6 @@ class Boss {
   }
 }
 
-// ===== Coin =====
 class Coin {
   constructor(x, y) {
     this.x = x;
@@ -743,7 +685,6 @@ class Coin {
     ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
     ctx.rotate(this.rotation);
 
-    // Draw coin
     ctx.fillStyle = '#fbbf24';
     ctx.beginPath();
     ctx.arc(0, 0, this.width / 2, 0, Math.PI * 2);

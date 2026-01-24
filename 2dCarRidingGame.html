@@ -14,7 +14,7 @@
       --sai-bottom: env(safe-area-inset-bottom, 0px);
       --sai-left: env(safe-area-inset-left, 0px);
     }
-    /* ===== Base Layout ===== */
+    
     html, body { margin: 0; height: 100%; overflow: hidden; background: #0e0f14; }
   #game { display:block; touch-action:none; user-select:none; -webkit-user-select:none; }
     #ui { position: fixed; inset: 0; pointer-events: none; color: #fff; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
@@ -33,26 +33,26 @@
     .shake { animation: shake 300ms ease; }
     @keyframes shake { 0%{transform:translateX(0)} 25%{transform:translateX(-4px)} 50%{transform:translateX(4px)} 75%{transform:translateX(-3px)} 100%{transform:translateX(0)} }
 
-    /* ===== Overlay ===== */
+    
     #overlay h1 { margin: 0 0 8px 0; }
     #overlay .subtitle { opacity:.85; margin-bottom: 10px; }
     #overlay .row { display:flex; gap:10px; justify-content:center; }
 
-    /* ===== Minimap ===== */
+    
     #minimap { position:absolute; right:12px; bottom:12px; background: rgba(0,0,0,.45); width: 220px; height: 120px; border-radius: 12px; pointer-events:none; overflow:hidden; }
     #minimap canvas { width:100%; height:100%; display:block; }
 
-  /* ===== Notifications ===== */
+  
   #toast { position:absolute; left: 50%; top: 12px; transform: translateX(-50%); background: rgba(0,0,0,.65); padding: 8px 12px; border-radius: 8px; pointer-events: none; opacity:0; transition: opacity .2s ease; }
   #toast.show { opacity: 1; }
 
-    /* ===== Pause Hint ===== */
+    
     #pauseHint { position:absolute; left:50%; bottom:16px; transform:translateX(-50%); background:rgba(0,0,0,.35); padding:6px 10px; border-radius:10px; pointer-events:none; opacity:.85; font-size:12px; }
 
-  /* ===== Rotate Hint (mobile portrait) ===== */
+  
   #rotateHint { position:absolute; left:50%; top:14px; transform:translateX(-50%); background: rgba(0,0,0,.65); padding:8px 12px; border-radius:10px; font-weight:700; pointer-events:none; display:none; z-index:3; }
 
-    /* ===== Touch Controls (mobile only) ===== */
+    
   #touchControls { display:none; position:absolute; inset:0; pointer-events:none; z-index: 0; }
     #touchControls .pad { position:absolute; bottom:16px; display:flex; gap:10px; pointer-events:auto; }
     #touchControls .left { left:16px; }
@@ -60,7 +60,7 @@
     #touchControls .tc-btn { width:68px; height:68px; border-radius:50%; border:none; background:rgba(17,24,39,.55); color:#fff; font-weight:900; font-size:22px; box-shadow:0 8px 24px rgba(0,0,0,.35); backdrop-filter: blur(4px); touch-action:none; user-select:none; -webkit-user-select:none; }
     #touchControls .tc-btn:active { transform: scale(0.96); }
     #touchControls .tc-small { position:absolute; top:14px; right:14px; width:44px; height:44px; border-radius:10px; border:none; background:rgba(17,24,39,.55); color:#fff; font-weight:800; font-size:18px; pointer-events:auto; touch-action:none; }
-    /* Mobile Breakpoints */
+    
     @media (max-width: 768px) {
       input, select, textarea { font-size: 16px !important; }
       #overlay .btn { font-size: 16px; }
@@ -80,15 +80,15 @@
       #touchControls { display:block; }
       #pauseHint { display:none; }
   .hud { left:max(8px, var(--sai-left)); top:max(8px, var(--sai-top)); padding:6px 8px; font-size:12px; }
-  /* Hide the power-ups on mobile by default; we can expose later if desired */
+  
   #shop { display:none !important; right:max(8px, var(--sai-right)); top:max(8px, var(--sai-top)); min-width:auto; width:min(70vw, 320px); grid-template-columns: 1fr; gap:6px; }
   #shop button { font-size:13px; padding:8px 10px; }
   #overlay .row .btn { font-size:16px; padding:12px 16px; }
   #minimap { right:max(8px, var(--sai-right)); bottom:max(8px, var(--sai-bottom)); width:180px; height:96px; }
-  /* (DevTools UI removed) */
+  
     }
 
-    /* Touch device optimizations */
+    
     @media (hover: none) and (pointer: coarse) {
       .btn { min-height: 48px; min-width: 48px; }
       #touchControls .tc-btn { width: 72px; height: 72px; }
@@ -112,10 +112,10 @@
       <div class="tip" id="cooldowns"></div>
     </div>
 
-    <!-- minimap -->
+    
     <div id="minimap"><canvas id="mini"></canvas></div>
 
-    <!-- overlay -->
+    
     <div id="overlay" class="center">
   <h1 id="title">2D Car Dodging Game</h1>
   <div class="subtitle">A/D or Arrow Keys to steer • Avoid traffic & obstacles • Use coins for power-ups</div>
@@ -127,7 +127,7 @@
     <div id="pauseHint">ESC to Pause/Resume</div>
   <div id="rotateHint">Rotate your device for a better view</div>
 
-    <!-- Touch controls (shown on mobile) -->
+    
     <div id="touchControls" aria-hidden="true">
       <div class="pad left">
         <button id="btnLeft"  class="tc-btn" aria-label="Steer Left">◀</button>
@@ -143,18 +143,18 @@
 
   <script>
   (() => {
-    // =====================================================================
-    //  Canvas Racer — Single-file build for VS Code (no particles, no settings UI)
-    // =====================================================================
+    
+    
+    
 
-    // --- Canvas & DPI ---
+    
     const canvas = document.getElementById('game');
     const ctx = canvas.getContext('2d');
     const mini = document.getElementById('mini');
     const mctx = mini.getContext('2d');
     const DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
 
-    // --- UI refs ---
+    
     const ui = {
       score: document.getElementById('score'),
       spd: document.getElementById('spd'),
@@ -171,40 +171,40 @@
       cooldowns: document.getElementById('cooldowns'),
       shop: document.getElementById('shop'),
       toast: document.getElementById('toast'),
-      btnReset: null, // not present in this trimmed UI
-      btnPause: null  // not present in this trimmed UI
+      btnReset: null, 
+      btnPause: null  
     };
 
-    // --- Core settings (no UI to change them) ---
+    
     const settings = {
       tilt: true,
       shake: true,
       volume: 0.8,
     dayNightCycle: true,
-  showHit: true // show hitboxes
+  showHit: true 
     };
 
-  // --- Developer Cheat flags ---
+  
   const CHEAT = { active:false, noHitboxes:false, speedBoost:1 };
 
-    // --- Economy / power-up costs ---
+    
     const PU_COST_FLY   = 8;
     const PU_COST_FEWER = 8;
     const PU_COST_RUSH  = 10;
 
-    // --- World globals (defined early) ---
+    
     const horizonFrac = 0.33;
   let mountains = [], clouds = [], birds = [];
   let grassPattern = null;
 
-    // --- Math helpers ---
+    
     const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
     const lerp  = (a,b,t)=>a+(b-a)*t;
     const rand  = (a,b)=>Math.random()*(b-a)+a;
     const choice= (arr)=>arr[Math.floor(Math.random()*arr.length)];
-    // ensure min horizontal gap from existing entities near the top
+    
     function pickLaneX(minGapNorm=0.18, minX=-0.9, maxX=0.9){
-      // Try a few random picks within [minX,maxX] to find a spot with enough gap from topmost obstacles/traffic
+      
       let best = clamp(0, minX, maxX), bestScore = -Infinity;
       for (let tries=0; tries<8; tries++){
         const cand = rand(minX, maxX);
@@ -214,37 +214,37 @@
         if (ok) return cand;
         if (score>bestScore){ bestScore=score; best=cand; }
       }
-      return best; // fallback to the least-colliding candidate
+      return best; 
     }
 
     function safeMaxNormForBase(base){
-      // Compute the maximum normalized center offset so a sprite of given base width stays fully on-road
+      
       const roadHalfW = road.botW * 0.5;
-      const scale = (typeof getScale==='function'?getScale():0.55); // match project()
-      const drawW = base * scale * 0.9; // from spriteDrawRect()
+      const scale = (typeof getScale==='function'?getScale():0.55); 
+      const drawW = base * scale * 0.9; 
       const halfDraw = drawW * 0.5;
       const lineW = 6, buffer = 6;
       const maxCenter = Math.max(0, roadHalfW - halfDraw - lineW*0.5 - buffer);
       return clamp(maxCenter / Math.max(1, roadHalfW), 0.05, 0.98);
     }
 
-    // --- Best score persistence ---
+    
     let bestScore = 0; try { bestScore = parseInt(localStorage.getItem('cr_best')||'0', 10) || 0; } catch {}
 
-    // --- Sprites ---
+    
     const SPRITES_META = {
       cone:   { w:64, h:80,  hb:[0.18,0.45,0.64,0.48], src:'drive_assets/cone.png' },
       barrel: { w:70, h:80,  hb:[0.2,0.25,0.6,0.65],  src:`data:image/svg+xml;utf8,${encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' width='70' height='80'><rect x='8' y='10' width='54' height='62' rx='10' ry='10' fill='#9ca3af' stroke='#4b5563' stroke-width='3'/><rect x='8' y='36' width='54' height='8' fill='#6b7280'/></svg>`)}` },
       tree:   { w:120,h:140, hb:[0.36,0.45,0.28,0.5],  src:'drive_assets/tree.png' },
   rock:   { w:90, h:60,  hb:[0.12,0.35,0.76,0.5],  src:'drive_assets/rock.png' },
-      // Traffic car sprites
+      
       car_blue:  { w:120, h:220, hb:[0.18,0.18,0.64,0.68], src:'drive_assets/bluecar.png' },
       car_red:   { w:120, h:220, hb:[0.18,0.18,0.64,0.68], src:'drive_assets/redcar.png' },
   car_white: { w:120, h:220, hb:[0.18,0.18,0.64,0.68], src:'drive_assets/whitecar.png' },
-      // Side decor image sprites
+      
       bush:      { w:120, h:110, hb:[0.2,0.3,0.6,0.5],  src:'drive_assets/bush.png' },
       billboard: { w:260, h:160, hb:[0.1,0.2,0.8,0.6],  src:'drive_assets/billboard.png' },
-  // Player car sprite
+  
   usercar:   { w:120, h:220, hb:[0.18,0.18,0.64,0.68], src:'drive_assets/usercar.png' }
     };
     const IMAGES = {};
@@ -262,25 +262,25 @@
       if(left===0) spritesReady=true;
     })();
 
-    // --- Resize / DPI ---
+    
     function buildGrassPattern(){
       try{
         const off = document.createElement('canvas');
         off.width = 96; off.height = 96;
         const g = off.getContext('2d');
-        // base
+        
         g.fillStyle = '#0e381d'; g.fillRect(0,0,off.width,off.height);
-        // noise tiles
+        
         for(let y=0;y<off.height;y+=6){
           for(let x=0;x<off.width;x+=6){
             const n = (Math.sin((x+y)*0.11) + Math.cos((x-y)*0.07))*0.25 + 0.5;
-            const shade = 0.75 + n*0.25; // 0.75..1.0
+            const shade = 0.75 + n*0.25; 
             const r = Math.round(18*shade), gg=Math.round(100*shade), b=Math.round(48*shade);
             g.fillStyle = `rgb(${r},${gg},${b})`;
             g.fillRect(x,y,6,6);
           }
         }
-        // a few blades
+        
         for(let i=0;i<120;i++){
           const x=Math.random()*off.width, y=Math.random()*off.height;
           const len = 4 + Math.random()*8, tilt = (Math.random()-0.5)*0.6;
@@ -307,7 +307,7 @@
     }
     window.addEventListener('resize', resize);
 
-  // --- Input ---
+  
   const keys = {a:false,d:false,w:false,s:false}; let lastSteer = 0;
     window.addEventListener('keydown', e => {
       if (e.repeat) return;
@@ -325,7 +325,7 @@
       if (e.key==='s' || e.key==='S' || e.key==='ArrowDown')  { keys.s=false; e.preventDefault(); }
     });
 
-    // --- Touch controls mapping ---
+    
     function setupTouchControls(){
       const left  = document.getElementById('btnLeft');
       const right = document.getElementById('btnRight');
@@ -334,7 +334,7 @@
       const pause = document.getElementById('btnPause');
       if (!left || !right || !accel || !brake || !pause) return;
 
-      // Prevent long-press menu and page scroll on touch only on canvas/controls
+      
       const preventers = [document.getElementById('game'), left, right, accel, brake, pause];
       preventers.forEach(el=>{
         if(!el) return;
@@ -351,7 +351,7 @@
         el.addEventListener('pointerup',   e=>{ e.preventDefault(); end(); });
         el.addEventListener('pointercancel', end);
         el.addEventListener('pointerleave',  end);
-        // Also support regular mouse/touch events as fallback
+        
         el.addEventListener('mousedown', e=>{ e.preventDefault(); active=true; down(); });
         window.addEventListener('mouseup', ()=> end());
         el.addEventListener('touchstart', e=>{ e.preventDefault(); active=true; down(); }, {passive:false});
@@ -365,7 +365,7 @@
       pause.addEventListener('click', ()=> togglePause());
     }
 
-    // Toggle visibility of shop/minimap based on state
+    
     function updateUIState(){
       const shopEl = document.getElementById('shop');
       const miniWrap = document.getElementById('minimap');
@@ -373,7 +373,7 @@
       if (miniWrap) miniWrap.style.display = (state==='play') ? 'block' : 'none';
     }
 
-    // --- Audio (swerve + crash only, no looping beeps) ---
+    
     let audioCtx = null;
     function getAudio(){ if(!audioCtx){ const Ctx = window.AudioContext || window.webkitAudioContext; audioCtx=new Ctx(); } return audioCtx; }
 
@@ -417,7 +417,7 @@
         src.connect(g).connect(ac.destination); src.start(); src.stop(ac.currentTime+dur+0.01);
       }catch(e){}
     }
-    // Custom coin sound (from drive_assets/coin.mp3) with synth fallback
+    
     const COIN_SOUND_SRC = 'drive_assets/coin.mp3';
     let coinAudioTemplate = null;
     function loadCoinAudio(){
@@ -425,22 +425,22 @@
         const a = new Audio(COIN_SOUND_SRC);
         a.preload = 'auto';
         a.crossOrigin = 'anonymous';
-        // Try to begin loading; browsers may defer until interaction but clone will still work after first gesture
+        
         a.load?.();
         coinAudioTemplate = a;
       }catch{ coinAudioTemplate = null; }
     }
     function playCoin(){
-      // Prefer your coin.mp3 if available; clone so overlapping picks don't cut off
+      
       try{
         if (coinAudioTemplate){
           const a = coinAudioTemplate.cloneNode(true);
           a.volume = Math.max(0, Math.min(1, 0.7 * settings.volume));
-          a.play().catch(()=>{ /* ignore; fallback below */ });
+          a.play().catch(()=>{  });
           return;
         }
       }catch{}
-      // Fallback: synth ding via WebAudio
+      
       try{
         const ac=getAudio(); const osc=ac.createOscillator(); const g=ac.createGain();
         osc.type='sine'; osc.frequency.setValueAtTime(880, ac.currentTime);
@@ -452,7 +452,7 @@
       }catch{}
     }
     function playCoin(){
-      // short pleasant ding using a sine and quick envelope
+      
       try{
         const ac=getAudio(); const osc=ac.createOscillator(); const g=ac.createGain();
         osc.type='sine'; osc.frequency.setValueAtTime(880, ac.currentTime);
@@ -464,7 +464,7 @@
       }catch(e){}
     }
 
-    // --- Game state ---
+    
     let state='menu';
     let score=0, coins=0, coinTimer=0;
     let baseSpeed=220, speedMul=1, elapsed=0;
@@ -476,18 +476,18 @@
   let spawnTimer=0, decorTimer=0, trafficTimer=0, pickupTimer=0;
     let spawnRateMul=1, fewerTimer=0, coinRushTimer=0;
     let shakeTime=0, shakeAmt=0, frames=0, fps=0, fpsAccum=0;
-  // Effective speed multiplier for this frame (includes throttle)
+  
   let speedMulNow = 1.0;
-    // Near-miss combo system
-    let combo = 1.0;       // score multiplier
-    let comboTime = 0.0;   // time until decay starts
+    
+    let combo = 1.0;       
+    let comboTime = 0.0;   
 
-    // --- Parallax ---
+    
     function seededRandom(seed){ let s=seed%2147483647; if(s<=0) s+=2147483646; return ()=> (s=s*16807%2147483647)/2147483647; }
     function buildMountains(){ const W=canvas.clientWidth,H=canvas.clientHeight,h=H*horizonFrac; const r=seededRandom(Math.floor(W*13+H*7)); mountains=[]; for(let i=0;i<6;i++){ const px=(i/5)*W, ph=60+r()*70, pw=180+r()*180; mountains.push({px,ph,pw}); } }
     function seedParallax(){ const W=canvas.clientWidth,H=canvas.clientHeight; const r=seededRandom(Math.floor(W*31+H*17)); clouds=[]; birds=[]; for(let i=0;i<8;i++) clouds.push({ x:r()*W, y:r()*H*0.25, s:r()*0.6+0.4, w:r()*140+120 }); for(let i=0;i<6;i++) birds.push({ x:r()*W, y:r()*H*0.22, s:r()*0.7+0.6 }); }
 
-    // --- Shop / power-ups ---
+    
     function refreshShop(){
       ui.coins.textContent = coins;
       ui.btnFly.disabled   = (state!=='play' || coins < PU_COST_FLY);
@@ -520,14 +520,14 @@
       } else showShopError('Not enough coins');
     });
 
-    // --- Start / pause ---
+    
   function togglePause(){ if(state==='play'){ state='pause'; toast('Paused'); } else if(state==='pause'){ state='play'; toast('Resumed'); } updateTouchUI(); updateUIState(); }
     if (ui.start) {
       ui.start.addEventListener('click', () => { if(state!=='play') start(); });
       ui.start.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); if(state!=='play') start(); }});
     }
 
-    // --- Responsive touch UI visibility ---
+    
   function isMobileLike(){ return window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 860; }
   function isPortrait(){ return window.innerHeight > window.innerWidth; }
     function updateTouchUI(){
@@ -541,24 +541,24 @@
       rh.style.display = show ? 'block' : 'none';
     }
 
-    // --- Projection ---
+    
     function getScale(){
-  // Fixed scale so car size doesn't change with acceleration
+  
   return 0.55;
     }
     function project(x, z){
       const W=canvas.clientWidth,H=canvas.clientHeight;
       const roadW = road.botW;
       const sx=W/2 + x*(roadW*0.5);
-      // Top-down: map z∈[0,2.2] to screen y∈[0,H]
+      
       const sy = (z/2.2) * H;
       const scale = getScale();
       return {x:sx,y:sy,scale};
     }
 
-    // --- Spawners ---
+    
     function spawnObstacle(){
-      // Cones less common; occasional rock
+      
       const t = choice(['cone','cone','cone','cone','cone','cone','rock']);
       const cd=carDrawRect();
       const minGapNorm = Math.min(0.4, (cd.carWidth / road.botW) + 0.06);
@@ -568,18 +568,18 @@
       const z=-0.2; obstacles.push({type:t,x,z,base,rot:Math.random()*Math.PI});
     }
   function spawnDecor(){
-    // Only spawn side decor that has images in drive_assets
+    
   const type = choice(['tree','bush','bush','tree','billboard','bush','tree']);
     const side = Math.random()<0.5 ? -1 : 1;
     const x = side * rand(1.08, 1.34);
   const base = (type==='billboard'? rand(240, 320) : type==='tree' ? rand(150, 200) : rand(110, 140));
     const cand = {type,x,z:-0.2,base,seg:0,side};
-    // Prevent overlap with recent decors near the top
+    
     const cr = spriteDrawRect(cand.type, cand.x, cand.z, cand.base);
     for (let i=decors.length-1; i>=0; i--){
       const d = decors[i]; if (d.z >= 0.6) break;
       const dr = spriteDrawRect(d.type, d.x, d.z, d.base);
-      if (rectsOverlap(cr, dr)) return; // skip this spawn
+      if (rectsOverlap(cr, dr)) return; 
     }
     decors.push(cand);
   }
@@ -590,12 +590,12 @@
       const base=Math.round(SPRITES_META[type].w * 1.15);
       const maxNormX = safeMaxNormForBase(base);
       const laneX=pickLaneX(minGapNorm, -maxNormX, maxNormX);
-      // Add slight forward relative speed (dz factor) and lane change plan
+      
       traffic.push({type,x:laneX,z:-0.2,base,vx:rand(-0.02,0.02), dz: rand(0.9, 1.15), laneTarget: laneX + rand(-0.25,0.25), laneTimer: rand(1.0, 3.0)});
     }
   function spawnPickup(){ const base=80; const maxNormX=safeMaxNormForBase(base); const x=rand(-maxNormX,maxNormX); pickups.push({type:'coin',x,z:-0.2,base,spin:0}); }
 
-    // --- Draw helpers ---
+    
     function roundRect(x,y,w,h,r){
       ctx.beginPath(); ctx.moveTo(x+r,y); ctx.lineTo(x+w-r,y); ctx.quadraticCurveTo(x+w,y,x+w,y+r);
       ctx.lineTo(x+w,y+h-r); ctx.quadraticCurveTo(x+w,y+h,x+w-r,y+h); ctx.lineTo(x+r,y+h);
@@ -603,7 +603,7 @@
     }
     function spriteDrawRect(type, xNorm, z, base){
       const p=project(xNorm,z); const meta=SPRITES_META[type];
-      // If we have an actual image, prefer its natural aspect ratio
+      
       let aspect = meta.h/meta.w;
       const im = IMAGES[type];
       if (im && im.naturalWidth && im.naturalHeight) aspect = im.naturalHeight / im.naturalWidth;
@@ -617,12 +617,12 @@
 
     function drawObstacle(o){
       const dr=spriteDrawRect(o.type,o.x,o.z,o.base);
-      // shadow under obstacle
+      
       ctx.fillStyle='rgba(0,0,0,0.25)';
       ctx.beginPath();
       ctx.ellipse(dr.x+dr.w/2, dr.y+dr.h*0.95, dr.w*0.55, dr.h*0.18, 0,0,Math.PI*2);
       ctx.fill();
-      // sprite or vector fallback
+      
       if (spritesReady && IMAGES[o.type] && IMAGES[o.type].complete) {
         ctx.drawImage(IMAGES[o.type], dr.x, dr.y, dr.w, dr.h);
       } else {
@@ -644,19 +644,19 @@
       }
       if (settings.showHit){
         let r=spriteHitRect(o.type,dr);
-        r = shrinkRect(r, 0.9, 0.85); // match obstacle collision shrink
+        r = shrinkRect(r, 0.9, 0.85); 
         ctx.strokeStyle='#ff3333'; ctx.lineWidth=2; ctx.strokeRect(r.x,r.y,r.w,r.h);
       }
     }
 
     function drawTraffic(c){
       const dr=spriteDrawRect(c.type, c.x, c.z, c.base);
-      // shadow
+      
       ctx.fillStyle='rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(dr.x+dr.w/2, dr.y+dr.h*0.95, dr.w*0.55, dr.h*0.18, 0,0,Math.PI*2); ctx.fill();
-      // sprite
+      
       if (spritesReady && IMAGES[c.type] && IMAGES[c.type].complete) { ctx.drawImage(IMAGES[c.type], dr.x, dr.y, dr.w, dr.h); }
       else {
-        // fallback simple car shape
+        
         ctx.save(); ctx.translate(dr.x+dr.w/2, dr.y+dr.h*0.55); ctx.scale(dr.w/100, dr.h/160);
         ctx.fillStyle='#10b981'; roundRect(-45,-40,90,120,12); ctx.fill();
         ctx.fillStyle='#0b1220'; roundRect(-32,-38,64,38,8); ctx.fill();
@@ -664,7 +664,7 @@
       }
       if (settings.showHit){
         let r=spriteHitRect(c.type, dr);
-        r = shrinkRect(r, 0.96, 0.94); // match traffic collision shrink
+        r = shrinkRect(r, 0.96, 0.94); 
         ctx.strokeStyle='#ff3333'; ctx.lineWidth=2; ctx.strokeRect(r.x,r.y,r.w,r.h);
       }
     }
@@ -677,20 +677,20 @@
       ctx.restore();
       if (settings.showHit){
         let r={ x: pr.x - size/2, y: pr.y - size, w: size, h: size };
-        r = shrinkRect(r, 0.9, 0.9); // match pickup collision
+        r = shrinkRect(r, 0.9, 0.9); 
         ctx.strokeStyle='#ff3333'; ctx.lineWidth=2; ctx.strokeRect(r.x,r.y,r.w,r.h);
       }
     }
 
-    // --- Off-road decor ---
+    
     function drawDecor(d){
-      // Only image-backed side decor
+      
       const dr = spriteDrawRect(d.type, d.x, d.z, d.base);
       const im = IMAGES[d.type];
       if (im && im.complete) {
         ctx.drawImage(im, dr.x, dr.y, dr.w, dr.h);
       } else {
-        // Fallback simple shapes until image loads
+        
         ctx.save(); ctx.translate(dr.x+dr.w/2, dr.y+dr.h/2); ctx.scale(dr.w/100, dr.h/100);
         const n = nightFactor();
         if (d.type==='billboard'){
@@ -700,9 +700,9 @@
         } else if (d.type==='tree'){
           ctx.fillStyle= n>0.5 ? '#1a6c3a' : '#22c55e'; ctx.beginPath(); ctx.ellipse(0,-10,40,30,0,0,Math.PI*2); ctx.fill();
           ctx.fillStyle='#8b5a2b'; roundRect(-4,10,8,40,4); ctx.fill();
-          // simple highlight
+          
           ctx.fillStyle = 'rgba(255,255,255,0.08)'; roundRect(-20,-26,40,12,6); ctx.fill();
-        } else { // bush
+        } else { 
           ctx.fillStyle= n>0.5 ? '#14532d' : '#166534'; ctx.beginPath(); ctx.ellipse(-16,10,22,20,0,0,Math.PI*2); ctx.fill();
           ctx.beginPath(); ctx.ellipse(10,12,26,22,0,0,Math.PI*2); ctx.fill();
           ctx.fillStyle= n>0.5 ? '#1f8f4a' : '#22c55e'; ctx.beginPath(); ctx.ellipse(0,0,18,16,0,0,Math.PI*2); ctx.fill();
@@ -711,36 +711,36 @@
       }
     }
 
-    // --- Car ---
+    
     function carDrawRect(){
       const W=canvas.clientWidth,H=canvas.clientHeight;
       const baseY=H-Math.min(200,H*0.28);
       const lift=player.flyTime>0?40+Math.sin(performance.now()/120)*6:0;
       const carY=baseY-lift;
-      // Width: match NPC cars; Height: keep from a slightly larger "before" size (no change to height)
+      
       const pScale = getScale();
       const baseWNpc = Math.round(SPRITES_META['car_blue'].w * 1.15);
       const aspect = (IMAGES['usercar'] && IMAGES['usercar'].naturalWidth && IMAGES['usercar'].naturalHeight)
         ? (IMAGES['usercar'].naturalHeight / IMAGES['usercar'].naturalWidth)
         : (SPRITES_META.usercar.h / SPRITES_META.usercar.w);
-      const carWidth = baseWNpc * pScale; // match others' width
-      const beforeFactor = 1.10; // visual height from "before" size (~10% larger look)
-      const carHeight = (baseWNpc * pScale * beforeFactor) * aspect; // don't touch height when shrinking width
+      const carWidth = baseWNpc * pScale; 
+      const beforeFactor = 1.10; 
+      const carHeight = (baseWNpc * pScale * beforeFactor) * aspect; 
       const p=project(player.x,1.0);
       return {cx:p.x, cy:carY, carWidth, carHeight, tilt:(settings.tilt?player.tilt:0), lift};
     }
     function getCarHitboxMeta(){
       const cd = carDrawRect();
-      // Build hitbox from the usercar sprite hb proportions to avoid distortion
+      
       const hb = SPRITES_META.usercar.hb || [0.18,0.18,0.64,0.68];
       const pseudoW = cd.carWidth * 0.9;
       const pseudoH = cd.carHeight * 0.9;
       const angle = cd.tilt * (cd.lift>0?0.7:1);
-  // Slightly narrower and taller while preserving the hitbox center
+  
   const cxFrac = hb[0] + hb[2]/2;
   const cyFrac = hb[1] + hb[3]/2;
-  const widthScale = 0.88;   // 12% less wide
-  const heightScale = 1.12;  // 12% taller
+  const widthScale = 0.88;   
+  const heightScale = 1.12;  
   const wFrac = Math.min(1, Math.max(0, hb[2] * widthScale));
   const hFrac = Math.min(1, Math.max(0, hb[3] * heightScale));
   const Lx = -pseudoW/2 + (cxFrac - wFrac/2) * pseudoW;
@@ -750,7 +750,7 @@
       return { cx: cd.cx, cy: cd.cy, angle, w, h, Lx, Ly };
     }
     function getCarRect(){
-      // Build an oriented rect that follows car tilt, then return its axis-aligned bounds for collisions
+      
       const meta = getCarHitboxMeta();
       const {cx, cy, angle, w, h, Lx, Ly} = meta;
       const c = Math.cos(angle), s = Math.sin(angle);
@@ -765,23 +765,23 @@
     }
     function drawCar(){
       const cd=carDrawRect(); const cx=cd.cx, cy=cd.cy, carWidth=cd.carWidth, carHeight=cd.carHeight, lift=cd.lift;
-  // Headlight beams removed per request
-      // body as sprite (keep tilt)
+  
+      
       ctx.save(); ctx.translate(cx, cy); ctx.rotate(cd.tilt*(lift>0?0.7:1));
-      // Flashing when fly is about to end (last 0.8s)
+      
       let flash = 0;
       if (player.flyTime > 0 && player.flyTime < 0.8){
         const t = performance.now()/100;
-        flash = (Math.floor(t)%2===0) ? 1 : 0; // toggle every ~100ms
+        flash = (Math.floor(t)%2===0) ? 1 : 0; 
       }
-      // Use spriteDrawRect logic manually to anchor at player position
+      
       const pseudo = { w: carWidth*0.9, h: carHeight*0.9 };
       if (spritesReady && IMAGES['usercar'] && IMAGES['usercar'].complete) {
-        // draw relative to translated origin so rotation centers correctly
+        
         if (!flash){
           ctx.drawImage(IMAGES['usercar'], -pseudo.w/2, -pseudo.h, pseudo.w, pseudo.h);
         } else {
-          // draw sprite with a quick white tint overlay
+          
           ctx.drawImage(IMAGES['usercar'], -pseudo.w/2, -pseudo.h, pseudo.w, pseudo.h);
           ctx.globalCompositeOperation = 'screen';
           ctx.fillStyle = 'rgba(255,255,255,0.55)';
@@ -789,7 +789,7 @@
           ctx.globalCompositeOperation = 'source-over';
         }
       } else {
-        // fallback to vector body if sprite not ready
+        
         const grd=ctx.createLinearGradient(0,-carHeight/2,0,carHeight/2); grd.addColorStop(0,'#5eead4'); grd.addColorStop(1,'#0ea5e9');
         ctx.fillStyle=grd; roundRect(-carWidth/2,-carHeight/2,carWidth,carHeight,14); ctx.fill();
         if (flash){ ctx.save(); ctx.globalCompositeOperation='screen'; ctx.fillStyle='rgba(255,255,255,0.5)'; roundRect(-carWidth/2,-carHeight/2,carWidth,carHeight,14); ctx.fill(); ctx.restore(); }
@@ -799,7 +799,7 @@
       ctx.restore();
 
   if (settings.showHit){
-    // Draw rotated hitbox to follow tilt
+    
     const meta = getCarHitboxMeta();
     ctx.save();
     ctx.translate(meta.cx, meta.cy);
@@ -810,12 +810,12 @@
   }
     }
 
-    // --- Background ---
+    
     function nightFactor(){ if(!settings.dayNightCycle) return 0.25; const t=(performance.now()/1000)/40; return Math.sin(t*Math.PI*2)*0.5+0.5; }
     let centerDashOffset=0, grassOffset=0;
     function drawBackground(dt){
       const W=canvas.clientWidth,H=canvas.clientHeight;
-      // Full top-down grass background (no sky)
+      
       if (!grassPattern) buildGrassPattern();
       const screenDY = (baseSpeed*speedMulNow) * (H/2.2) / 900;
       if (state === 'play') grassOffset -= dt * screenDY;
@@ -828,31 +828,31 @@
         ctx.fillStyle='#0f3b1d'; ctx.fillRect(0,0,W,H);
       }
 
-      // Road as a centered rectangle
+      
       const roadLeft = W/2 - road.botW/2;
       ctx.fillStyle='#1f1f1f'; ctx.fillRect(roadLeft,0,road.botW,H);
-  // Shoulders
+  
   ctx.fillStyle='#2a2a2a';
   ctx.fillRect(roadLeft-10,0,10,H);
   ctx.fillRect(roadLeft+road.botW,0,10,H);
-      // Road edges
+      
       ctx.strokeStyle='#cfcfcf'; ctx.lineWidth=6; ctx.setLineDash([]);
       ctx.beginPath(); ctx.moveTo(roadLeft,0); ctx.lineTo(roadLeft,H); ctx.stroke();
       ctx.beginPath(); ctx.moveTo(roadLeft+road.botW,0); ctx.lineTo(roadLeft+road.botW,H); ctx.stroke();
-  // Center vertical dashed line scrolling; match obstacle screen-speed and freeze when not playing
-  const dashDY = (baseSpeed*speedMulNow) * (H/2.2) / 900; // same factor as obstacles (900)
-  if (state === 'play') centerDashOffset -= dt * dashDY; // invert to move downward
+  
+  const dashDY = (baseSpeed*speedMulNow) * (H/2.2) / 900; 
+  if (state === 'play') centerDashOffset -= dt * dashDY; 
       const spacing=50, dashLen=26, x=W/2;
       ctx.strokeStyle='#ffd966'; ctx.lineWidth=4;
       for(let y = - (centerDashOffset % spacing); y < H; y += spacing){
         ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y+dashLen); ctx.stroke();
       }
-      // Cat's eyes along the center
+      
       ctx.fillStyle = 'rgba(255,255,200,0.45)';
       for(let y = - (centerDashOffset % (spacing)); y < H; y += spacing){
         ctx.fillRect(x-1, y+dashLen+4, 2, 2);
       }
-      // Edge posts along shoulders
+      
       const postSpacing = 100, postH = 14, postW = 3;
       const yStart = - (centerDashOffset % postSpacing);
       ctx.fillStyle = '#e5e7eb';
@@ -860,7 +860,7 @@
         ctx.fillRect(roadLeft-14, y, postW, postH);
         ctx.fillRect(roadLeft+road.botW+11, y, postW, postH);
       }
-      // Rumble strip dashes just inside road edges
+      
       ctx.fillStyle = '#3a3a3a';
       const rbx1 = roadLeft + 8, rbx2 = roadLeft + road.botW - 12;
       for(let y = - (centerDashOffset % 22); y < H; y += 22){
@@ -869,11 +869,11 @@
       }
     }
 
-    // --- Collision ---
+    
     function rectsOverlap(a,b){ return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y; }
   function shrinkRect(r, fx=0.9, fy=0.85){ const nx=r.x + r.w*(1-fx)/2, ny=r.y + r.h*(1-fy)/2; return { x:nx, y:ny, w:r.w*fx, h:r.h*fy }; }
 
-    // --- Game flow ---
+    
     function start(){
       score=0; coins=0; coinTimer=0; speedMul=1; baseSpeed=220; elapsed=0;
       player.x=0; player.vx=0; player.tilt=0; player.flyTime=0; player.invuln=1.0;
@@ -897,55 +897,55 @@
       }
     }
 
-    // --- Update ---
+    
     let last=0;
     function update(dt){
-      // FPS
+      
       frames++; fpsAccum+=dt; if(fpsAccum>=0.5){ fps=Math.round(frames/fpsAccum); frames=0; fpsAccum=0; ui.fps.textContent=fps; }
 
-      // Difficulty curves: chill → chaos
+      
       elapsed += dt;
-  const slowPhase = clamp(1 - Math.min(elapsed, 60)/60, 0, 1);    // 1→0 over first minute
-  const chaos     = clamp((elapsed - 60) / 240, 0, 1);            // 0 at 60s → 1 at 5min
+  const slowPhase = clamp(1 - Math.min(elapsed, 60)/60, 0, 1);    
+  const chaos     = clamp((elapsed - 60) / 240, 0, 1);            
   const curve     = (1 - slowPhase)*0.5 + chaos*0.5; 
-  // Faster overall game speed
+  
   baseSpeed = lerp(300, 700, curve); 
-  // Higher dynamic multiplier envelope
+  
   speedMul  = lerp(1.2, 2.5, curve); 
-  // Stronger forward acceleration
-  const ACCEL_RATE = 1.9;  // per second
-  const BRAKE_RATE = 1.6;  // per second
-  const DRAG_RATE  = 1.0;  // per second toward 0
-  const MAX_POS    = 1.15; // max positive thrust
-  const MAX_NEG    = 0.45; // max negative thrust
+  
+  const ACCEL_RATE = 1.9;  
+  const BRAKE_RATE = 1.6;  
+  const DRAG_RATE  = 1.0;  
+  const MAX_POS    = 1.15; 
+  const MAX_NEG    = 0.45; 
   if (keys.w) player.thrust = Math.min(MAX_POS, player.thrust + ACCEL_RATE*dt);
   if (keys.s) player.thrust = Math.max(-MAX_NEG, player.thrust - BRAKE_RATE*dt);
   if (!keys.w && !keys.s){
     if (player.thrust>0) player.thrust = Math.max(0, player.thrust - DRAG_RATE*dt);
     else if (player.thrust<0) player.thrust = Math.min(0, player.thrust + DRAG_RATE*dt);
   }
-  const BASE_THRUST = 0.5; // baseline forward boost even without accelerating
+  const BASE_THRUST = 0.5; 
   speedMulNow = speedMul * Math.max(0.1, 1 + BASE_THRUST + player.thrust) * (CHEAT.speedBoost||1);
 
-      // Controls
+      
       const steer = (keys.d?1:0) - (keys.a?1:0);
       if (steer!==0) triggerSwerve(steer);
-      // Apply steering acceleration
+      
       player.vx += steer * player.accel * dt;
-      // Small decay when no input: quickly ease to a stop instead of snapping
+      
       if (steer===0){
-        const decel = player.friction * dt; // fairly quick due to higher friction
+        const decel = player.friction * dt; 
         if (Math.abs(player.vx) <= decel) player.vx = 0; else player.vx += -Math.sign(player.vx) * decel;
-        if (Math.abs(player.vx) < 0.03) player.vx = 0; // tiny deadzone
+        if (Math.abs(player.vx) < 0.03) player.vx = 0; 
       }
-      // Tighter clamp for snappier control
+      
       player.vx = clamp(player.vx, -3.0, 3.0);
-      // Keep the car fully within the road edges using visible width (prevents peeking past lines)
+      
       {
         const cd = carDrawRect();
         const roadHalfW = road.botW * 0.5;
         const carHalfVisible = cd.carWidth * 0.5;
-        const lineW = 6, extra = 6; // account for edge line width and a small buffer
+        const lineW = 6, extra = 6; 
         const maxCenter = Math.max(0, roadHalfW - carHalfVisible - lineW*0.5 - extra);
         const maxNormX = clamp(maxCenter / Math.max(1, roadHalfW), 0.1, 0.98);
   if (player.vx !== 0) player.x = clamp(player.x + player.vx * dt * 0.68, -maxNormX, maxNormX);
@@ -953,40 +953,40 @@
       const targetTilt=(player.vx/2.6)*player.maxTilt;
       player.tilt += (targetTilt - player.tilt) * (1 - Math.pow(0.001, dt));
 
-      // Power-ups
+      
       if (player.flyTime>0)  player.flyTime=Math.max(0, player.flyTime-dt);
       if (player.invuln>0)   player.invuln=Math.max(0, player.invuln-dt);
       if (fewerTimer>0){ fewerTimer=Math.max(0,fewerTimer-dt); if (fewerTimer===0) spawnRateMul=1; }
       if (coinRushTimer>0)   coinRushTimer=Math.max(0, coinRushTimer-dt);
 
-      // Coins over time
+      
       coinTimer += dt; if (coinTimer>=5){ coinTimer-=5; coins+=1; refreshShop(); toast('+1 coin'); }
 
-      // Spawn timers
+      
       spawnTimer-=dt; decorTimer-=dt; trafficTimer-=dt; pickupTimer-=dt;
 
-      // Spawns
+      
   const baseInterval = lerp(2.6, 0.9, curve);
   const minSpawn = (baseInterval / speedMulNow) / Math.max(0.0001, spawnRateMul);
 
       if (coinRushTimer>0){
-        // Coin-only mode
+        
         if (pickupTimer<=0){ spawnPickup(); if (Math.random()<0.55) spawnPickup(); pickupTimer=lerp(0.7, 0.45, chaos); }
         if (decorTimer<=0){ spawnDecor(); if (Math.random()<0.35) spawnDecor(); decorTimer=rand(1.2, 2.0); }
       } else {
         if (spawnTimer<=0){ spawnObstacle(); if (Math.random() < (0.12 + 0.18*chaos) * spawnRateMul) spawnObstacle(); spawnTimer=minSpawn; }
         if (decorTimer<=0){
-          // Spawn more frequent side decor with slight clustering
+          
           spawnDecor(); if (Math.random()<0.45) spawnDecor();
           decorTimer=rand(1.1, 2.2);
         }
-  // Fewer cars on mobile (less space)
+  
   const baseLimit = Math.round(lerp(3, 11, chaos));
   const trafficLimit = isMobileLike() ? Math.max(2, Math.floor(baseLimit * 0.6)) : baseLimit;
         if (trafficTimer<=0){
           if (traffic.length < trafficLimit) {
             spawnTraffic();
-            // Often spawn a second car if there's room
+            
             const secondProb = (isMobileLike() ? 0.5 : 1.0) * lerp(0.35, 0.6, chaos);
             if (traffic.length < trafficLimit && Math.random() < secondProb) spawnTraffic();
           }
@@ -997,7 +997,7 @@
 
       const carR=getCarRect();
 
-      // Helper: award near-miss once per object when close but not colliding
+      
       function tryNearMiss(obj, r, carRect){
         if (!obj || obj.nm) return;
         const carTop = carRect.y, carBottom = carRect.y + carRect.h;
@@ -1010,9 +1010,9 @@
         if (distX < threshold){
           obj.nm = true;
           combo = Math.min(5.0, combo + 0.25); comboTime = 1.6;
-          // Reward: +1 coin with popup and sound
+          
           coins += 1; refreshShop(); try{ playCoin(); }catch{}
-          // transient toast for near-miss
+          
           try{
             ui.toast.textContent = 'near miss! +1 coin';
             ui.toast.classList.add('show');
@@ -1021,13 +1021,13 @@
         }
       }
 
-      // Obstacles
+      
       for (let i=obstacles.length-1;i>=0;i--){
   const o=obstacles[i]; o.z += dt*(baseSpeed*speedMulNow)/900;
-        // Remove only when fully off-screen bottom
+        
         const drTest = spriteDrawRect(o.type, o.x, o.z, o.base);
         if (drTest.y > canvas.clientHeight) { obstacles.splice(i,1); continue; }
-        // ensure stays on-road (e.g., after resize)
+        
         { const maxNormX=safeMaxNormForBase(o.base); o.x = clamp(o.x, -maxNormX, maxNormX); }
         const dr=spriteDrawRect(o.type,o.x,o.z,o.base); let r=spriteHitRect(o.type,dr);
         r = shrinkRect(r, 0.9, 0.85); const carRS = shrinkRect(carR, 0.9, 0.9);
@@ -1038,19 +1038,19 @@
   else { tryNearMiss(o, r, carR); }
       }
 
-    // Traffic
+    
       for (let i=traffic.length-1;i>=0;i--){
         const c=traffic[i];
-        // independent forward speed factor
+        
   c.z += dt*(baseSpeed*speedMulNow)* (c.dz || 1) / 1000;
-        // lane change towards a soft target
+        
         c.laneTimer = (c.laneTimer || 0) - dt;
         if (c.laneTimer <= 0) {
           c.laneTarget = clamp((c.laneTarget || c.x) + rand(-0.5,0.5), -0.95, 0.95);
           c.laneTimer = rand(1.0, 3.0);
         }
         let steerX = clamp((c.laneTarget - c.x), -0.6, 0.6);
-        // Dampen sudden swerves near player to reduce unfair merges
+        
         let damp = 1.0, noiseAmp = 0.03;
         try {
           const cd = carDrawRect();
@@ -1069,7 +1069,7 @@
         c.vx = clamp(c.vx, -0.35, 0.35);
         c.x += c.vx * dt;
         const maxNormX = safeMaxNormForBase(c.base); c.x=clamp(c.x,-maxNormX,maxNormX);
-        // Remove only when fully off-screen bottom
+        
         { const drTest=spriteDrawRect(c.type,c.x,c.z,c.base); if (drTest.y > canvas.clientHeight) { traffic.splice(i,1); continue; } }
   if (!CHEAT.noHitboxes && player.flyTime<=0 && player.invuln<=0){
           const dr=spriteDrawRect(c.type,c.x,c.z,c.base); let r=spriteHitRect(c.type, dr); r = shrinkRect(r, 0.96, 0.94); const carRS = shrinkRect(carR, 0.9, 0.9);
@@ -1081,14 +1081,14 @@
         }
       }
 
-      // Pickups
+      
       for (let i=pickups.length-1;i>=0;i--){
   const pu=pickups[i]; pu.z += dt*(baseSpeed*speedMulNow)/980;
-        // Remove only when fully off-screen bottom
+        
         { const prTest=project(pu.x, pu.z); const sizeTest=pu.base*prTest.scale*0.6; if (prTest.y - sizeTest > canvas.clientHeight) { pickups.splice(i,1); continue; } }
         { const maxNormX=safeMaxNormForBase(pu.base); pu.x = clamp(pu.x, -maxNormX, maxNormX); }
   const p=project(pu.x,pu.z); const size=pu.base*p.scale*0.6; let r={x:p.x-size/2,y:p.y-size,w:size,h:size}; r = shrinkRect(r,0.9,0.9);
-        // While flying, slightly expand car rect for pickups so coins still collect
+        
         const carForPickup = (player.flyTime>0) ? shrinkRect(carR, 1.05, 1.15) : carR;
         if (rectsOverlap(carForPickup,r)){
           coins+=1; refreshShop(); pickups.splice(i,1);
@@ -1097,7 +1097,7 @@
         }
       }
 
-      // Off-road decor update
+      
       for (let i=decors.length-1;i>=0;i--){
         const d=decors[i];
         d.z += dt * (baseSpeed*speedMulNow) / 1000;
@@ -1106,9 +1106,9 @@
         if (prTest.y > canvas.clientHeight + 10){ decors.splice(i,1); continue; }
       }
 
-    // Combo decay and HUD
+    
     if (combo > 1){ if (comboTime > 0) comboTime = Math.max(0, comboTime - dt); else combo = Math.max(1, combo - 0.4*dt); }
-    // HUD / scoring
+    
     score += dt * 10 * speedMulNow * combo; ui.score.textContent=Math.floor(score);
   ui.spd.textContent=Math.floor(120 + 220*speedMulNow);
     if (ui.combo) ui.combo.textContent = combo.toFixed(2) + 'x';
@@ -1117,7 +1117,7 @@
       ui.cooldowns.textContent = `Invulnerability ${player.invuln.toFixed(1)}s`;
     }
 
-    // --- Drawing composition ---
+    
     function drawWorldLists(dt){
       decors.sort((a,b)=>a.z-b.z); for(const d of decors) drawDecor(d);
       obstacles.sort((a,b)=>a.z-b.z); for(const o of obstacles) drawObstacle(o);
@@ -1137,7 +1137,7 @@
     }
 
     function drawEverything(dt){
-      // quick shake decay (fast on death)
+      
       if (shakeTime>0){ const decay = (state==='play'?1.0:3.0); shakeTime=Math.max(0, shakeTime-dt*decay); }
       if (settings.shake && shakeTime>0){
         const a=(Math.random()*2-1)*shakeAmt*(shakeTime/0.45);
@@ -1146,15 +1146,15 @@
       } else {
         drawBackground(dt); drawWorldLists(dt);
       }
-      // Day-night tint overlay (subtle)
+      
       try {
         const W=canvas.clientWidth,H=canvas.clientHeight; const n=nightFactor();
         if (n>=0){
-          if (n>0.5){ // night – cool blue tint increasing up to ~0.25 alpha
+          if (n>0.5){ 
             const a = (n-0.5)*0.35;
             ctx.fillStyle = `rgba(8, 20, 56, ${a.toFixed(3)})`;
             ctx.fillRect(0,0,W,H);
-          } else { // day – very subtle warm haze
+          } else { 
             const a = (0.5-n)*0.08;
             if (a>0){ ctx.fillStyle = `rgba(255, 210, 130, ${a.toFixed(3)})`; ctx.fillRect(0,0,W,H); }
           }
@@ -1163,20 +1163,20 @@
       drawUIExtras();
     }
 
-    // --- Frame loop ---
+    
     function frame(t){
       const time=t/1000; const dt=Math.min(0.033, time - last || 0); last=time;
       if (state==='play') update(dt);
       drawEverything(dt);
   if (state==='menu' || state==='over') ui.overlay.style.display='block'; else ui.overlay.style.display='none';
-  // keep touch UI in sync if viewport or state changes mid-frame
+  
   updateTouchUI();
   updateRotateHint();
   updateUIState();
       requestAnimationFrame(frame);
     }
 
-    // --- Start / Tests / Boot ---
+    
     function startButtonTest(){ if (!ui.start) return; const prev=state; state='menu'; ui.start.dispatchEvent(new Event('click')); console.assert(state==='play','Start button should trigger start()'); state=prev; }
     function projectionSanityTest(){ const near=project(0,0.1), far=project(0,1.5); console.assert(far.y>near.y,'Projected y should grow with z'); }
     function shopButtonsTest(){
@@ -1224,7 +1224,7 @@
       refreshShop(); toast('Good luck! Best: '+bestScore);
     }
 
-    // Bind ESC to pause in global handler above; wire start button already done.
+    
   resize();
   setupTouchControls();
   loadCoinAudio();
@@ -1233,7 +1233,7 @@
   setTimeout(runTests, 10);
 
 
-  // --- Console cheat trigger ---
+  
   try{
     Object.defineProperty(window, 'cheatcode', {
       configurable: true,
@@ -1244,13 +1244,13 @@
         return 'CHEAT ENABLED';
       }
     });
-    // Optional: allow turning it off with resetcheat
+    
     Object.defineProperty(window, 'resetcheat', {
       configurable: true,
       get(){ CHEAT.active=false; CHEAT.noHitboxes=false; CHEAT.speedBoost=1; try{ toast('CHEAT disabled'); }catch{}; console.info('CHEAT disabled'); return 'CHEAT disabled'; }
     });
 
-    // Callable fallbacks for consoles that don't resolve bare identifiers to window props
+    
     window.enableCheats = function(){
   CHEAT.active=true; CHEAT.noHitboxes=true; CHEAT.speedBoost=500;
   try{ toast('CHEAT: no hitboxes + 500x speed'); }catch{}
@@ -1263,7 +1263,7 @@
       console.info('CHEAT disabled');
       return 'CHEAT disabled';
     };
-    // convenient alias
+    
     window.cheat = window.enableCheats;
   }catch{}
   })();

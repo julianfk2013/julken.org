@@ -1,50 +1,37 @@
-// Galactic Assault - Simple Space Background
-// Clean starfield without distracting elements
-
 const Background = {
-  // Star layers for parallax effect
   stars: {
-    far: [],      // Slowest, smallest, dimmest
-    mid: [],      // Medium speed and size
-    near: [],     // Fastest, largest, brightest
+    far: [],
+    mid: [],
+    near: [],
   },
 
-  // Canvas dimensions
   width: 0,
   height: 0,
 
-  // Scroll speed multiplier
   scrollSpeed: 1.0,
 
-  // Meteor system
   meteors: [],
   meteorSpawnTimer: 0,
   meteorSpawnInterval: 3,
 
-  // Space dust for atmosphere
   dust: [],
 
-  // Nebula clouds
   nebulae: [],
 
-  // New decoration systems
   asteroids: [],
   stations: [],
   lightningBolts: [],
   solarFlare: null,
   energyWaves: [],
 
-  // Initialize background
   init(width, height) {
     this.width = width;
     this.height = height;
 
-    // Generate star layers
     this.generateStars('far', 100, 1, 0.4, 0.3);
     this.generateStars('mid', 60, 1.5, 0.6, 0.8);
     this.generateStars('near', 30, 2, 0.9, 1.5);
 
-    // Generate space dust
     for (let i = 0; i < 80; i++) {
       this.dust.push({
         x: Math.random() * this.width,
@@ -56,7 +43,6 @@ const Background = {
       });
     }
 
-    // Generate distant nebulae (stationary background decoration)
     for (let i = 0; i < 5; i++) {
       this.nebulae.push({
         x: Math.random() * this.width,
@@ -69,7 +55,6 @@ const Background = {
       });
     }
 
-    // Generate asteroid field
     for (let i = 0; i < 15; i++) {
       this.asteroids.push({
         x: Math.random() * this.width,
@@ -81,7 +66,6 @@ const Background = {
       });
     }
 
-    // Generate space stations (1-2 distant stations with lights)
     if (Math.random() < 0.5) {
       this.stations.push({
         x: Math.random() * this.width,
@@ -91,7 +75,6 @@ const Background = {
         lights: []
       });
 
-      // Generate random lights on station
       for (let i = 0; i < 5; i++) {
         this.stations[0].lights.push({
           x: (Math.random() - 0.5) * this.stations[0].size,
@@ -103,7 +86,6 @@ const Background = {
     }
   },
 
-  // Generate stars for a layer
   generateStars(layer, count, size, alpha, speed) {
     this.stars[layer] = [];
 
@@ -121,7 +103,6 @@ const Background = {
     }
   },
 
-  // Generate lightning path with segments
   generateLightningPath(x1, y1, x2, y2, segments) {
     const points = [{x: x1, y: y1}];
     for (let i = 1; i < segments; i++) {
@@ -135,20 +116,16 @@ const Background = {
     return points;
   },
 
-  // Update background (scrolling, animations)
   update(dt) {
     const scrollMultiplier = this.scrollSpeed;
 
-    // Update all star layers
     ['far', 'mid', 'near'].forEach(layer => {
       this.stars[layer].forEach(star => {
         star.y += star.speed * scrollMultiplier * dt * 60;
         star.twinkle += star.twinkleSpeed * dt;
 
-        // Update twinkle alpha
         star.alpha = star.baseAlpha * (0.7 + 0.3 * Math.sin(star.twinkle));
 
-        // Wrap around
         if (star.y > this.height) {
           star.y = 0;
           star.x = Math.random() * this.width;
@@ -156,7 +133,6 @@ const Background = {
       });
     });
 
-    // Update space dust
     this.dust.forEach(particle => {
       particle.y += particle.speed * scrollMultiplier * dt * 30;
       particle.x += Math.sin(particle.y * 0.01) * particle.drift * dt;
@@ -169,12 +145,10 @@ const Background = {
       if (particle.x > this.width) particle.x = 0;
     });
 
-    // Update nebula pulse
     this.nebulae.forEach(nebula => {
       nebula.pulsePhase += nebula.pulseSpeed * dt;
     });
 
-    // Spawn meteors periodically
     this.meteorSpawnTimer += dt;
     if (this.meteorSpawnTimer >= this.meteorSpawnInterval) {
       this.meteorSpawnTimer = 0;
@@ -192,7 +166,6 @@ const Background = {
       });
     }
 
-    // Update meteors
     for (let i = this.meteors.length - 1; i >= 0; i--) {
       const m = this.meteors[i];
       m.x += m.vx * dt;
@@ -200,21 +173,17 @@ const Background = {
       m.rotation += m.rotationSpeed * dt;
       m.life += dt;
 
-      // Add trail point
       m.trail.push({ x: m.x, y: m.y, alpha: 1 });
       if (m.trail.length > 15) m.trail.shift();
 
-      // Fade trail
       m.trail.forEach(t => { t.alpha -= dt * 1.5; });
       m.trail = m.trail.filter(t => t.alpha > 0);
 
-      // Remove if off-screen or expired
       if (m.life > m.maxLife || m.x > this.width + 50 || m.y > this.height + 50) {
         this.meteors.splice(i, 1);
       }
     }
 
-    // Update asteroids
     this.asteroids.forEach(ast => {
       ast.y += ast.speed * scrollMultiplier * dt;
       ast.rotation += ast.rotationSpeed * dt;
@@ -224,7 +193,6 @@ const Background = {
       }
     });
 
-    // Update space stations
     this.stations.forEach(station => {
       station.blink += dt * 3;
       station.lights.forEach(light => {
@@ -232,7 +200,6 @@ const Background = {
       });
     });
 
-    // Spawn random lightning
     if (Math.random() < 0.005) {
       const startX = Math.random() * this.width;
       const startY = 0;
@@ -246,13 +213,11 @@ const Background = {
       });
     }
 
-    // Update lightning bolts
     this.lightningBolts = this.lightningBolts.filter(bolt => {
       bolt.life -= dt;
       return bolt.life > 0;
     });
 
-    // Spawn solar flares
     if (!this.solarFlare && Math.random() < 0.002) {
       this.solarFlare = {
         x: Math.random() < 0.5 ? -100 : this.width + 100,
@@ -263,7 +228,6 @@ const Background = {
       };
     }
 
-    // Update solar flare
     if (this.solarFlare) {
       this.solarFlare.life -= dt;
       if (this.solarFlare.life <= 0) {
@@ -271,7 +235,6 @@ const Background = {
       }
     }
 
-    // Spawn energy waves (more subtle and less frequent)
     if (Math.random() < 0.003) {
       this.energyWaves.push({
         y: -50,
@@ -283,7 +246,6 @@ const Background = {
       });
     }
 
-    // Update energy waves
     this.energyWaves = this.energyWaves.filter(wave => {
       wave.y += wave.speed * dt;
       wave.life -= dt;
@@ -291,9 +253,7 @@ const Background = {
     });
   },
 
-  // Draw background
   draw(ctx) {
-    // Draw gradient background (deep space)
     const gradient = ctx.createLinearGradient(0, 0, 0, this.height);
     gradient.addColorStop(0, '#000814');
     gradient.addColorStop(0.5, '#001d3d');
@@ -301,14 +261,12 @@ const Background = {
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, this.width, this.height);
 
-    // Draw distant nebulae (behind everything)
     this.nebulae.forEach(nebula => {
       const pulse = Math.sin(nebula.pulsePhase) * 0.3 + 0.7;
       const nebulaGradient = ctx.createRadialGradient(
         nebula.x, nebula.y, 0,
         nebula.x, nebula.y, nebula.radius
       );
-      // Bug #16: Clamp alpha value to valid range before converting to hex
       const alpha = Math.min(255, Math.max(0, Math.floor(nebula.alpha * pulse * 255)));
       const alphaHex = alpha.toString(16).padStart(2, '0');
       nebulaGradient.addColorStop(0, `${nebula.color}${alphaHex}`);
@@ -320,7 +278,6 @@ const Background = {
       ctx.fill();
     });
 
-    // Draw space dust (subtle background layer)
     this.dust.forEach(particle => {
       ctx.globalAlpha = particle.alpha;
       ctx.fillStyle = '#8b9dc3';
@@ -328,21 +285,18 @@ const Background = {
     });
     ctx.globalAlpha = 1;
 
-    // Draw far stars (smallest, dimmest)
     this.stars.far.forEach(star => {
       ctx.globalAlpha = star.alpha;
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(star.x, star.y, star.size, star.size);
     });
 
-    // Draw mid stars
     this.stars.mid.forEach(star => {
       ctx.globalAlpha = star.alpha;
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(star.x, star.y, star.size, star.size);
     });
 
-    // Draw near stars (largest, brightest, with glow)
     this.stars.near.forEach(star => {
       ctx.globalAlpha = star.alpha;
       ctx.shadowBlur = 2;
@@ -351,11 +305,9 @@ const Background = {
       ctx.fillRect(star.x, star.y, star.size, star.size);
     });
 
-    // Draw meteors
     this.meteors.forEach(m => {
       const alpha = 1 - (m.life / m.maxLife);
 
-      // Meteor trail
       for (let i = 0; i < m.trail.length - 1; i++) {
         const t = m.trail[i];
         const nextT = m.trail[i + 1];
@@ -369,7 +321,6 @@ const Background = {
         ctx.stroke();
       }
 
-      // Meteor body
       ctx.save();
       ctx.translate(m.x, m.y);
       ctx.rotate(m.rotation);
@@ -380,7 +331,6 @@ const Background = {
       ctx.arc(0, 0, m.size, 0, Math.PI * 2);
       ctx.fill();
 
-      // Glow
       ctx.shadowBlur = 8;
       ctx.shadowColor = '#c4b5fd';
       ctx.fillStyle = '#a78bfa';
@@ -391,7 +341,6 @@ const Background = {
       ctx.restore();
     });
 
-    // Draw asteroids
     this.asteroids.forEach(ast => {
       ctx.save();
       ctx.translate(ast.x, ast.y);
@@ -401,16 +350,13 @@ const Background = {
       ctx.restore();
     });
 
-    // Draw space stations
     this.stations.forEach(station => {
       ctx.save();
 
-      // Station structure (dark grey cross)
       ctx.fillStyle = '#374151';
       ctx.fillRect(station.x - station.size / 2, station.y - 3, station.size, 6);
       ctx.fillRect(station.x - 3, station.y - station.size / 2, 6, station.size);
 
-      // Blinking lights
       station.lights.forEach(light => {
         const alpha = Math.sin(light.phase) * 0.5 + 0.5;
         ctx.fillStyle = light.color;
@@ -424,7 +370,6 @@ const Background = {
       ctx.restore();
     });
 
-    // Draw lightning bolts
     this.lightningBolts.forEach(bolt => {
       ctx.save();
       ctx.strokeStyle = bolt.color;
@@ -443,7 +388,6 @@ const Background = {
       ctx.restore();
     });
 
-    // Draw solar flare
     if (this.solarFlare) {
       const progress = 1 - (this.solarFlare.life / this.solarFlare.maxLife);
       const fadeIn = Math.min(progress * 3, 1);
@@ -462,7 +406,6 @@ const Background = {
       ctx.fillRect(0, 0, this.width, this.height);
     }
 
-    // Draw energy waves (more subtle)
     this.energyWaves.forEach(wave => {
       ctx.save();
       ctx.strokeStyle = wave.color;
@@ -482,18 +425,15 @@ const Background = {
       ctx.restore();
     });
 
-    // Reset all canvas state properties together
     ctx.globalAlpha = 1;
     ctx.shadowBlur = 0;
     ctx.shadowColor = 'transparent';
   },
 
-  // Set scroll speed (for time slow effect)
   setScrollSpeed(speed) {
     this.scrollSpeed = speed;
   },
 
-  // Resize background
   resize(width, height) {
     this.width = width;
     this.height = height;

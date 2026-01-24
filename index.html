@@ -41,7 +41,6 @@
             overflow-x: hidden;
         }
 
-        /* Background */
         #bgCanvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; display:block; }
         .aurora { position: fixed; inset: -20% -10% 0 -10%; z-index: 0; pointer-events: none; opacity: 0.55; filter: blur(22px) saturate(1.1); mix-blend-mode: screen; }
         .aurora::before, .aurora::after { content:""; position:absolute; inset:auto; border-radius:50%; }
@@ -60,7 +59,6 @@
             50% { box-shadow: 0 4px 20px rgba(245, 158, 11, 0.6); }
         }
 
-        /* Header */
         header {
             position: sticky;
             top: 0;
@@ -80,7 +78,6 @@
         .brand img { width: 34px; height: 34px; border-radius: 8px; box-shadow: 0 6px 18px rgba(0,0,0,0.35); }
         .brand .title { font-weight: 700; letter-spacing: .3px; white-space: nowrap; }
 
-        /* Search Bar */
         .search-container {
             position: relative;
             flex: 1;
@@ -113,7 +110,6 @@
             opacity: 0.5;
         }
 
-        /* Filter Pills */
         .filters {
             display: flex;
             gap: 8px;
@@ -142,7 +138,6 @@
             box-shadow: 0 0 20px rgba(56, 189, 248, 0.3);
         }
 
-        /* Popup Notification */
         .popup-overlay {
             position: fixed;
             top: 0;
@@ -217,7 +212,6 @@
             to { transform: scale(1); }
         }
 
-        /* Hero */
         .hero { position: relative; z-index: 1; max-width: 1100px; margin: 24px auto 12px; padding: 60px 16px 40px; text-align: center; }
         .hero-title { margin: 0 0 16px; font-size: clamp(36px, 8vw, 72px); font-weight: 700; }
         .gradient-text {
@@ -229,7 +223,6 @@
         }
         .hero-subtitle { font-size: clamp(16px, 3vw, 22px); margin: 0 0 40px; color: var(--muted); }
 
-        /* Animated stats */
         .stats-container {
             display: flex;
             justify-content: center;
@@ -262,7 +255,6 @@
         }
         .stat-separator { font-size: 24px; color: rgba(56, 189, 248, 0.3); }
 
-        /* Featured Game */
         .featured-game {
             position: relative; z-index: 1;
             max-width: 1100px;
@@ -378,7 +370,6 @@
             color: var(--muted);
         }
 
-        /* Grid */
         .grid { position: relative; z-index: 1; max-width: 1100px; margin: 16px auto; padding: 0 16px 24px; display: grid; gap: 16px; grid-template-columns: repeat(12, 1fr); }
         .col-4 { grid-column: span 4; }
         .col-6 { grid-column: span 6; }
@@ -475,7 +466,6 @@
             border-color: transparent;
         }
 
-        /* No results */
         .no-results {
             grid-column: 1 / -1;
             text-align: center;
@@ -490,7 +480,6 @@
 
         footer { position: relative; z-index:1; max-width:1100px; margin: 0 auto; padding: 12px 16px 32px; color: var(--muted); text-align:center; }
 
-        /* Responsive */
         @media (max-width: 900px) {
             .col-4, .col-6 { grid-column: span 6; }
             .nav { flex-direction: column; gap: 12px; }
@@ -519,7 +508,6 @@
     </style>
 </head>
 <body>
-    <!-- Popup Notification -->
     <div class="popup-overlay" id="popupOverlay">
         <div class="popup-box">
             <span class="popup-icon">💻</span>
@@ -563,7 +551,7 @@
 
         <div class="stats-container">
             <div class="stat-card">
-                <div class="stat-value" data-target="9">0</div>
+                <div class="stat-value" data-target="10">0</div>
                 <div class="stat-label">Games</div>
             </div>
         </div>
@@ -712,7 +700,20 @@
             </div>
         </article>
 
-        <!-- News / Info Cards -->
+        <article class="card col-4" aria-labelledby="g-tappy">
+            <div class="thumb" aria-hidden="true">
+                <span>Tappy Bird</span>
+            </div>
+            <div class="body">
+                <h3 id="g-tappy">Tappy Bird <span class="badge badge-new">New</span></h3>
+                <p>Tap to flap through pipes. Classic arcade fun!</p>
+                <div class="actions">
+                    <a href="tappybird.html" class="btn primary">Play</a>
+                    <span class="badge">Arcade</span>
+                </div>
+            </div>
+        </article>
+
         <section class="card col-4" aria-labelledby="news">
             <div class="body">
                 <h3 id="news">Latest News</h3>
@@ -734,7 +735,6 @@
     </footer>
 
     <script>
-    // Popup close function
     function closePopup() {
         const popup = document.getElementById('popupOverlay');
         if (popup) {
@@ -748,7 +748,6 @@
     (function(){
         'use strict';
 
-        // Footer year & updated date
         const y = document.getElementById('year');
         if (y) y.textContent = new Date().getFullYear();
 
@@ -760,7 +759,6 @@
             u.textContent = sameDay ? 'today' : d.toLocaleDateString();
         }
 
-        // Animated counter
         function animateCounters() {
             const counters = document.querySelectorAll('.stat-value');
             const duration = 2000;
@@ -785,7 +783,6 @@
             });
         }
 
-        // Trigger animation when hero is in view
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -798,7 +795,6 @@
         const heroSection = document.querySelector('.hero');
         if (heroSection) observer.observe(heroSection);
 
-        // Search and Filter Functionality
         const searchInput = document.getElementById('searchInput');
         const filterPills = document.querySelectorAll('.filter-pill');
         const gameCards = document.querySelectorAll('.grid .card[aria-labelledby]');
@@ -860,7 +856,6 @@
             }
         }
 
-        // Enhanced Background Canvas
         const canvas = document.getElementById('bgCanvas');
         if (!canvas) return;
         const ctx = canvas.getContext('2d');

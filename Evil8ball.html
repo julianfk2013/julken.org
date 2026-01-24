@@ -42,7 +42,6 @@
             overflow-x: hidden;
         }
 
-        /* Background canvas */
         #bgCanvas { position: fixed; inset: 0; z-index: 0; pointer-events: none; display: block; will-change: transform; }
         .aurora { position: fixed; inset: -20% -10% 0 -10%; z-index: 0; pointer-events: none; opacity: 0.55; filter: blur(22px) saturate(1.1); mix-blend-mode: screen; }
         .aurora::before, .aurora::after { content:""; position:absolute; inset:auto; border-radius:50%;}
@@ -75,7 +74,6 @@
         .btn[disabled] { opacity:.6; cursor:not-allowed; }
         .kbd { font-family: ui-monospace, Menlo, Consolas, monospace; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); padding: 2px 6px; border-radius: 6px; font-size: 12px; }
 
-        /* 8-ball */
         .ball-wrap { display: grid; place-items: center; padding: 8px 0 2px; }
         .ball { width: 170px; height: 170px; border-radius: 50%; background: radial-gradient(102px 102px at 40% 35%, #1f2937, #000 60%); box-shadow: inset -14px -16px 36px rgba(0,0,0,0.8), inset 10px 8px 22px rgba(255,255,255,0.06), 0 18px 54px rgba(0,0,0,0.6); display: grid; place-items: center; transform-style: preserve-3d; transition: transform .15s ease; }
         .window { width: 95px; height: 95px; border-radius: 50%; background: radial-gradient(60px 60px at 50% 45%, #0b1e4a, #020b1e 65%); box-shadow: inset 0 0 18px rgba(0,0,0,0.75), 0 0 0 5px rgba(0,0,0,0.35); display: grid; place-items: center; overflow: hidden; position: relative; }
@@ -83,7 +81,6 @@
         .ans { position: absolute; top: 50%; left: 50%; transform: translate(-50%, calc(-50% + 6px)); width: 70px; text-align: center; font-size: 11px; color: #dff6ff; text-transform: uppercase; letter-spacing: .6px; font-weight: 700; }
         .badge { position:absolute; right: 8px; top: 8px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); padding: 4px 8px; border-radius: 999px; font-size: 12px; color: var(--muted); }
 
-        /* Category glows */
         .ball.good { box-shadow: inset -16px -18px 40px rgba(0,0,0,0.8), inset 12px 10px 24px rgba(255,255,255,0.06), 0 0 60px rgba(34,197,94,0.35), 0 20px 60px rgba(0,0,0,0.6); }
         .ball.bad { box-shadow: inset -16px -18px 40px rgba(0,0,0,0.8), inset 12px 10px 24px rgba(255,255,255,0.06), 0 0 60px rgba(239,68,68,0.35), 0 20px 60px rgba(0,0,0,0.6); }
         .ball.cheeky { box-shadow: inset -16px -18px 40px rgba(0,0,0,0.8), inset 12px 10px 24px rgba(255,255,255,0.06), 0 0 60px rgba(245,158,11,0.35), 0 20px 60px rgba(0,0,0,0.6); }
@@ -101,7 +98,6 @@
         .modal-backdrop { position: fixed; inset: 0; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.55); padding: 16px; z-index: 40; }
         .modal .body { max-height: 70vh; overflow:auto; }
 
-        /* Lightning flash for negative */
         .flash { position: fixed; inset: 0; background: rgba(255,255,255,0.0); pointer-events: none; z-index: 30; }
         .flash.active { animation: flash 0.5s ease-out; }
         @keyframes flash { 0%{ background: rgba(255,255,255,0.0);} 20%{ background: rgba(255,255,255,0.35);} 100%{ background: rgba(255,255,255,0.0);} }
@@ -111,11 +107,9 @@
 
         .toast-layer { position: fixed; right: 12px; top: 12px; z-index: 60; }
         .toast { background: rgba(17,24,39,0.88); color: #e5e7eb; border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 8px 12px; margin-bottom: 8px; box-shadow: 0 10px 24px rgba(0,0,0,0.35); }
-        /* Global Home button */
         .homeBtn { position: fixed; left: 10px; top: 10px; z-index: 80; display:inline-flex; align-items:center; gap:6px; padding:8px 10px; border-radius:10px; background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.16); color:#e5e7eb; text-decoration:none; font-weight:700; backdrop-filter: blur(6px); }
         .homeBtn:hover{ background: rgba(255,255,255,0.16); }
 
-        /* Mobile Breakpoints */
         @media (max-width: 768px) {
             .grid { grid-template-columns: 1fr; }
             input, select, textarea { font-size: 16px !important; }
@@ -133,7 +127,6 @@
             .ball { width: 180px; height: 180px; }
         }
 
-        /* Touch device optimizations */
         @media (hover: none) and (pointer: coarse) {
             button, .btn { min-height: 48px; min-width: 48px; padding: 14px 18px; }
             #question { min-height: 48px; font-size: 16px; }
@@ -194,7 +187,7 @@
         </aside>
     </main>
 
-        <!-- Disclaimer Modal (single step) -->
+        
         <div id="disclaimer" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="dTitle" aria-hidden="true">
             <div class="card modal" style="max-width:560px;">
                 <header class="header">
@@ -210,7 +203,7 @@
             </div>
         </div>
 
-    <!-- About Modal -->
+    
     <div id="aboutModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="aTitle" aria-hidden="true">
         <div class="card modal" style="max-width:640px;">
             <header class="header">
@@ -237,7 +230,6 @@
     (function(){
         'use strict';
 
-        // Elements
         const $ = (s) => document.querySelector(s);
         const els = {
             bg: $('#bgCanvas'),
@@ -262,14 +254,13 @@
             closeDisclaimer: $('#closeDisclaimer'),
         };
 
-        // State
         const storage = {
             get(k, f){ try{ const v=localStorage.getItem(k); return v==null?f:JSON.parse(v);}catch{return f;}},
             set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch{} }
         };
         const state = {
             voice: storage.get('e8_voice', false),
-            history: storage.get('e8_hist', []), // [{q,a,c,t}]
+            history: storage.get('e8_hist', []),
             acknowledged: storage.get('e8_ack', false),
         };
 
@@ -291,7 +282,6 @@
             ],
         };
 
-        // Short yes/no-style pools for smart handling
         const YES_NEGATE_POOL = [
             'Yes.', 'Yes—skip it.', 'Yes, avoid that.', 'Yes. Sit this one out.',
         ];
@@ -325,16 +315,12 @@
         }
 
         function pickCategory(q){
-            // Evil bias base weights
             let w = { positive: 0.10, negative: 0.60, cheeky: 0.20, evil: 0.10 };
             const s = (q||'').toLowerCase();
-            // Strongly punish optimistic wording; reward negations for extra doom
             if(/\b(not|never|can\'t|dont|don\'t|shouldn\'t|won\'t|no way)\b/.test(s)) { w.negative += 0.20; w.evil += 0.05; w.positive -= 0.08; }
             if(/\b(should|can|will|could|may|am i|do i|is it|will i)\b/.test(s)) { w.negative += 0.10; w.cheeky += 0.05; w.positive -= 0.08; }
             if(/\b(why|how|what|when|where|explain)\b/.test(s)) { w.cheeky += 0.08; }
-            // Random mood swing towards evil
             if(Math.random() < 0.20){ w.evil += 0.06; w.negative += 0.04; }
-            // Clamp at small positive values and normalize
             for(const k of ['positive','negative','cheeky','evil']){ w[k] = Math.max(0.001, w[k]); }
             const sum = w.positive + w.negative + w.cheeky + w.evil;
             let r = Math.random() * sum;
@@ -346,24 +332,19 @@
             const arr = ANSWERS[cat] || ANSWERS.cheeky; return arr[Math.floor(Math.random()*arr.length)];
         }
 
-        // Very light yes/no intent + negation parser
         function parseYesNo(q){
             const s = (q||'').trim().toLowerCase();
             const ynStart = /^(\s*)(should|can|will|would|could|may|do|does|did|is|are|am|was|were)\b/.test(s);
             if(!ynStart) return { yn:false };
-            // Detect negation tokens anywhere after the modal
             const neg = /(\bnot\b|\bnever\b|don'?t\b|do not\b|can'?t\b|won'?t\b|shouldn'?t\b|isn'?t\b|aren'?t\b|wasn'?t\b|weren'?t\b|doesn'?t\b|didn'?t\b|wouldn'?t\b|couldn'?t\b)/.test(s);
             return { yn:true, negated: neg };
         }
 
-        // Generate a logically consistent evil answer for yes/no questions
         function smartAnswer(q){
             const p = parseYesNo(q);
             if(!p.yn) return null;
-            // Evil baseline: deny the action. For negated questions, affirm the negation.
-            const wantYes = p.negated; // yes to "should I not X"; no to "should I X"
+            const wantYes = p.negated;
             if(wantYes){
-                // Yes, but to not doing the thing; keep vibe negative/evil
                 const cat = Math.random()<0.5 ? 'evil' : 'negative';
                 return { cat, text: rand(YES_NEGATE_POOL) };
             } else {
@@ -393,7 +374,7 @@
             els.ans.textContent = text.toUpperCase();
             els.answerBox.textContent = text;
             els.answerBox.classList.remove('shake','glitch');
-            void els.answerBox.offsetWidth; // restart anim
+            void els.answerBox.offsetWidth;
             els.answerBox.classList.add('shake');
             if (cat==='evil') els.answerBox.classList.add('glitch');
             if (cat==='negative') { els.flash.classList.remove('active'); void els.flash.offsetWidth; els.flash.classList.add('active'); }
@@ -427,7 +408,6 @@
             state.history.push({ q, a, c:cat, t: Date.now() }); saveHistory(); renderHistory();
         }
 
-        // Events
         els.askBtn.addEventListener('click', ask);
         els.shakeBtn.addEventListener('click', ()=>{ animateBall(); setTimeout(ask, 120); });
         els.question.addEventListener('keydown', (e)=>{ if(e.key==='Enter') ask(); });
@@ -438,24 +418,20 @@
         els.clearBtn.addEventListener('click', ()=>{ els.question.value=''; els.answerBox.textContent='Ask anything to begin.'; els.ans.textContent='8'; setCategoryGlow(null); });
         els.speakBtn.addEventListener('click', ()=>{ state.voice = !state.voice; storage.set('e8_voice', state.voice); els.speakBtn.textContent = 'Voice: ' + (state.voice? 'On' : 'Off'); els.speakBtn.setAttribute('aria-pressed', String(state.voice)); });
 
-        // About modal
         const openAbout = ()=>{ els.aboutModal.style.display='flex'; els.aboutModal.setAttribute('aria-hidden','false'); };
         const closeAbout = ()=>{ els.aboutModal.style.display='none'; els.aboutModal.setAttribute('aria-hidden','true'); };
         els.aboutBtn.addEventListener('click', openAbout);
         els.closeAbout.addEventListener('click', closeAbout);
         els.aboutModal.addEventListener('click', (e)=>{ if(e.target===els.aboutModal) closeAbout(); });
 
-    // Disclaimer modal (single step)
         function openDisclaimer(){ els.disclaimer.style.display='flex'; els.disclaimer.setAttribute('aria-hidden','false'); }
         function closeDisclaimer(){ els.disclaimer.style.display='none'; els.disclaimer.setAttribute('aria-hidden','true'); }
         els.closeDisclaimer.addEventListener('click', ()=>{ state.acknowledged = true; storage.set('e8_ack', true); closeDisclaimer(); toast('Enjoy responsibly.'); els.question.focus(); });
 
-        // Init
         els.speakBtn.textContent = 'Voice: ' + (state.voice? 'On' : 'Off');
         renderHistory();
         if (!state.acknowledged) openDisclaimer();
 
-        // Pointer parallax on ball
         els.ball.addEventListener('mousemove', (e)=>{
             const r = els.ball.getBoundingClientRect();
             const dx = (e.clientX - (r.left + r.width/2)) / (r.width/2);
@@ -464,7 +440,6 @@
         });
         els.ball.addEventListener('mouseleave', ()=>{ els.ball.style.transform = 'rotateX(0deg) rotateY(0deg)'; });
 
-        // Background stars + galaxy
         (function startBg(){
             const canvas = els.bg; if(!canvas) return; const ctx = canvas.getContext('2d'); if(!ctx) return;
             const DPR = Math.min(2, window.devicePixelRatio||1);

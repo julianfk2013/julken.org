@@ -25,7 +25,7 @@
             background: radial-gradient(1200px 600px at 10% -10%, #1f2937 0%, transparent 60%), radial-gradient(1000px 500px at 110% 10%, #0b1320 0%, transparent 60%), linear-gradient(160deg, #0b1020, #0f172a 55%, #0a0f1f);
             display:grid; place-items:center; padding:18px
         }
-        /* Decorative layers */
+        
         #bgCanvas{position:fixed; inset:0; z-index:0; pointer-events:none}
         .aurora{position:fixed; inset:-20% -10% 0 -10%; z-index:0; pointer-events:none; opacity:.55; filter:blur(22px) saturate(1.1); mix-blend-mode:screen}
         .aurora::before,.aurora::after{content:""; position:absolute; border-radius:50%}
@@ -38,7 +38,7 @@
             display:grid; grid-template-columns: 1fr; gap:14px;
         }
         .card{position:relative; background:linear-gradient(180deg, var(--panel), var(--panel-2)); border:1px solid rgba(255,255,255,.08); border-radius:16px; box-shadow:var(--shadow); overflow:hidden}
-        /* Animated glow border */
+        
         .card::before{content:""; position:absolute; inset:-2px; background:conic-gradient(from 0deg, #38bdf8, #22c55e, #f59e0b, #ef4444, #38bdf8); filter:blur(16px); opacity:.25; z-index:0; animation:spin 20s linear infinite}
         .card > *{position:relative; z-index:1}
         @keyframes spin{to{transform:rotate(360deg)}}
@@ -56,10 +56,10 @@
         button.key.op{background:linear-gradient(180deg,#38bdf8,#0ea5e9); color:#001018; border:0}
         button.key.eq{background:linear-gradient(180deg,#22c55e,#16a34a); color:#001018; border:0}
         button.key.warn{background:linear-gradient(180deg,#f59e0b,#d97706); color:#001018; border:0}
-        /* Shimmer on hover */
+        
         button.key::after{content:""; position:absolute; inset:-40% -20%; background:linear-gradient(120deg, transparent 0%, rgba(255,255,255,.15) 30%, transparent 60%); transform:translateX(-120%); transition:transform .5s ease}
         button.key:hover::after{transform:translateX(120%)}
-        /* Ripple */
+        
         .ripple{position:absolute; border-radius:50%; pointer-events:none; transform:translate(-50%,-50%); background:rgba(255,255,255,.6); mix-blend-mode:overlay; width:8px; height:8px; opacity:.8; animation:rip .6s ease-out forwards}
         @keyframes rip{to{opacity:0; transform:translate(-50%,-50%) scale(14)}}
         .row{display:flex; gap:8px; align-items:center; justify-content:space-between}
@@ -76,7 +76,7 @@
             .grid{grid-template-columns: repeat(4, 1fr)}
         }
 
-        /* Mobile Breakpoints */
+        
         @media (max-width: 768px) {
             .calc { max-width: 95%; }
             input, select, textarea { font-size: 16px !important; }
@@ -92,7 +92,7 @@
             .key { font-size: 18px; min-height: 50px; }
         }
 
-        /* Touch device optimizations */
+        
         @media (hover: none) and (pointer: coarse) {
             .key { min-height: 56px; min-width: 56px; }
             button, .btn, .btnIcon { min-height: 48px; padding: 12px 14px; }
@@ -113,37 +113,37 @@
                 </div>
 
                 <div class="grid" id="keys">
-                    <!-- Row 1 -->
+                    
                     <button class="key warn" data-action="ac">AC</button>
                     <button class="key" data-action="c">C</button>
                     <button class="key" data-action="back">⌫</button>
                     <button class="key" data-val="%">%</button>
                     <button class="key" data-action="adv">ADV</button>
-                    <!-- Row 2 -->
+                    
                     <button class="key" data-val="(">(</button>
                     <button class="key" data-val=")">)</button>
                     <button class="key" data-val="π">π</button>
                     <button class="key" data-val="e">e</button>
                     <button class="key" data-val="^">^</button>
-                    <!-- Row 3 -->
+                    
                     <button class="key" data-val="7">7</button>
                     <button class="key" data-val="8">8</button>
                     <button class="key" data-val="9">9</button>
                     <button class="key op" data-val="÷">÷</button>
                     <button class="key" data-action="sqrt">√</button>
-                    <!-- Row 4 -->
+                    
                     <button class="key" data-val="4">4</button>
                     <button class="key" data-val="5">5</button>
                     <button class="key" data-val="6">6</button>
                     <button class="key op" data-val="×">×</button>
                     <button class="key" data-action="pow2">x²</button>
-                    <!-- Row 5 -->
+                    
                     <button class="key" data-val="1">1</button>
                     <button class="key" data-val="2">2</button>
                     <button class="key" data-val="3">3</button>
                     <button class="key op" data-val="-">−</button>
                     <button class="key" data-action="inv">1/x</button>
-                    <!-- Row 6 -->
+                    
                     <button class="key" data-val="0">0</button>
                     <button class="key" data-val=".">.</button>
                     <button class="key eq" data-action="eq">=</button>
@@ -182,10 +182,10 @@
         const state = {
             expr: '',
             lastAns: 0,
-            history: [] // {e, r}
+            history: [] 
         };
 
-            // --- Sound Effects ---
+            
             function createSFX(){
                 let ctx = null, master = null; let muted = false; let unlocked = false;
                 function ensure(){
@@ -227,7 +227,7 @@
                 };
             }
             const SFX = createSFX();
-            window.SFX = SFX; // allow background to trigger whoosh
+            window.SFX = SFX; 
             if(soundBtn){ soundBtn.addEventListener('click', ()=>{ const on = SFX.toggle(); soundBtn.textContent = on? '🔊' : '🔇'; }); }
 
         function setExpr(v){ state.expr = v; exprEl.textContent = v; }
@@ -238,13 +238,13 @@
 
         function fmt(n){
             if(!isFinite(n)) return 'Error';
-            // limit long floats
+            
             const s = Math.abs(n) < 1e-6 || Math.abs(n) >= 1e12 ? n.toExponential(8) : n.toLocaleString(undefined,{maximumFractionDigits:10});
             return s.replace(/(\.\d*?[1-9])0+$/,'$1').replace(/\.0+$/,'');
         }
 
         function preprocess(expr){
-            // Replace symbols
+            
             let e = expr
                 .replace(/π/g, 'PI')
                 .replace(/e/g, 'E')
@@ -253,10 +253,10 @@
                 .replace(/−/g, '-')
                 .replace(/\^/g, '**');
 
-            // Percent: turn trailing number% into (number/100)
+            
             e = e.replace(/(\d+(?:\.\d+)?)%/g, '($1/100)');
 
-            // Functions mapping by placeholders to avoid partial matches
+            
             e = e.replace(/sin\(/g,'Math.sin(')
                      .replace(/cos\(/g,'Math.cos(')
                      .replace(/tan\(/g,'Math.tan(')
@@ -269,15 +269,15 @@
         }
 
             function safeEval(expr){
-                // Preprocess first to normalize unicode ops and symbols
+                
                 const e = preprocess(expr);
-                // Allow only numbers, basic ops, parentheses, comma, percent, whitespace, dot, and letters (for Math.*)
+                
                 const allowed = /^[0-9+\-*/().,%\s^A-Za-z]*$/;
                 if(!allowed.test(e)) throw new Error('bad chars');
-                // Extra coarse blocklist
+                
                 if(/(?:constructor|prototype|window|document|Function)/i.test(e)) throw new Error('blocked');
-                // Evaluate safely
-                // eslint-disable-next-line no-new-func
+                
+                
                 return Function('"use strict"; return ('+ e +');')();
             }
 
@@ -328,7 +328,7 @@
         function inv(){ append('1/('); }
         function addFunc(name){ append(name + '('); }
 
-        // Clicks
+        
             keys.addEventListener('click', (e)=>{
             const btn = e.target.closest('button.key'); if(!btn) return;
             const val = btn.getAttribute('data-val');
@@ -352,7 +352,7 @@
             }
         });
 
-        // Keyboard
+        
             document.addEventListener('keydown', (e)=>{
             const k = e.key;
                 if(/^[0-9]$/.test(k)) { SFX.click(); append(k); return; }
@@ -364,7 +364,7 @@
             if(k==='%'){ append('%'); return; }
         });
 
-            // Ripples on key click
+            
             keys.addEventListener('pointerdown', (e)=>{
                 const btn = e.target.closest('button.key'); if(!btn) return;
                 const rect = btn.getBoundingClientRect();
@@ -373,25 +373,25 @@
                 btn.appendChild(s); setTimeout(()=>s.remove(), 650);
             });
 
-            // Init
+            
         allClear();
     })();
     </script>
         <script>
-            // Background stars with shooting meteors
+            
         (function(){
             const c = document.getElementById('bgCanvas'); if(!c) return; const dpr = Math.max(1, window.devicePixelRatio||1); const ctx = c.getContext('2d');
                 const stars = []; const meteors = []; let w=0,h=0; let nextMeteor = 0; 
                 function resize(){ w = c.width = Math.floor(innerWidth*dpr); h = c.height = Math.floor(innerHeight*dpr); c.style.width=innerWidth+'px'; c.style.height=innerHeight+'px'; }
                 function init(n=220){ stars.length=0; for(let i=0;i<n;i++){ stars.push({ x: Math.random()*w, y: Math.random()*h, r: Math.random()*1.8+0.2, a: Math.random()*Math.PI*2, s: 0.002+Math.random()*0.004 }); } }
                 function spawnMeteor(){
-                    // Spawn near top-left moving down-right, or top-right to down-left sometimes
+                    
                     const fromLeft = Math.random()<0.7;
-                    const speed = (2 + Math.random()*3) * dpr; // px/frame
+                    const speed = (2 + Math.random()*3) * dpr; 
                     const angle = fromLeft? (Math.PI/4 + Math.random()*0.3) : (3*Math.PI/4 - Math.random()*0.3);
                     const vx = Math.cos(angle)*speed, vy = Math.sin(angle)*speed;
                     const x = fromLeft? -50*dpr : w + 50*dpr;
-                    const y = Math.random()*0.3*h; // top 30%
+                    const y = Math.random()*0.3*h; 
                     const len = 120*dpr + Math.random()*120*dpr;
                     const ttl = 120 + Math.floor(Math.random()*80);
                     meteors.push({x,y,vx,vy,len,life:0,ttl});
@@ -411,13 +411,13 @@
                 }
                 function step(){
                     ctx.clearRect(0,0,w,h);
-                    // stars
+                    
                     ctx.fillStyle='#ffffff';
                     for(const s of stars){ s.a += s.s; const alpha = 0.35+0.35*Math.sin(s.a); ctx.globalAlpha = alpha; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill(); }
                     ctx.globalAlpha=1;
-                    // meteors
+                    
                     for(let i=meteors.length-1;i>=0;i--){ const m = meteors[i]; drawMeteor(m); m.x += m.vx; m.y += m.vy; m.life++; if(m.life>m.ttl || m.x<-200 || m.x>w+200 || m.y<-200 || m.y>h+200){ meteors.splice(i,1); } }
-                    // schedule
+                    
                     const now = performance.now(); if(now>nextMeteor){ spawnMeteor(); nextMeteor = now + 1800 + Math.random()*2600; }
                     requestAnimationFrame(step);
                 }

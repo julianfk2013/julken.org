@@ -45,7 +45,7 @@
 		.card .body{padding:16px}
 		.muted{color:var(--muted)}
 
-		/* Play panel */
+		
 		.topRow{display:grid; grid-template-columns: 1fr; gap:10px}
 		.counterLarge{font-size: clamp(36px, 8vw, 64px); font-weight: 800; letter-spacing:.5px; text-align:center; text-shadow: 0 6px 20px rgba(0,0,0,.35)}
 		.stats{display:flex; gap:10px; flex-wrap:wrap; justify-content:center}
@@ -61,7 +61,7 @@
 		.ripple{position:absolute; border-radius:50%; pointer-events:none; transform:translate(-50%,-50%); background:rgba(255,255,255,.6); mix-blend-mode:overlay; width:8px; height:8px; opacity:.8; animation:rip .5s ease-out forwards}
 		@keyframes rip{to{opacity:0; transform:translate(-50%,-50%) scale(16)}}
 
-		/* Floating +n on tap */
+		
 		.floatAdd{position:absolute; left:0; top:0; transform:translate(-50%,-50%); pointer-events:none; z-index:70; color:#fff56a; font-weight:800; text-shadow:0 2px 8px rgba(0,0,0,.6), 0 0 12px rgba(255,245,150,.45); opacity:0; animation:floatAdd .9s ease-out forwards}
 		@keyframes floatAdd{
 			0%{ transform: translate(-50%,-50%) translate(var(--x0, 0px), var(--y0, 0px)); opacity:0; }
@@ -70,7 +70,7 @@
 			100%{ transform: translate(-50%,-50%) translate(var(--x1, 0px), var(--y1, -80px)); opacity:0; }
 		}
 
-		/* Rain from the sky labels */
+		
 		.rainAdd{position:fixed; top:-24px; left:0; pointer-events:none; z-index:70; color:#fff56a; font-weight:800; font-size:16px; text-shadow:0 2px 8px rgba(0,0,0,.6), 0 0 12px rgba(255,245,150,.45); opacity:0; animation:rainAdd var(--dur, 2.1s) linear forwards; will-change: transform, opacity}
 		@keyframes rainAdd{
 			0%{ transform: translate(0, -30px) rotate(var(--r0, 0deg)); opacity:0; }
@@ -78,9 +78,9 @@
 			90%{ opacity:1; }
 			100%{ transform: translate(var(--dx, 0px), 120vh) rotate(var(--r1, 360deg)); opacity:0; }
 		}
-		/* removed extra spin animation to avoid transform conflicts */
+		
 
-		/* Shop */
+		
 		.tabs{display:flex; gap:8px; padding:12px 16px; border-bottom:1px solid rgba(255,255,255,.08)}
 		.tab{appearance:none; border:1px solid rgba(255,255,255,.12); background:rgba(255,255,255,.06); color:var(--text); padding:8px 12px; border-radius:10px; cursor:pointer; font-weight:600}
 		.tab.active{background:linear-gradient(180deg,#38bdf8,#0ea5e9); color:#001018; border:0}
@@ -100,12 +100,12 @@
 		.toasts{position:fixed; right:12px; top:12px; z-index:60}
 		.toast{background:rgba(17,24,39,.9); color:#e5e7eb; border:1px solid rgba(255,255,255,.12); border-radius:10px; padding:8px 12px; margin-bottom:8px; box-shadow:0 10px 24px rgba(0,0,0,.35)}
 
-		/* Mobile Breakpoints */
+		
 		@media (max-width: 768px) {
 			.counterLarge { font-size: clamp(32px, 10vw, 56px); }
 			.stats { gap: 8px; }
 			.stat { min-width: 100px; padding: 8px 10px; }
-			input, select, textarea { font-size: 16px !important; } /* Prevents iOS zoom */
+			input, select, textarea { font-size: 16px !important; } 
 		}
 
 		@media (max-width: 414px) {
@@ -122,7 +122,7 @@
 			.btn { font-size: 14px; padding: 10px 14px; }
 		}
 
-		/* Touch device optimizations */
+		
 		@media (hover: none) and (pointer: coarse) {
 			button, .btn, .tapBtn { min-height: 48px; min-width: 48px; padding: 14px 18px; }
 			.spaceKey { min-height: 80px; }
@@ -144,7 +144,7 @@
 
 		<div class="wrap">
 			<div class="grid">
-				<!-- Play panel (top) -->
+				
 				<section class="card" aria-labelledby="tPlay">
 				<header class="header"><h2 id="tPlay" class="title">Play</h2></header>
 				<div class="body">
@@ -171,7 +171,7 @@
 				</div>
 			</section>
 
-					<!-- Shop (bottom) -->
+					
 					<aside class="card" aria-labelledby="tShop">
 						<header class="header"><h2 id="tShop" class="title">Shop</h2></header>
 						<div class="tabs">
@@ -186,7 +186,7 @@
 	<script>
 	(function(){
 		'use strict';
-		// Elements
+		
 		const $ = (s)=>document.querySelector(s);
 			const els = {
 			bg: $('#bgCanvas'),
@@ -197,7 +197,7 @@
 				shopBody: $('#shopBody'), tabUp: $('#tabUp'), tabGen: $('#tabGen')
 		};
 
-		// State (persistence enabled)
+		
 		const store = {
 			get(k,d){ try{ const v=localStorage.getItem(k); return v? JSON.parse(v): d; }catch{ return d; } },
 			set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch{} }
@@ -211,20 +211,20 @@
 						numberRain: true,
 					carry: 0,
 					items: {
-						// Upgrades
+						
 						clickUp: 0, booster: 0, megaKey: 0, titanium: 0, nebulaGlove: 0, supernova: 0, galacticStamp: 0,
 						cosmicHammer: 0, singularity: 0, darkMatter: 0, starforge: 0,
 						carbonFiber: 0, hyperKey: 0, plasmaSpring: 0, quantumInk: 0, fusionPad: 0, tachyonGrip: 0,
-						// Generators
+						
 						autoClicker: 0, worker: 0, factory: 0, robot: 0, server: 0, quantum: 0,
 						printer: 0, lab: 0, aiOverlord: 0, blackHole: 0,
 						microservice: 0, pipeline: 0, datacenter: 0, fusionReactor: 0, wormhole: 0, timeDilation: 0,
-						// Formerly timed gens; now per-second as well
+						
 						fish: 0, shark: 0, crab: 0, whale: 0, chest: 0, comet: 0, asteroid: 0
 					}
 				};
 			}
-			// One-time wipe of any old save to start from scratch
+			
 			try{
 				const WIPE_FLAG = 'sb_wiped_v3';
 				if(!localStorage.getItem(WIPE_FLAG)){
@@ -233,10 +233,10 @@
 				}
 			}catch{}
 			const state = Object.assign(baseState(), store.get('sb_v2', {}));
-			// ensure shape if loading older saves (gen no longer used)
+			
 			state.items = Object.assign({}, baseState().items, state.items||{});
 
-		// Shop config
+		
 			const UPGRADES = [
 				{ id:'clickUp', name:'Stronger Press', desc:'+1 per press', base: 10, scale: 1.15, apply: ()=>{ state.per += 1; } },
 				{ id:'booster', name:'Booster Keycap', desc:'+2 per press', base: 80, scale: 1.17, apply: ()=>{ state.per += 2; } },
@@ -257,7 +257,7 @@
 				{ id:'tachyonGrip', name:'Tachyon Grip', desc:'+6000000 per press', base: 30000000000, scale: 1.41, apply: ()=>{ state.per += 6000000; } },
 			];
 			const GENERATORS = [
-				// Per-second producers (all generators now grant per-second income)
+				
 				{ id:'fish', name:'Background Job', desc:'+2 per second', base: 60, scale: 1.17, apply: ()=>{ state.auto += 2; } },
 				{ id:'shark', name:'Edge Cluster', desc:'+5 per second', base: 550, scale: 1.20, apply: ()=>{ state.auto += 5; } },
 				{ id:'crab', name:'Cache Worker', desc:'+3 per second', base: 220, scale: 1.18, apply: ()=>{ state.auto += 3; } },
@@ -265,7 +265,7 @@
 				{ id:'chest', name:'Data Vault', desc:'+3.33 per second', base: 1800, scale: 1.22, apply: ()=>{ state.auto += (50/15); } },
 				{ id:'comet', name:'Event Stream', desc:'+3.33 per second', base: 18000, scale: 1.26, apply: ()=>{ state.auto += (200/60); } },
 				{ id:'asteroid', name:'Mining Rig', desc:'+4.17 per second', base: 120000, scale: 1.28, apply: ()=>{ state.auto += (500/120); } },
-				// Additional per-second producers
+				
 				{ id:'autoClicker', name:'Auto Clicker', desc:'+1 per second', base: 50, scale: 1.18, apply: ()=>{ state.auto += 1; } },
 				{ id:'worker', name:'Worker Bee', desc:'+5 per second', base: 250, scale: 1.20, apply: ()=>{ state.auto += 5; } },
 				{ id:'factory', name:'Click Factory', desc:'+10 per second', base: 1000, scale: 1.25, apply: ()=>{ state.auto += 10; } },
@@ -285,9 +285,9 @@
 			];
 			function allItems(){ return [...UPGRADES, ...GENERATORS]; }
 			function findItem(id){ return allItems().find(i=>i.id===id); }
-			// Global price tuning
-			const COST_MULTIPLIER = 1.25; // make everything a little more expensive
-			const TIER_GAP_FACTOR = 1.5; // widen gaps between items by tier
+			
+			const COST_MULTIPLIER = 1.25; 
+			const TIER_GAP_FACTOR = 1.5; 
 			function getRankInGroup(itemId){
 				const inUp = UPGRADES.some(i=>i.id===itemId);
 				const group = inUp ? UPGRADES : GENERATORS;
@@ -309,7 +309,7 @@
 				arr.sort((a,b)=> a.cost - b.cost);
 				for(let i=1;i<arr.length;i++){
 					if(Math.floor(arr[i].cost) <= Math.floor(arr[i-1].cost)){
-						arr[i].cost = Math.floor(arr[i-1].cost) + 1; // bump to ensure uniqueness
+						arr[i].cost = Math.floor(arr[i-1].cost) + 1; 
 					}
 				}
 				const map = {};
@@ -323,7 +323,7 @@
 				return Math.max(100, map[itemId]||Math.floor(rawCost(itemId)));
 			}
 
-		// UI helpers
+		
 		function fmt(n){ return Number.isFinite(n) ? n.toLocaleString() : String(n); }
 		function abbr(n){
 			if(!Number.isFinite(n)) return String(n);
@@ -331,13 +331,13 @@
 			const abs = Math.abs(n);
 			if(abs < 1000) return fmt(n);
 			const units = ['K','M','B','T','Qa','Qi','Sx','Sp','Oc','No','Dc','Ud','Dd','Td','Qd','Qn','Sd','St','Og','Nv','Vg'];
-			let idx = Math.floor(Math.log10(abs) / 3) - 1; // 1 => K
+			let idx = Math.floor(Math.log10(abs) / 3) - 1; 
 			idx = Math.min(Math.max(0, idx), units.length - 1);
 			const scale = Math.pow(10, (idx + 1) * 3);
 			let val = abs / scale;
 			let dec = val >= 100 ? 0 : val >= 10 ? 1 : 2;
 			let str = val.toFixed(dec);
-			// strip trailing zeros
+			
 			if(str.indexOf('.') !== -1){ str = str.replace(/\.0+$|(?<=[0-9])0+$/g, ''); str = str.replace(/\.$/, ''); }
 			return sign + str + units[idx];
 		}
@@ -372,7 +372,7 @@
 				const it = findItem(id);
 				if(!it) return;
 				const cost = getCost(id);
-				// In infinite mode, always enable Buy regardless of funds
+				
 				if(btn) btn.disabled = (!state.infinite) && (state.total < cost);
 				const desc = row.querySelector('.desc'); if(desc){ desc.textContent = `${it.desc} — Cost: ${abbr(cost)}`; desc.title = `Exact: ${fmt(cost)}`; }
 				const name = row.querySelector('.name'); if(name){ const owned = state.items[id]||0; name.textContent = `${it.name} ${owned? '×'+owned: ''}`; }
@@ -391,11 +391,11 @@
 					const desc = document.createElement('div'); desc.className='desc'; desc.textContent = `${it.desc} — Cost: ${abbr(cost)}`; desc.title = `Exact: ${fmt(cost)}`;
 				meta.append(name, desc);
 				const btn = document.createElement('button'); btn.type='button'; btn.className='buy primary'; btn.textContent = 'Buy'; btn.setAttribute('data-id', it.id);
-				// In infinite mode, button should not be disabled
+				
 				btn.disabled = (!state.infinite) && (state.total < cost);
 				btn.addEventListener('click', (ev)=>{
 					const currentCost = getCost(it.id);
-					// Allow purchase even without funds when infinite; otherwise require enough total
+					
 					if(!state.infinite && state.total < currentCost) { toast('Not enough'); return; }
 					if(!state.infinite) state.total -= currentCost;
 					state.items[it.id]=(state.items[it.id]||0)+1; try{ it.apply(); }catch{}
@@ -407,22 +407,22 @@
 		}
 		function toast(msg){ if(!els.toasts) return; const d=document.createElement('div'); d.className='toast'; d.textContent=msg; els.toasts.appendChild(d); setTimeout(()=>d.remove(), 2600); }
 
-		// Game logic
-		let lastKeyDown=false; // prevent space hold spam
+		
+		let lastKeyDown=false; 
 		function tap(x,y){
 				state.total += state.per; renderHUD(); sfx.click();
-			// ripple
+			
 			try{
-				// Compute center if no coordinates provided
+				
 				if(x==null||y==null){ const rect=els.space.getBoundingClientRect(); x=rect.left+rect.width/2; y=rect.top+rect.height/2; }
-				// Ripple effect
+				
 				const r=document.createElement('span'); r.className='ripple'; r.style.left=x+'px'; r.style.top=y+'px'; document.body.appendChild(r); setTimeout(()=>r.remove(), 520);
-				// Visuals based on toggle
+				
 				const txt = state.infinite ? '∞' : '+'+abbr(state.per);
 				if(state.numberRain){
 					spawnRainLabel(txt);
 				}else{
-					// Old float effect with randomized direction and rotation
+					
 					const f=document.createElement('div'); f.className='floatAdd'; f.textContent = txt;
 					f.style.left=(x+12)+'px'; f.style.top=(y-8)+'px';
 					const ang = Math.random()*Math.PI*2; const dist = 60 + Math.random()*60; const x1 = Math.cos(ang)*dist; const y1 = Math.sin(ang)*dist * -1;
@@ -433,20 +433,20 @@
 					f.addEventListener('animationend', ()=>{ try{ f.remove(); }catch{} }, { once:true }); setTimeout(()=>{ try{ f.remove(); }catch{} }, 1400);
 				}
 			}catch{}
-			// Achievements
+			
 			if(state.total===100) toast(`Milestone: ${abbr(100)}!`);
 			if(state.total===1000) toast(`Milestone: ${abbr(1000)}!`);
 		}
 
-		// Helper: spawn falling label from random x at top
+		
 		function spawnRainLabel(text){
 			try{
 				const d=document.createElement('div'); d.className='rainAdd'; d.textContent=text;
 				const vw = Math.max(document.documentElement.clientWidth||0, window.innerWidth||0);
-				const x = Math.random()*vw; const drift = (Math.random()*2-1) * 200; // -200..200px drift while falling
+				const x = Math.random()*vw; const drift = (Math.random()*2-1) * 200; 
 				d.style.left = Math.round(x)+'px'; d.style.top = '-24px'; d.style.zIndex = '90'; d.style.setProperty('--dx', drift.toFixed(0)+'px');
 				const dur = (1.7 + Math.random()*1.0).toFixed(2)+'s'; d.style.setProperty('--dur', dur);
-				// Random rotation start/end and spin speed
+				
 				const r0 = (Math.random()*20 - 10).toFixed(1)+'deg';
 				const r1 = (parseFloat(r0) + (Math.random()*120 + 60)).toFixed(1)+'deg';
 				d.style.setProperty('--r0', r0); d.style.setProperty('--r1', r1);
@@ -457,24 +457,24 @@
 			}catch{}
 		}
 
-			// Auto tick every 100ms (integer carry)
+			
 			let autoEmitAcc = 0; let lastEmit = performance.now();
 			setInterval(()=>{
-				// per second generators
+				
 				if(state.auto>0){
 					state.carry += state.auto/10;
 					let gained = 0;
 					while(state.carry>=1){ state.total += 1; state.carry -= 1; gained += 1; }
 					if(gained>0){ autoEmitAcc += gained; }
 				}
-				// Emit rain labels periodically for auto income to avoid spam
+				
 				const now = performance.now();
 				if(autoEmitAcc>0 && now - lastEmit > 350){
 					const txt = state.infinite ? '∞' : '+' + abbr(autoEmitAcc);
 					if(state.numberRain){ spawnRainLabel(txt); }
 					else {
-						// Emit a float near the SPACE key for auto when rain is off
-						const rect=els.space.getBoundingClientRect(); const cx=rect.left+rect.width/2; const cy=rect.top+8; // near top of key
+						
+						const rect=els.space.getBoundingClientRect(); const cx=rect.left+rect.width/2; const cy=rect.top+8; 
 						const f=document.createElement('div'); f.className='floatAdd'; f.textContent = txt;
 						f.style.left=(cx+ (Math.random()*40-20))+'px'; f.style.top=(cy+(Math.random()*10-5))+'px';
 						const ang = -Math.PI/2 + (Math.random()*0.6-0.3); const dist = 50 + Math.random()*40; const x1 = Math.cos(ang)*dist; const y1 = Math.sin(ang)*dist;
@@ -489,22 +489,22 @@
 				renderHUD();
 			}, 100);
 
-		// Save to localStorage
+		
 		function save(){ store.set('sb_v2', state); }
 		setInterval(save, 5000);
 
-		// Events
+		
 		els.tap.addEventListener('click', (e)=> { tap(e.clientX, e.clientY); pressVisual(); });
 		els.space.addEventListener('mousedown', ()=>{ pressVisual(true); });
 		els.space.addEventListener('mouseup', ()=>{ pressVisual(false); });
 		els.space.addEventListener('mouseleave', ()=>{ pressVisual(false); });
-		// Only treat real pointer clicks on the SPACE key area; ignore keyboard-triggered clicks (detail===0)
+		
 		els.space.addEventListener('click', (e)=> { if(e && e.detail===0){ return; } tap(e.clientX, e.clientY); });
-		// Prevent default space behavior on the key element; document keydown handles tap and visuals
+		
 		els.space.addEventListener('keydown', (e)=>{ if(e.code==='Space'){ e.preventDefault(); }});
-		// On keyup, allow bubbling so document keyup can clear guards; also clear here for safety
+		
 		els.space.addEventListener('keyup', (e)=>{ if(e.code==='Space'){ e.preventDefault(); lastKeyDown=false; pressVisual(false); }});
-		// Ensure state resets if focus leaves the space key
+		
 		els.space.addEventListener('blur', ()=>{ lastKeyDown=false; pressVisual(false); });
 		document.addEventListener('keydown', (e)=>{
 			if(e.code==='Space'){
@@ -512,7 +512,7 @@
 				const ae = document.activeElement;
 				const isSpaceKey = ae === els.space;
 				const isButtonish = ae && (ae.tagName === 'BUTTON' || ae.getAttribute('role') === 'button');
-				// If focus is on a button-like element other than the SPACE key area, let it handle the click (avoid double tap)
+				
 				if(isButtonish && !isSpaceKey) return;
 				if(!lastKeyDown){ tap(); lastKeyDown=true; pressVisual(true); }
 			}
@@ -522,7 +522,7 @@
 		function hardReset(){
 			try{ localStorage.removeItem('sb_v2'); }catch{}
 			const fresh = baseState();
-			// Clear existing state thoroughly, then apply fresh base values
+			
 			for(const k of Object.keys(state)) { delete state[k]; }
 			Object.assign(state, fresh);
 			lastKeyDown = false;
@@ -534,33 +534,33 @@
 		els.save.addEventListener('click', ()=>{ save(); toast('Saved'); });
 		if(els.rainToggle){ els.rainToggle.addEventListener('click', ()=>{ state.numberRain = !state.numberRain; renderHUD(); save(); }); }
 
-		// Tabs
+		
 		els.tabUp.addEventListener('click', ()=>{ activeTab='up'; els.tabUp.classList.add('active'); els.tabGen.classList.remove('active'); renderShop(); });
 		els.tabGen.addEventListener('click', ()=>{ activeTab='gen'; els.tabGen.classList.add('active'); els.tabUp.classList.remove('active'); renderShop(); });
 
-		// Init
+		
 		render();
 
-		// Minimal cheat: global inf(on=true) to toggle infinite money
+		
 		(function setupCheat(){
 			function setInfinite(on=true){ state.infinite = !!on; save(); render(); return `infinite=${state.infinite}`; }
 			try{ window.inf = setInfinite; }catch{}
 		})();
 
-		// DevTools cheats
+		
 		(function setupCheats(){
 			const api = {
-				// Toggle infinite display mode
+				
 				infinite(on){ state.infinite = !!on; save(); render(); return `infinite=${state.infinite}`; },
-				// Set total explicitly
+				
 				set(n){ n=Number(n)||0; state.total = Math.max(0, Math.floor(n)); render(); save(); return state.total; },
-				// Add to total
+				
 				add(n){ n=Number(n)||0; state.total = Math.max(0, Math.floor(state.total + n)); render(); save(); return state.total; },
-				// Set per-press
+				
 				per(n){ n=Number(n)||1; state.per = Math.max(1, Math.floor(n)); render(); save(); return state.per; },
-				// Set auto per second
+				
 				auto(n){ n=Number(n)||0; state.auto = Math.max(0, Math.floor(n)); render(); save(); return state.auto; },
-				// Grant shop items (bypass cost)
+				
 				give(id, count=1){
 					const it = findItem(id);
 					if(!it) return `Unknown item: ${id}`;
@@ -571,25 +571,25 @@
 					}
 					render(); save(); return `${id} x${state.items[id]}`;
 				},
-				// Save/Load
+				
 				save(){ save(); return 'saved'; },
 				load(){ const loaded = store.get('sb_v2', {}); Object.assign(state, baseState(), loaded); render(); return 'loaded'; },
-				// Reset
+				
 				reset(){ hardReset(); return 'reset'; },
-				// Help
+				
 				help(){ return 'inf(on) infinite money; sb(n) set; sbAdd(n) add; sbX.give(id,n); sbX.per(n); sbX.auto(n); ids: '+allItems().map(i=>i.id).join(', '); }
 			};
-			// Short helpers
+			
 			window.sb = function(n){ return api.set(n); };
 			window.sbAdd = function(n){ return api.add(n); };
 			window.inf = function(on=true){ return api.infinite(on); };
-			// Friendly aliases
+			
 			window.setNumber = window.sb;
 			window.addNumber = window.sbAdd;
 			window.sbX = api;
 		})();
 
-		// Background stars + light galaxy (simple)
+		
 		(function startBg(){
 			const canvas=els.bg; if(!canvas) return; const ctx=canvas.getContext('2d'); if(!ctx) return; const DPR=Math.min(2, window.devicePixelRatio||1);
 			let w=0,h=0, stars=[], nebulas=[], meteors=[]; let mx=0,my=0; const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -610,9 +610,9 @@
 			requestAnimationFrame(tick);
 		})();
     
-				// Confetti removed
+				
 
-				// SFX using WebAudio
+				
 				const sfx = (function(){
 					let ctx; function ac(){ if(!ctx){ try{ ctx = new (window.AudioContext||window.webkitAudioContext)(); }catch{} } return ctx; }
 					function tone(freq=220, dur=0.07, type='square', vol=0.1){ const c=ac(); if(!c) return; const o=c.createOscillator(); const g=c.createGain(); o.type=type; o.frequency.value=freq; g.gain.value=vol; o.connect(g); g.connect(c.destination); const now=c.currentTime; o.start(now); o.stop(now+dur); g.gain.setValueAtTime(vol, now); g.gain.exponentialRampToValueAtTime(0.0001, now+dur); }

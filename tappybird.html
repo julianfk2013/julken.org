@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Tappy Bird — Classic Arcade</title>
+  <link rel="icon" type="image/png" sizes="16x16" href="favicon_16x16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="favicon_32x32.png" />
+  <link rel="icon" type="image/png" sizes="256x256" href="favicon_256x256.png" />
+  <link rel="stylesheet" href="css/tappybird.css" />
+</head>
+<body>
+  
+  <a class="homeBtn" href="index.html">🏠 Home</a>
+
+  
+  <button class="volumeBtn" id="volumeBtn" onclick="TappyUI.showVolumeMenu()">🔊</button>
+
+  
+  <div class="hud">
+    <div class="hud-item">
+      <span class="hud-label">Score:</span>
+      <span class="hud-value" id="score">0</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Best:</span>
+      <span class="hud-value" id="highScore">0</span>
+    </div>
+  </div>
+
+  
+  <div id="gameContainer">
+    <canvas id="gameCanvas"></canvas>
+  </div>
+
+  
+  <div id="overlay">
+    <div id="menuContent"></div>
+  </div>
+
+  
+  <script src="js/tappybird-config.js"></script>
+  <script src="js/tappybird-storage.js"></script>
+  <script src="js/tappybird-entities.js"></script>
+  <script src="js/tappybird-ui.js"></script>
+  <script src="js/tappybird-game.js"></script>
+
+  
+  <script>
+    window.addEventListener('DOMContentLoaded', () => {
+      console.log('🐦 Tappy Bird - Initializing...');
+
+      const canvas = document.getElementById('gameCanvas');
+      if (!canvas) {
+        console.error('❌ Canvas not found!');
+        return;
+      }
+
+      
+      AudioManager.init();
+
+      
+      AudioManager.loadSound('flap', 'tappybird_assets/jump.mp3');
+      AudioManager.loadSound('hit', 'tappybird_assets/gameover.mp3');
+      AudioManager.loadSound('die', 'tappybird_assets/gameover.mp3');
+
+      
+      const timestamp = Date.now();
+      const birdImg = new Image();
+      birdImg.src = 'tappybird_assets/tappy.png?' + timestamp;
+
+      const pipeImg = new Image();
+      pipeImg.src = 'tappybird_assets/pipe.png?' + timestamp;
+
+      const cloudImg = new Image();
+      cloudImg.src = 'tappybird_assets/cloud.png?' + timestamp;
+
+      
+      let imagesLoaded = 0;
+      const totalImages = 3;
+
+      function imageLoaded() {
+        imagesLoaded++;
+        console.log(`Image ${imagesLoaded}/${totalImages} loaded`);
+        if (imagesLoaded === totalImages) {
+          console.log('✅ All assets loaded, initializing game...');
+          console.log('Pipe image dimensions:', pipeImg.width, 'x', pipeImg.height);
+          console.log('Bird image dimensions:', birdImg.width, 'x', birdImg.height);
+          TappyGame.init(canvas, { birdImg, pipeImg, cloudImg });
+          TappyUI.showMenu();
+          TappyUI.updateVolumeButtonIcon();
+        }
+      }
+
+      birdImg.onload = imageLoaded;
+      pipeImg.onload = imageLoaded;
+      cloudImg.onload = imageLoaded;
+
+      
+      birdImg.onerror = () => console.error('Failed to load bird image');
+      pipeImg.onerror = () => console.error('Failed to load pipe image');
+      cloudImg.onerror = () => console.error('Failed to load cloud image');
+    });
+  </script>
+</body>
+</html>

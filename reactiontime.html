@@ -26,7 +26,7 @@
       overflow-x:hidden;
     }
 
-    /* background canvas */
+    
     #bgCanvas{position:fixed; inset:0; z-index:0; pointer-events:none; display:block}
 
     header{position:sticky; top:0; top: max(0px, var(--sai-top)); z-index:2; background:linear-gradient(180deg, rgba(10,14,25,.9), rgba(10,14,25,.6) 70%, transparent); -webkit-backdrop-filter:saturate(120%) blur(6px); backdrop-filter:saturate(120%) blur(6px); padding-top: max(0px, var(--sai-top))}
@@ -46,7 +46,7 @@
     .card h2{font-size:18px; margin:0}
     .muted{color:var(--muted); font-size:13px}
 
-    /* Reaction stage */
+    
     .stage{
       position:relative; height:340px; border-radius:14px; overflow:hidden; user-select:none; cursor:pointer;
       display:grid; place-items:center; background:linear-gradient(180deg,#12203a,#0c1428);
@@ -54,24 +54,24 @@
     }
     .stage.ready{background:linear-gradient(180deg,#1a2542,#101a31)}
     .stage.wait{background:linear-gradient(180deg,#1c2130,#141a26)}
-  /* Stronger, more vivid green for Go */
+  
   .stage.go{background:linear-gradient(180deg,#0fbd53,#0a7a38)}
     .stage.tooSoon{background:linear-gradient(180deg,#3a1422,#290e18)}
     .stage .msg{font-size:22px; text-align:center; padding:0 14px}
     .stage .sub{font-size:13px; color:var(--muted); margin-top:6px}
 
-    /* big number */
+    
     .rt{ font-size:48px; font-weight:700; letter-spacing:.5px; display:flex; align-items:baseline; gap:6px; }
     .rt .unit{font-size:14px; color:var(--muted)}
     .pill{display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; background:#0f1a33; border:1px solid rgba(255,255,255,.06); color:#bcd3ff; font-size:12px}
 
-    /* stats */
+    
     .statRow{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
     .stat{flex:1; min-width:130px; background:#0e1528; border:1px solid rgba(255,255,255,.06); border-radius:12px; padding:10px 12px}
     .stat .label{font-size:12px; color:var(--muted)}
     .stat .val{font-size:18px; font-weight:700}
 
-    /* buttons */
+    
     .btn{appearance:none; border:1px solid rgba(255,255,255,.08); color:#eaf2ff; background:#132140; padding:10px 14px; border-radius:10px; font-weight:600; cursor:pointer}
     .btn:hover{background:#172a52}
     .btnRow{display:flex; gap:10px; flex-wrap:wrap}
@@ -79,7 +79,7 @@
     footer{opacity:.8; text-align:center; padding:24px 0 36px}
     a.home{color:#bcd3ff; text-underline-offset:3px}
 
-    /* Mobile Breakpoints */
+    
     @media (max-width: 768px) {
       .rt .value { font-size: clamp(48px, 12vw, 72px); }
       .statRow { gap: 8px; }
@@ -100,7 +100,7 @@
       .rt .value { font-size: clamp(40px, 10vw, 64px); }
     }
 
-    /* Touch device optimizations */
+    
     @media (hover: none) and (pointer: coarse) {
       button, .btn { min-height: 48px; min-width: 48px; padding: 14px 18px; }
       #clickArea { min-height: 200px; }
@@ -118,7 +118,7 @@
 
   <div class="wrap">
     <div class="cards">
-      <!-- Game card -->
+      
       <article class="card">
         <div class="body">
           <div class="titleRow">
@@ -156,7 +156,7 @@
         </div>
       </article>
 
-      <!-- About card -->
+      
       <article class="card">
         <div class="body">
           <h2 style="margin-bottom:6px">About</h2>
@@ -179,7 +179,7 @@
   </footer>
 
   <script>
-    // Simple galaxy-ish starfield
+    
     (function(){
       const c = document.getElementById('bgCanvas');
       const dpr = Math.max(1, Math.min(2, window.devicePixelRatio||1));
@@ -214,7 +214,7 @@
         ctx.clearRect(0,0,W,H);
         nebula();
 
-        // spiral-ish core
+        
         ctx.save();
         ctx.translate(W*0.5,H*0.2);
         for(let i=0;i<90;i++){
@@ -226,7 +226,7 @@
         }
         ctx.restore();
 
-        // stars
+        
         for(const s of stars){
           s.x += Math.cos(s.a)*s.s; s.y += Math.sin(s.a)*s.s;
           if(s.x<0) s.x+=W; if(s.x>W) s.x-=W; if(s.y<0) s.y+=H; if(s.y>H) s.y-=H;
@@ -241,7 +241,7 @@
       requestAnimationFrame(tick);
     })();
 
-    // Reaction Time logic
+    
     (function(){
       const stage = document.getElementById('stage');
       const msg = document.getElementById('msg');
@@ -253,11 +253,11 @@
       const shareBtn = document.getElementById('shareBtn');
       document.getElementById('yr').textContent = new Date().getFullYear();
 
-  let state = 'idle'; // idle, wait, go, result, tooSoon
-  // High-precision timing using performance.now() and rAF
-  let waitRAF = 0, goRAF = 0; // requestAnimationFrame ids
-  let startAt = 0, targetAt = 0; // timestamps in ms (perf clock)
-      // Web Audio for the "Go" beep
+  let state = 'idle'; 
+  
+  let waitRAF = 0, goRAF = 0; 
+  let startAt = 0, targetAt = 0; 
+      
       let audioCtx = null; let audioUnlocked = false;
       function getAudio(){
         if(!audioCtx){
@@ -277,7 +277,7 @@
         const o = ctx.createOscillator();
         const g = ctx.createGain();
         o.type = 'sine';
-        o.frequency.setValueAtTime(880, ctx.currentTime); // A5
+        o.frequency.setValueAtTime(880, ctx.currentTime); 
         g.gain.setValueAtTime(0.001, ctx.currentTime);
         g.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + 0.005);
         g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18);
@@ -303,10 +303,10 @@
         cancelAnimationFrame(waitRAF);
         cancelAnimationFrame(goRAF);
         setState('wait');
-        const delay = 1000 + Math.random()*2000; // 1000–3000ms
+        const delay = 1000 + Math.random()*2000; 
         targetAt = performance.now() + delay;
         const waitLoop = () => {
-          if(state !== 'wait') return; // aborted (tooSoon or reset)
+          if(state !== 'wait') return; 
           const now = performance.now();
           if (now >= targetAt) {
             startAt = now;
@@ -382,7 +382,7 @@
 
     stage.addEventListener('keydown', (e)=>{
         if(e.code==='Space'){
-          // Avoid auto-repeat triggering multiple actions
+          
           if (e.repeat) { e.preventDefault(); return; }
           e.preventDefault();
       unlockAudio();

@@ -1,24 +1,18 @@
-// Galactic Breakout DELUXE - UI Management
-// HUD, menus, overlays, achievements
-
 const UI = {
-  menuAnimationId: null, // Track menu animation loop to prevent memory leaks
+  menuAnimationId: null,
 
-  // Update HUD
   updateHUD(game) {
     document.getElementById('score').textContent = game.score;
     document.getElementById('level').textContent = `Wave ${game.wave}`;
     document.getElementById('combo').textContent = game.killStreak > 0 ? `Streak: ${game.killStreak}` : game.combo.toFixed(1) + 'x';
     document.getElementById('coins').textContent = Storage.getTotalCoins();
 
-    // Update lives display (HP in-game, shown in canvas)
     const livesEl = document.getElementById('lives');
     if (livesEl && game.player) {
       const hpPercent = Math.floor((game.player.hp / game.player.maxHp) * 100);
       livesEl.textContent = `${hpPercent}%`;
     }
 
-    // Update active power-ups display
     this.updatePowerupsDisplay(game.activePowerups);
   },
 
@@ -100,7 +94,6 @@ const UI = {
   },
 
   hideOverlay() {
-    // Cancel menu particle animation to prevent memory leak
     if (this.menuAnimationId) {
       cancelAnimationFrame(this.menuAnimationId);
       this.menuAnimationId = null;
@@ -235,8 +228,6 @@ const UI = {
 
     let html = '<div class="achievements"><h2>Achievements</h2><div class="achievement-grid">';
 
-    // Safety check for ACHIEVEMENTS
-    // Bug #18: Add Array.isArray check to prevent iteration errors
     if (typeof ACHIEVEMENTS === 'undefined' || !ACHIEVEMENTS || !Array.isArray(ACHIEVEMENTS)) {
       html += '<p style="color: #ef4444;">Achievements failed to load. Please refresh the page.</p>';
     } else {
@@ -328,9 +319,7 @@ const UI = {
     overlay.style.display = 'flex';
   },
 
-  // Animated particle background for menus (BUG FIX: added delta time and cleanup)
   initMenuParticles() {
-    // Stop existing animation if running (prevent memory leaks)
     if (this.menuAnimationId) {
       cancelAnimationFrame(this.menuAnimationId);
       this.menuAnimationId = null;
@@ -343,61 +332,50 @@ const UI = {
     const particles = [];
     const particleCount = 30;
 
-    // Create particles
     for (let i = 0; i < particleCount; i++) {
       particles.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 30, // Speed in pixels per second (was 0.5 per frame)
+        vx: (Math.random() - 0.5) * 30,
         vy: (Math.random() - 0.5) * 30,
         size: Math.random() * 2 + 1,
         alpha: Math.random() * 0.5 + 0.3
       });
     }
 
-    // Delta time tracking
     let lastTime = performance.now();
 
-    // Animation loop
     const animate = (currentTime) => {
-      // Check if canvas still exists
       if (!document.querySelector('.menu-particles')) {
         this.menuAnimationId = null;
         return;
       }
 
-      // Calculate delta time in seconds
-      const dt = Math.min((currentTime - lastTime) / 1000, 0.1); // Cap at 100ms to prevent huge jumps
+      const dt = Math.min((currentTime - lastTime) / 1000, 0.1);
       lastTime = currentTime;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Update and draw particles
       particles.forEach(p => {
-        // Update position with delta time
         p.x += p.vx * dt;
         p.y += p.vy * dt;
 
-        // Wrap around edges
         if (p.x < 0) p.x = canvas.width;
         if (p.x > canvas.width) p.x = 0;
         if (p.y < 0) p.y = canvas.height;
         if (p.y > canvas.height) p.y = 0;
 
-        // Draw particle
         ctx.fillStyle = `rgba(56, 189, 248, ${p.alpha})`;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
         ctx.fill();
 
-        // Glow
         ctx.shadowBlur = 10;
         ctx.shadowColor = '#38bdf8';
         ctx.fill();
         ctx.shadowBlur = 0;
       });
 
-      // Draw connecting lines
       particles.forEach((p1, i) => {
         particles.slice(i + 1).forEach(p2 => {
           const dx = p1.x - p2.x;
@@ -422,7 +400,6 @@ const UI = {
   }
 };
 
-// Achievement System
 const AchievementSystem = {
   unlock(achievementId) {
     if (Storage.unlockAchievement(achievementId)) {

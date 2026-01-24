@@ -7,7 +7,6 @@
 <link rel="icon" type="image/png" sizes="16x16" href="favicon_16x16.png" />
 <link rel="icon" type="image/png" sizes="32x32" href="favicon_32x32.png" />
 <link rel="icon" type="image/png" sizes="256x256" href="favicon_256x256.png" />
-<!-- Modern arcade font for the logo -->
 <link href="https://fonts.googleapis.com/css2?family=Audiowide&display=swap" rel="stylesheet">
 <style>
  html,body { margin:0; padding:0; background:#000; color:#fff; font-family:system-ui,Segoe UI,Arial,sans-serif; overflow:hidden; }
@@ -26,7 +25,7 @@
  .flash { animation:flash 90ms linear 2; }
  @keyframes flash { 0%,100%{ filter:brightness(1); } 50%{ filter:brightness(2); } }
   #musicCredit { position:fixed; bottom:calc(10px + env(safe-area-inset-bottom)); left:50%; transform:translateX(-50%); font-size:12px; opacity:0.75; z-index:11; }
-  /* Upgraded UI styling */
+  
   #uiOverlay .card { background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); padding:16px 18px; border-radius:14px; backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); }
   #uiOverlay .statsRow { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
   #uiOverlay .statCard { min-width:120px; padding:10px 12px; border-radius:10px; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); }
@@ -41,7 +40,7 @@
   #uiOverlay .howto li { margin:6px 0; }
   #uiOverlay .btnRow { display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
   #uiOverlay .hint { font-size:12px; opacity:0.8; margin-top:4px; }
-  /* Modern start screen */
+  
   #uiOverlay .hero { display:flex; flex-direction:column; gap:8px; align-items:center; text-align:center; }
   #uiOverlay .logoText { font-family:'Audiowide', 'Russo One', 'Orbitron', system-ui, sans-serif; font-size:clamp(2.8rem,8vw,5.6rem); font-weight:900; letter-spacing:.08em; margin:0; line-height:1; 
     background:linear-gradient(92deg,#9be1ff 0%,#4da7ff 35%,#7d8bff 65%,#9be1ff 100%);
@@ -68,7 +67,7 @@
   #uiOverlay .footRow { margin-top:8px; opacity:0.9; font-size:12px; display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
   @keyframes floaty { 0%{ transform:translateY(0);} 50%{ transform:translateY(-6px);} 100%{ transform:translateY(0);} }
   #uiOverlay .floaty { animation:floaty 4s ease-in-out infinite; }
-    /* Music toggle button (overlays everything) */
+    
     #musicToggle {
       position:fixed; top:calc(10px + env(safe-area-inset-top)); right:calc(10px + env(safe-area-inset-right)); z-index:20;
       width:40px; height:40px; border-radius:999px; border:1px solid rgba(255,255,255,0.25);
@@ -79,7 +78,7 @@
     }
     #musicToggle:hover { background:rgba(255,255,255,0.08); }
 
-    /* Info button */
+    
     #infoToggle {
       position:fixed; top:calc(10px + env(safe-area-inset-top)); left:calc(10px + env(safe-area-inset-left)); z-index:20;
       width:40px; height:40px; border-radius:999px; border:1px solid rgba(255,255,255,0.25);
@@ -90,7 +89,7 @@
     }
     #infoToggle:hover { background:rgba(255,255,255,0.08); }
 
-    /* Home button */
+    
     #homeBtn {
       position:fixed; bottom:calc(12px + env(safe-area-inset-bottom)); left:calc(12px + env(safe-area-inset-left)); z-index:20;
       border:1px solid rgba(255,255,255,0.25); border-radius:10px; padding:8px 12px;
@@ -100,7 +99,7 @@
     }
     #homeBtn:hover { background:rgba(255,255,255,0.08); }
 
-    /* Download button (floating) */
+    
     #downloadBtn {
       position:fixed; top:calc(60px + env(safe-area-inset-top)); right:calc(10px + env(safe-area-inset-right)); z-index:20;
       border:1px solid rgba(255,255,255,0.25); border-radius:10px; padding:8px 14px;
@@ -109,7 +108,7 @@
     }
     #downloadBtn:hover { background:#2a8dff; }
 
-    /* Lag notice modal */
+    
     #lagNotice { position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:40; }
     #lagNotice.show { display:flex; }
     #lagNotice .backdrop { position:absolute; inset:0; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); }
@@ -121,7 +120,7 @@
     #lagNotice .closeSmall { position:absolute; top:10px; right:10px; background:transparent; border:1px solid rgba(255,255,255,0.3); color:#fff; border-radius:8px; padding:4px 8px; cursor:pointer; }
   #lagNotice .warn { font-size:12px; opacity:0.72; margin-top:14px; line-height:1.35; }
 
-    /* Info modal */
+    
     #infoModal { position:fixed; inset:0; display:none; place-items:center; z-index:30; }
     #infoModal.open { display:grid; }
     #infoModal .backdrop { position:absolute; inset:0; background:rgba(0,0,0,0.6); backdrop-filter:blur(2px); }
@@ -134,7 +133,7 @@
     #infoModal .closeBtn { position:absolute; top:10px; right:10px; background:transparent; color:#fff; border:1px solid rgba(255,255,255,0.25); border-radius:10px; padding:4px 8px; cursor:pointer; }
     #infoModal .sec { margin:10px 0; }
 
-  /* Responsive adjustments */
+  
   @media (max-width: 768px) {
     #uiOverlay .modeGrid { grid-template-columns: 1fr 1fr; gap: 10px; }
     input, select, textarea { font-size: 16px !important; }
@@ -158,12 +157,12 @@
     #uiOverlay .hero { gap:4px; }
   }
 
-  /* Touch device optimizations */
+  
   @media (hover: none) and (pointer: coarse) {
     button { min-height: 48px; min-width: 48px; padding: .8rem 1.6rem; }
     #musicToggle, #infoToggle { min-width: 48px; min-height: 48px; }
   }
-  /* Rift help overlay */
+  
   #riftHelp { position:fixed; inset:0; display:none; align-items:flex-start; justify-content:center; padding-top:60px; z-index:50; }
   #riftHelp.open { display:flex; }
   #riftHelp .backdrop { position:absolute; inset:0; background:rgba(0,0,0,0.7); backdrop-filter:blur(4px); }
@@ -189,7 +188,6 @@
 </div>
 <div id="musicCredit">Music: Creo - Flux</div>
 <canvas id="game"></canvas>
-<!-- Info Modal -->
 <div id="infoModal" aria-hidden="true">
   <div class="backdrop"></div>
   <div class="card">
@@ -199,7 +197,6 @@
       <strong>Credits</strong>
   <div>Music: Creo — Prophecy (menu), Live (Shooter), Without You (Dodge), Flux (Blackout)</div>
     </div>
-    <!-- Lag Notice Modal -->
     <div id="lagNotice" aria-hidden="true">
       <div class="backdrop" data-close="lag"></div>
       <div class="panel">
@@ -221,7 +218,6 @@
     </div>
   </div>
   </div>
-<!-- Rift Help Modal -->
 <div id="riftHelp" aria-hidden="true">
   <div class="backdrop" data-close="rift"></div>
   <div class="panel">
@@ -243,31 +239,31 @@
   </div>
 </div>
 <script>
-// --- Config & State ---
+
 const cvs = document.getElementById('game');
 const ctx = cvs.getContext('2d');
 let W = innerWidth, H = innerHeight;
-// resize() is defined later (single definition) and registered after it's defined.
 
-// Offscreen mask canvas for Blackout darkness overlay
+
+
 let maskCvs = null, maskCtx = null;
 function ensureMask(){
   if (!maskCvs){ maskCvs = document.createElement('canvas'); maskCtx = maskCvs.getContext('2d'); }
   if (maskCvs.width !== W || maskCvs.height !== H){ maskCvs.width = W; maskCvs.height = H; }
 }
 
-// Runtime flag
+
 const settings = { floorKills:false };
-// Hitbox debug removed for release
-let gameMode = 'dodge'; // 'dodge' | 'shooter' | 'blackout'
-// Added new mode 'rift' (Rift Runner)
-// Shooter boss state
+
+let gameMode = 'dodge'; 
+
+
 let bossActive = false;
-let boss = null; // {x,y,r,hp,maxHp,vx,vy,rot,throwTimer,throwEvery,bobPhase}
-let bossIndex = 0; // 0-based: 0=>20hp, 1=>40hp, etc.
-let nextBossAt = 100; // score threshold for next boss spawn
-let holdThrust = false; // Space held
-// Background
+let boss = null; 
+let bossIndex = 0; 
+let nextBossAt = 100; 
+let holdThrust = false; 
+
 let stars = [], meteors = [], nebulas = [];
 let meteorTimerBG = 0;
 function initStarfield(){
@@ -277,25 +273,25 @@ function initStarfield(){
     const layer = Math.random();
     const r = layer < 0.6 ? 1 : (layer < 0.9 ? 1.5 : 2);
     const spd = (20 + Math.random()*60) * (0.5 + layer) * (SCALE_X || 1);
-    // subtle color temperature for stars (cool/neutral/warm)
+    
     let col;
-    if (layer < 0.45) col = [255,255,255]; // neutral white
-    else if (layer < 0.75) col = [180+Math.random()*50, 200+Math.random()*40, 255]; // cool blue
-    else col = [255, 230+Math.random()*20, 170+Math.random()*30]; // warm yellow
-    const glow = layer > 0.9 && Math.random() < 0.6; // some larger stars glow
+    if (layer < 0.45) col = [255,255,255]; 
+    else if (layer < 0.75) col = [180+Math.random()*50, 200+Math.random()*40, 255]; 
+    else col = [255, 230+Math.random()*20, 170+Math.random()*30]; 
+    const glow = layer > 0.9 && Math.random() < 0.6; 
     stars.push({ x: Math.random()*W, y: Math.random()*H, r, spd, tw: Math.random()*Math.PI*2, twSpd: 1 + Math.random()*2, col, glow });
   }
-  // procedural nebulas
+  
   nebulas.length = 0;
-  const nCount = 2 + Math.floor(Math.random()*3); // 2-4 nebulas
+  const nCount = 2 + Math.floor(Math.random()*3); 
   for (let i=0;i<nCount;i++){
     const big = Math.random() < 0.5;
     const r = (big ? Math.max(W,H)*0.7 : Math.max(W,H)*0.45) * (0.8 + Math.random()*0.6);
     const palette = [
-      [120,60,200],   // violet
-      [40,120,220],   // blue
-      [200,60,160],   // magenta
-      [40,180,200]    // teal
+      [120,60,200],   
+      [40,120,220],   
+      [200,60,160],   
+      [40,180,200]    
     ];
     const base = palette[Math.floor(Math.random()*palette.length)];
     nebulas.push({
@@ -313,28 +309,28 @@ function initStarfield(){
   meteors.length = 0; meteorTimerBG = 0;
 }
 
-// Physical constants (base tuned for 480x800 reference)
-// Even slower tuning
+
+
 const BASE = { GRAVITY: 600, FLAP: -190, GAP: 260, SPEED: 70, AST_SIZE: 56, PIPE_W: 90, SHIP_W:68, SHIP_H:52 };
 let GRAVITY, FLAP_V, GAP, SPEED, AST_SIZE, PIPE_W, SHIP_W, SHIP_H, SCALE_F=1, SCALE_X=1, SCALE_Y=1;
-let PIPE_HIT_INSET = 0; // horizontal shrink for collision vs visual pipe width
+let PIPE_HIT_INSET = 0; 
 const SHOOT_COOLDOWN_MS = 180;
 const BULLET_SPEED = 600;
-let startTime = 0; // timestamp when run started
-const START_GRACE_MS = 900; // invulnerability / no-floor-death window
+let startTime = 0; 
+const START_GRACE_MS = 900; 
 
-// Blackout mode state
-let flares = []; // collectible flares (lights up temporarily)
-let flareTimer = 0; // spawn timer for flares
-let flareBoost = 0; // 0..1 intensity that widens the light cone
-let flareBoostDecay = 0.35; // per second decay
+
+let flares = []; 
+let flareTimer = 0; 
+let flareBoost = 0; 
+let flareBoostDecay = 0.35; 
 function scaleConstants(){
-  SCALE_X = W/480; SCALE_Y = H/800; // treat independently
-  const s = Math.min(SCALE_X, SCALE_Y); // general scale
+  SCALE_X = W/480; SCALE_Y = H/800; 
+  const s = Math.min(SCALE_X, SCALE_Y); 
   SCALE_F = s;
   GRAVITY = BASE.GRAVITY * SCALE_Y;
   FLAP_V = BASE.FLAP * SCALE_Y;
-  // Clamp gap to ensure playable space always exists
+  
   const desiredGap = BASE.GAP * SCALE_Y;
   const minGap = Math.max(90, H * 0.18);
   const maxGap = Math.min(H * 0.65, Math.max(minGap + 20, desiredGap));
@@ -344,18 +340,18 @@ function scaleConstants(){
   PIPE_W = Math.max(60, BASE.PIPE_W * s);
   SHIP_W = BASE.SHIP_W * s;
   SHIP_H = BASE.SHIP_H * s;
-  PIPE_HIT_INSET = Math.min(PIPE_W * 0.22, 16); // scale inset, capped
-  // Rectangular ship hitbox (axis-aligned)
-  ship.hitW = SHIP_W * 0.65; // a bit inside the sprite for fairness
+  PIPE_HIT_INSET = Math.min(PIPE_W * 0.22, 16); 
+  
+  ship.hitW = SHIP_W * 0.65; 
   ship.hitH = SHIP_H * 0.55;
-  // Enforce GAP never below ship height + padding (prevents impossible gaps after resizes)
+  
   const minPlayGap = ship.hitH * 1.4 + 32;
   if (GAP < minPlayGap) GAP = minPlayGap;
-  // Make overall gap thinner for higher difficulty (then still enforcing safety)
+  
   GAP *= 0.85;
   if (GAP < minPlayGap) GAP = minPlayGap;
 }
-// Initialize starfield on first load and on resize
+
 initStarfield();
 function resize(){
   W = innerWidth; H = innerHeight; cvs.width = W; cvs.height = H;
@@ -363,17 +359,17 @@ function resize(){
 }
 addEventListener('resize', resize);
 
-// Images (may not exist in workspace – add defensive loading)
+
 function img(src){
   const i = new Image();
   i.onerror = ()=>{ i._broken = true; };
   i.src = src;
   return i;
 }
-// If these assets aren't present they'll fall back to simple shapes without errors.
+
 const imgShip = img('spacedodgers_assets/spaceship.png');
 const imgSkyscraper = img('spacedodgers_assets/skyscraper.png');
-// Asteroid image with simple fallback (asteroid / astroid) + cache-bust to avoid stale 404
+
 let imgAsteroid = new Image();
 const _astCandidates = ['spacedodgers_assets/asteroid.png','spacedodgers_assets/astroid.png'];
 let _astIdx = 0;
@@ -386,41 +382,41 @@ function _tryAst(){
   imgAsteroid.src = src + '?v=' + Date.now();
 }
 _tryAst();
-// Boss image
+
 const imgBoss = img('spacedodgers_assets/bossfight.png');
 
-// --- Audio (graceful fallbacks if files missing) ---
+
 function loadSfx(path){ const a=new Audio(); a.src=path; a.onerror=()=>console.warn('[SFX missing]',path); return a; }
 const crashSfx = loadSfx('spacedodgers_assets/death.mp3');
 const shotSfx  = loadSfx('spacedodgers_assets/shot.mp3');
 const thrustSfx = loadSfx('spacedodgers_assets/thrust.mp3');
-// Background soundtrack (loops). Uses the soundtrack file in assets.
+
 const bgm = loadSfx('spacedodgers_assets/soundtrack.mp3');
 const BGM_BASE_VOL = 0.45;
 try{ shotSfx.playbackRate = 1.35; }catch{}
-// Lower SFX volumes; raise music slightly
-let shotBaseVol = 0.12; // shooting
+
+let shotBaseVol = 0.12; 
 try{ shotSfx.volume = shotBaseVol; }catch{}
 try{ thrustSfx.loop = true; thrustSfx.volume = 0.55; }catch{}
 try{ crashSfx.volume = 0.28; }catch{}
 try{ bgm.loop = true; bgm.volume = BGM_BASE_VOL; }catch{}
-// When starting thrust, skip the first second of the audio (no delay on lift)
-const THRUST_SKIP_SEC = 1.0; // seconds to skip from the beginning
-let thrustSkipEff = THRUST_SKIP_SEC; // effective skip (clamped by duration when known)
+
+const THRUST_SKIP_SEC = 1.0; 
+let thrustSkipEff = THRUST_SKIP_SEC; 
 try{
   thrustSfx.addEventListener('loadedmetadata', ()=>{
     if (isFinite(thrustSfx.duration) && thrustSfx.duration > 0){
       thrustSkipEff = Math.min(THRUST_SKIP_SEC, Math.max(0, thrustSfx.duration - 0.05));
     }
   });
-  // Ensure the loop never plays the skipped intro
+  
   thrustSfx.addEventListener('timeupdate', ()=>{
     if (thrustPlaying && thrustSfx.currentTime < thrustSkipEff - 0.01){
       try{ thrustSfx.currentTime = thrustSkipEff; }catch{}
     }
   });
 }catch{}
-// Thrust fade helpers
+
 let thrustBaseVol = (typeof thrustSfx.volume === 'number' ? thrustSfx.volume : 1.0);
 let thrustFadeRaf = null;
 let thrustFadeInRaf = null;
@@ -441,7 +437,7 @@ function fadeInThrustAudio(ms=1000){
 function startThrustAudio(){
   cancelThrustFade(); cancelThrustFadeIn();
   try {
-    // Start immediately at the skip point and at base volume
+    
     thrustSfx.volume = thrustBaseVol;
     if (thrustSfx.paused) {
       thrustSfx.currentTime = thrustSkipEff;
@@ -472,7 +468,7 @@ function fadeOutThrustAudio(ms=220){
   thrustFadeRaf = requestAnimationFrame(step);
 }
 
-// Background music helpers
+
 let bgmTriedAutoplay = false;
 function startBgm(){
   try {
@@ -481,25 +477,25 @@ function startBgm(){
   if (typeof bgm.volume === 'number') bgm.volume = BGM_BASE_VOL;
   const p = bgm.play();
   if (typeof bgm.volume === 'number') bgm.volume = BGM_BASE_VOL;
-    if (p && typeof p.catch === 'function') { p.catch(()=>{/* likely blocked by autoplay policy; will retry on first input */}); }
+    if (p && typeof p.catch === 'function') { p.catch(()=>{}); }
   } catch{}
 }
 
 function isReady(image){ return image && image.complete && !image._broken && image.naturalWidth > 0; }
 
-// --- Geometry helpers for tilted ship hitbox (OBB) ---
+
 function getShipTilt(){ return Math.max(-0.6, Math.min(0.6, ship.vy / 600)); }
 function obbAabbIntersect(cx, cy, hx, hy, angle, ax1, ay1, ax2, ay2){
-  // OBB center (cx,cy), half extents (hx,hy), rotation 'angle'
-  // AABB as min/max
+  
+  
   const c = Math.cos(angle), s = Math.sin(angle);
   const acx = (ax1 + ax2) * 0.5, acy = (ay1 + ay2) * 0.5;
   const ahx = Math.max(0, (ax2 - ax1) * 0.5), ahy = Math.max(0, (ay2 - ay1) * 0.5);
   const dx = cx - acx, dy = cy - acy;
-  // Axes tests: world X and Y (AABB axes)
+  
   if (Math.abs(dx) > ahx + hx * Math.abs(c) + hy * Math.abs(-s)) return false;
   if (Math.abs(dy) > ahy + hx * Math.abs(s) + hy * Math.abs(c)) return false;
-  // Axes tests: OBB axes u=(c,s) and v=(-s,c)
+  
   const du = dx * c + dy * s;
   const dv = dx * (-s) + dy * c;
   const rAabbOnU = ahx * Math.abs(c) + ahy * Math.abs(s);
@@ -509,7 +505,7 @@ function obbAabbIntersect(cx, cy, hx, hy, angle, ax1, ay1, ax2, ay2){
   return true;
 }
 function obbCircleIntersect(cx, cy, hx, hy, angle, x2, y2, r){
-  // Transform circle center into OBB local space
+  
   const c = Math.cos(angle), s = Math.sin(angle);
   const dx = x2 - cx, dy = y2 - cy;
   const lx = dx * c + dy * s;
@@ -520,8 +516,8 @@ function obbCircleIntersect(cx, cy, hx, hy, angle, x2, y2, r){
   return (ddx*ddx + ddy*ddy) <= r*r;
 }
 
-// BGM source helpers
-// Small helper: fade audio to target volume
+
+
 let _bgmFadeRaf = null;
 function fadeAudioTo(audio, target, ms=300, done){
   try{
@@ -580,9 +576,9 @@ function setBgmForMode(mode){
   else setBgmSource('spacedodgers_assets/without you.mp3');
 }
 
-// --- Background update/draw ---
+
 function spawnMeteor(){
-  // spawn from random right/top edge heading down-left
+  
   const fromTop = Math.random() < 0.5;
   const speed = (350 + Math.random()*450) * (SCALE_X || 1);
   let x, y, vx, vy;
@@ -593,7 +589,7 @@ function spawnMeteor(){
 }
 function updateBackground(dt){
   for (const s of stars){ s.x -= s.spd * dt; if (s.x < -4) s.x = W + Math.random()*40; s.tw += s.twSpd * dt; }
-  // drift nebulas slowly and wrap
+  
   for (const n of nebulas){
     n.x += n.vx * dt; n.y += n.vy * dt; n.pulse += n.pulseSpd * dt;
     if (n.x < -n.r) n.x = W + n.r*0.5; else if (n.x > W + n.r) n.x = -n.r*0.5;
@@ -605,7 +601,7 @@ function updateBackground(dt){
   meteors = meteors.filter(m => m.life > 0 && m.x > -200 && m.y < H + 200);
 }
 function drawBackground(){
-  // nebulas (additive blend)
+  
   ctx.save();
   ctx.globalCompositeOperation = 'lighter';
   for (const n of nebulas){
@@ -621,7 +617,7 @@ function drawBackground(){
   }
   ctx.restore();
 
-  // stars (with subtle colors and occasional glow)
+  
   ctx.save();
   for (const s of stars){
     const tw = 0.5 + 0.5 * Math.sin(s.tw);
@@ -632,7 +628,7 @@ function drawBackground(){
     ctx.fillStyle = `rgba(${cr},${cg},${cb},${alpha.toFixed(3)})`;
     ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
   }
-  // shooting stars
+  
   ctx.lineCap = 'round';
   for (const m of meteors){
     const vx = m.vx, vy = m.vy; const vlen = Math.hypot(vx,vy)||1; const dx = -vx/vlen, dy = -vy/vlen;
@@ -643,7 +639,7 @@ function drawBackground(){
   }
   ctx.restore();
 
-  // subtle edge vignette to deepen space feel
+  
   ctx.save();
   const vg = ctx.createRadialGradient(W*0.5, H*0.45, Math.min(W,H)*0.2, W*0.5, H*0.45, Math.max(W,H)*0.75);
   vg.addColorStop(0, 'rgba(0,0,0,0)');
@@ -653,20 +649,20 @@ function drawBackground(){
 }
 
 let ship = { x:0, y:0, vy:0, hitW:32, hitH:18 };
-// firstFlap removed – not needed for Geometry Dash style ship
+
 let obstacles = [];
 let asteroids = [];
 let bullets = [];
 let lastShotTime = 0;
 let thrustPlaying = false;
 let effects = [];
-let thrustWarmup = 0; // seconds remaining until thrust activates after engage
-let thrustEngage = 0; // 0..1 ramp for thrust smoothing to avoid spikes
+let thrustWarmup = 0; 
+let thrustEngage = 0; 
 let score=0, best=0, started=false, gameOver=false, lastTime=0, spawnTimer=0, asteroidTimer=0;
-let lastScore = 0; // for game over screen
+let lastScore = 0; 
 let wasNewBest = false;
-// Tiny camera shake for polish (split-second)
-const SHAKE_MAX = 0.12; // seconds
+
+const SHAKE_MAX = 0.12; 
 let camShakeT = 0, camShakeMag = 0;
 function addShake(mag=6, time=0.08){
   camShakeMag = Math.max(camShakeMag, mag);
@@ -681,7 +677,7 @@ const bestHud = document.getElementById('bestHud');
 const overlay = document.getElementById('uiOverlay');
 const musicToggle = document.getElementById('musicToggle');
 const infoToggle = document.getElementById('infoToggle');
-const downloadBtn = document.getElementById('downloadBtn'); // now an anchor
+const downloadBtn = document.getElementById('downloadBtn'); 
 const lagNotice = document.getElementById('lagNotice');
 const homeBtn = document.getElementById('homeBtn');
 const msg = document.getElementById('msg');
@@ -693,13 +689,13 @@ function reset(){
   ship.x = W*0.25; ship.y = H*0.5; ship.vy = 0;
   obstacles.length=0; asteroids.length=0; bullets.length=0; score=0; spawnTimer=0; asteroidTimer=0; started=false; gameOver=false;
   hudScore.textContent='0';
-  // stop thrust audio on reset
+  
   try{ cancelThrustFade(); cancelThrustFadeIn(); thrustSfx.pause(); thrustSfx.currentTime = 0; thrustSfx.volume = thrustBaseVol; thrustPlaying=false; }catch{}
   effects.length = 0;
   thrustWarmup = 0; ship._thrustActive = false;
-  // reset blackout items
+  
   flares = []; flareTimer = 0; flareBoost = 0;
-  // reset boss
+  
   bossActive = false; boss = null;
   if (gameMode !== 'shooter'){ bossIndex = 0; nextBossAt = 100; }
   if (gameMode==='dodge' || gameMode==='blackout') {
@@ -708,9 +704,9 @@ function reset(){
 }
 
 function addObstacle(x){
-  // Base margins
+  
   let margin = Math.max(40, Math.min(140, H * 0.12));
-  const gapPx = Math.max(GAP, (ship.hitH||SHIP_H*0.55) * 1.4 + 32); // never less than safe minimum
+  const gapPx = Math.max(GAP, (ship.hitH||SHIP_H*0.55) * 1.4 + 32); 
   let usableSpace = H - margin*2 - gapPx;
   if (usableSpace < 10) { usableSpace = 10; }
   const offsetGap = Math.random() * usableSpace;
@@ -721,40 +717,40 @@ function addObstacle(x){
   obstacles.push({x, heightTop, heightBot, passed:false});
 }
 
-// --- Rift Runner Mode Additions ---
-let stability = 100; // 0..100
-let gates = []; // {x,y,gap,scored,type,wobblePhase}
+
+let stability = 100; 
+let gates = []; 
 let gateCounter = 0;
 let perfectGates = 0, totalGates = 0;
-let timeSlowTimer = 0; // seconds left of slow-mo
-let riftPaused = false; // help overlay active
-let riftMeltdown = false; // final 5s collapse phase
-let meltdownTimer = 0; // counts down from 5s
-// Target: ~30s from full (100) to 0 if player does nothing: 100 / 30 ≈ 3.33
-// We'll start slightly lower and ramp to approximate average 3.3/sec
-// Stability drain tuning: target ~30 seconds from 100 -> 0 if player does NOTHING.
-// 100 / 30 ≈ 3.333. Use slight score ramp later; baseline constant for predictability.
-const STABILITY_TARGET_TIME = 30; // seconds to hit 0 (pre-meltdown) doing nothing
-const STABILITY_DRAIN_BASE = 100 / STABILITY_TARGET_TIME; // ≈3.3333 per second
+let timeSlowTimer = 0; 
+let riftPaused = false; 
+let riftMeltdown = false; 
+let meltdownTimer = 0; 
+
+
+
+
+const STABILITY_TARGET_TIME = 30; 
+const STABILITY_DRAIN_BASE = 100 / STABILITY_TARGET_TIME; 
 const STABILITY_PERFECT = 20;
 const STABILITY_NORMAL = 10;
-const STABILITY_MISS = 25; // subtract
+const STABILITY_MISS = 25; 
 let lastGateScore = -999;
-let gateSpawnTimer = 0; // time-based spawn for rift
+let gateSpawnTimer = 0; 
 function addGate(x){
   const gap = 150;
-  // Choose a vertical band: follow ship lightly for fairness
+  
   const follow = Math.random()<0.55;
   let baseY = follow ? ship.y + (Math.random()*120-60) : (H*0.3 + Math.random()*H*0.4);
   baseY = Math.max(90, Math.min(H-90, baseY));
-  // Gate type: normal, vertical oscillate, drift, squeeze (smaller inner ring for higher reward)
+  
   const r = Math.random();
   let type='normal';
   if (r<0.25) type='osc'; else if (r<0.45) type='drift'; else if (r<0.58) type='squeeze';
   gates.push({ x, y: baseY, gap, scored:false, type, wobblePhase: Math.random()*Math.PI*2 });
 }
 
-// --- Meltdown Alarm (Web Audio minimal) ---
+
 let meltdownAC=null, meltdownOsc=null, meltdownGain=null, meltdownOsc2=null;
 function startMeltdownAlarm(){
   try{
@@ -762,7 +758,7 @@ function startMeltdownAlarm(){
     const AC = new (window.AudioContext||window.webkitAudioContext)();
     const g = AC.createGain(); g.gain.value=0.0001; g.connect(AC.destination);
     const o = AC.createOscillator(); o.type='sawtooth'; o.frequency.value=420; o.connect(g);
-    const o2 = AC.createOscillator(); o2.type='square'; o2.frequency.value=2.2; // LFO for pulsing
+    const o2 = AC.createOscillator(); o2.type='square'; o2.frequency.value=2.2; 
     const lfoGain = AC.createGain(); lfoGain.gain.value=220; o2.connect(lfoGain); lfoGain.connect(o.frequency);
     o.start(); o2.start();
     g.gain.linearRampToValueAtTime(0.18, AC.currentTime+0.4);
@@ -779,10 +775,10 @@ function stopMeltdownAlarm(){
 
 function resetRift(){
   stability = 85; gates.length = 0; gateCounter = 0; perfectGates = 0; totalGates = 0; timeSlowTimer=0; riftPaused=false;
-  lastGateScore = -999; gateSpawnTimer = 0; addGate(W + 280); // ensure first visible gate soon
+  lastGateScore = -999; gateSpawnTimer = 0; addGate(W + 280); 
   riftMeltdown = false; meltdownTimer = 0; stopMeltdownAlarm();
 }
-// Rift help logic
+
 let hasShownRiftHelp = false;
 function openRiftHelpOnce(){
   const rh = document.getElementById('riftHelp');
@@ -799,7 +795,7 @@ function closeRiftHelp(){
 }
 
 function spawnAsteroid(){
-  // random y inside screen (avoid edges a bit)
+  
   const y = Math.random()*(H-120)+60;
   const vx = - (SPEED*0.6 + Math.random()*SPEED*0.4);
   const vy = (Math.random()*60 - 30);
@@ -809,9 +805,9 @@ function spawnAsteroid(){
 function startGame(){
   if(started) return;
   started=true; overlay.classList.add('hidden'); lastTime=performance.now(); startTime=lastTime;
-  // hide credit during gameplay
+  
   try{ document.getElementById('musicCredit').style.display = 'none'; }catch{}
-  // Aggressive fallback: attempt multiple times shortly after start in case styles/caching block first hide
+  
   let attempts = 0;
   const hideInterval = setInterval(()=>{
     attempts++;
@@ -824,17 +820,17 @@ function startGame(){
   }, 120);
 }
 function showGameOver(){
-    // reflect current mute state in the toggle
+    
     if (musicToggle){
       const muted = bgm.muted || false;
       musicToggle.setAttribute('aria-pressed', muted? 'true':'false');
       musicToggle.textContent = muted? '🔇' : '🔊';
       musicToggle.title = muted? 'Unmute music' : 'Mute music';
     }
-  // Menu/lobby music
+  
   setBgmSource('spacedodgers_assets/prophecy.mp3');
   overlay.classList.remove('hidden');
-  // restore display in case it was force-hidden
+  
   overlay.style.display='flex';
   overlay.setAttribute('aria-hidden','false');
   const headerGO = overlay.querySelector('h1');
@@ -871,7 +867,7 @@ function showGameOver(){
     <span id="hiLine"></span>
   `;
   formatHi();
-  // wire buttons since we replaced innerHTML
+  
   const startShooterBtn = document.getElementById('startShooterBtn');
   const startDodgeNormalBtn = document.getElementById('startDodgeNormalBtn');
   const startDodgeBlackoutBtn = document.getElementById('startDodgeBlackoutBtn');
@@ -882,7 +878,7 @@ function showGameOver(){
   if (startRiftOverBtn) startRiftOverBtn.onclick = ()=>{ if(gameOver) { gameOver=false; } startMode('rift'); };
 }
 function showStart(){
-  // Menu/lobby music
+  
   setBgmSource('spacedodgers_assets/prophecy.mp3');
   overlay.classList.remove('hidden');
   overlay.style.display='flex';
@@ -946,9 +942,9 @@ function showStart(){
     <span id="hiLine" style="display:none;"></span>
   `;
   formatHi();
-  // ensure credit visible on home
+  
   try{ const credit = document.getElementById('musicCredit'); if (credit) credit.style.display = 'block'; }catch{}
-  // wire buttons since we replaced innerHTML
+  
   const startShooterBtn = document.getElementById('startShooterBtn');
   const startDodgeNormalBtn = document.getElementById('startDodgeNormalBtn');
   const cardDodge = document.getElementById('cardDodge');
@@ -956,7 +952,7 @@ function showStart(){
   const cardBlackout = document.getElementById('cardBlackout');
   const cardRift = document.getElementById('cardRift');
   if (cardDodge) cardDodge.onclick = (e)=>{
-    // avoid double-start if sub-buttons clicked
+    
     if ((e.target && (e.target.id==='startDodgeNormalBtn'))) return;
     startMode('dodge');
   };
@@ -985,29 +981,29 @@ function startMode(mode){
   if (mode==='rift') resetRift();
   startGame();
   if (mode==='rift') openRiftHelpOnce();
-  // Force-hide overlay in case CSS transition class failed
+  
   if (overlay){ overlay.classList.add('hidden'); overlay.style.display='none'; }
 }
 
-// Force hide utility (can be called repeatedly; idempotent)
+
 function forceHideOverlay(){
   if (!overlay) return;
   overlay.classList.add('hidden');
   overlay.style.display='none';
   overlay.setAttribute('aria-hidden','true');
 }
-// Extra safety: hide overlay on ANY key or pointer interaction once game started
+
 addEventListener('keydown', ()=>{ if (started && !gameOver) forceHideOverlay(); }, { passive:true });
 addEventListener('pointerdown', ()=>{ if (started && !gameOver) forceHideOverlay(); }, { passive:true });
 
-// Tap flap removed: ascent only via holding SPACE (continuous thrust)
-function flap(){ /* removed (Geometry Dash ship style uses hold) */ }
+
+function flap(){  }
 function shoot(){
   if(!started || gameOver) return;
   const now = performance.now();
   if(now - lastShotTime < SHOOT_COOLDOWN_MS) return;
   lastShotTime = now;
-  // Aim bullets in the ship's facing direction (tilt by vertical velocity)
+  
   const angle = Math.max(-0.6, Math.min(0.6, ship.vy / 600));
   const cos = Math.cos(angle), sin = Math.sin(angle);
   const speed = BULLET_SPEED * (SCALE_X||1);
@@ -1017,7 +1013,7 @@ function shoot(){
   try{ shotSfx.volume = shotBaseVol; shotSfx.currentTime=0; shotSfx.play().catch(()=>{});}catch{}
 }
 
-// Simple explosion particle effect when an asteroid is destroyed
+
 function spawnExplosion(x, y, baseR){
   const n = 14 + Math.floor(Math.random()*6);
   const parts = [];
@@ -1043,7 +1039,7 @@ function updateEffects(dt){
     if (e.type==='explosion'){
       for (const p of e.parts){
         p.x += p.vx*dt; p.y += p.vy*dt;
-        // slight drag and fade
+        
         p.vx *= 0.98; p.vy = p.vy*0.985 + 30*dt;
         p.life -= dt; p.a = Math.max(0, p.life/0.6);
       }
@@ -1069,42 +1065,42 @@ function drawEffects(){
 
 function update(dt){
   if(!started || gameOver) return;
-  // Physics (reduced gravity until first actual flap to avoid big early floor bounce)
-  // Geometry Dash ship style: constant gravity + upward thrust while held.
-  const GRAV_A = GRAVITY * 1.25; // stronger gravity for faster fall
-  const THRUST_A = Math.abs(FLAP_V) * 8.6; // stronger upward force for faster climb
-  const DRAG   = 0.035; // slightly less damping to help ascent
+  
+  
+  const GRAV_A = GRAVITY * 1.25; 
+  const THRUST_A = Math.abs(FLAP_V) * 8.6; 
+  const DRAG   = 0.035; 
   ship.vy += GRAV_A * dt;
   if (holdThrust){
-    // Smooth thrust ramp to avoid a sudden spike
-    thrustEngage += dt / 0.2; // ~200ms to full thrust
+    
+    thrustEngage += dt / 0.2; 
     if (thrustEngage > 1) thrustEngage = 1;
-    // apply continuous thrust scaled by ramp
+    
     ship.vy -= THRUST_A * thrustEngage * dt;
-    // ensure audio is playing (skip intro)
+    
     if(!thrustPlaying || thrustSfx.paused){ startThrustAudio(); }
   } else {
     ship._thrustActive = false; thrustWarmup = 0; thrustEngage = 0;
     if(thrustPlaying){ fadeOutThrustAudio(240); }
   }
-  // apply drag to smooth extremes
+  
   ship.vy *= (1 - DRAG);
   ship.y += ship.vy*dt;
   const rHalf = (ship.hitH||SHIP_H*0.55) * 0.5;
-  // Clamp top (no death)
+  
   if (ship.y < rHalf) { ship.y = rHalf; if (ship.vy < 0) ship.vy = 0; }
-  // Bottom: optionally kill, otherwise bounce/stop
+  
   if (ship.y > H - rHalf) {
-    ship.y = H - rHalf - 0.5; // slight offset to avoid re-trigger accumulation
+    ship.y = H - rHalf - 0.5; 
     if (settings.floorKills) {
       die('floor');
     } else if (ship.vy > 0) {
-      ship.vy = 0; // hard stop, no bounce
+      ship.vy = 0; 
     }
   }
 
-  // Clamp extreme vertical velocity (prevents any sudden large launches that might zip off-screen visually)
-  const maxVy = Math.abs(FLAP_V) * 3.6 + GRAVITY * 0.45; // allow faster upward speed before clamping
+  
+  const maxVy = Math.abs(FLAP_V) * 3.6 + GRAVITY * 0.45; 
   if (ship.vy > maxVy) ship.vy = maxVy;
   if (ship.vy < -maxVy) ship.vy = -maxVy;
 
@@ -1119,21 +1115,21 @@ function update(dt){
       for (const o of obstacles) { if (!o.passed && ship.x > o.x + PIPE_W) { o.passed = true; score++; hudScore.textContent = score; } }
   }
 
-  // Asteroids (reduced density to make it easier)
+  
     asteroidTimer += dt;
   let asteroidInterval = gameMode==='shooter' ? 0.6 : (gameMode==='blackout' ? 2.0 : 3.2);
-  if (gameMode==='rift') asteroidInterval = 4.5; // very low interference
+  if (gameMode==='rift') asteroidInterval = 4.5; 
     if (asteroidTimer > asteroidInterval){
       asteroidTimer=0;
       if (gameMode==='shooter'){
         if (!bossActive){
-          // Lighter density: 1-2 most of the time, rarely 3
+          
           spawnAsteroid();
           if (Math.random()<0.3) spawnAsteroid();
           if (Math.random()<0.05) spawnAsteroid();
         }
       } else if (gameMode==='blackout'){
-        // Gentle density in blackout
+        
         spawnAsteroid(); if (Math.random() < 0.15) spawnAsteroid();
       } else if (Math.random() < 0.35) {
         spawnAsteroid();
@@ -1141,26 +1137,26 @@ function update(dt){
   }
   for (const a of asteroids){ a.x += a.vx*dt; a.y += a.vy*dt; a.rot += a.vr*dt; }
   asteroids = asteroids.filter(a=> a.x > -AST_SIZE*2 && a.y>-AST_SIZE && a.y < H+AST_SIZE);
-  // Hard fail-safe: if ship leaves plausible area or becomes invalid, recenter
+  
   if(!Number.isFinite(ship.y) || ship.y < -400 || ship.y > H + 400){ ship.y = H*0.5; ship.vy = 0; }
 
-  // Collisions - tilted ship (OBB) vs pipes (AABB columns)
+  
   if (gameMode==='dodge' || gameMode==='blackout'){
     const halfW = (ship.hitW||SHIP_W*0.65)*0.5;
     const halfH = (ship.hitH||SHIP_H*0.55)*0.5;
     const tilt = getShipTilt();
     for (const o of obstacles){
       const ox1 = o.x + PIPE_HIT_INSET, ox2 = o.x + PIPE_W - PIPE_HIT_INSET;
-      // Top column
+      
       if (obbAabbIntersect(ship.x, ship.y, halfW, halfH, tilt, ox1, 0, ox2, o.heightTop)) { die('obstacle'); break; }
-      // Bottom column
+      
       const bY = H - o.heightBot;
       if (obbAabbIntersect(ship.x, ship.y, halfW, halfH, tilt, ox1, bY, ox2, H)) { die('obstacle'); break; }
     }
   }
-  // Bullets are active in both modes now (move in 2D and decay life)
+  
   for (const b of bullets){ b.x += b.vx*dt; b.y += (b.vy||0)*dt; if (b.life!=null) b.life -= dt; }
-  // Bullet vs asteroid (circle vs point approximation) with explosion effect (and boss hits)
+  
   const remainingAst=[];
   for (const a of asteroids){
     let hit=false;
@@ -1170,43 +1166,43 @@ function update(dt){
     if(!hit) remainingAst.push(a);
   }
   asteroids = remainingAst;
-  // Boss spawn and update (shooter)
+  
   if (gameMode==='shooter'){
     if (!bossActive && score >= nextBossAt){
-      // Spawn a big asteroid boss
+      
       bossActive = true;
       const baseR = AST_SIZE * 1.8;
       const hp = 20 + bossIndex * 20;
       boss = { x: W + baseR + 40, y: H*0.5, r: baseR, hp, maxHp: hp, vx: -SPEED*0.4, vy: 0, rot: 0, throwTimer: 0, throwEvery: 1.2, bobPhase: 0 };
-      // Clear existing small asteroids to focus on boss
+      
       asteroids = [];
     }
     if (bossActive && boss){
-      // movement: drift left then hover near 70% width, slow bob up/down
+      
       boss.x += boss.vx * dt; boss.y += boss.vy * dt; boss.rot += 0.4*dt; boss.bobPhase += dt;
       const targetX = W * 0.72;
       if (boss.x < targetX){ boss.vx = 0; boss.x = targetX; }
       if (boss.vx === 0){ boss.y += Math.sin(boss.bobPhase*1.2) * 30 * dt; }
-      // Throw smaller asteroids at player; disable normal spawns already above
+      
       boss.throwTimer += dt;
       const cadence = boss.throwEvery * Math.max(0.5, 1 - bossIndex*0.08);
       if (boss.throwTimer > cadence){
         boss.throwTimer = 0;
-        // aim roughly towards ship with some spread
+        
         const angle = Math.atan2(ship.y - boss.y, (ship.x+80) - boss.x) + (Math.random()*0.4 - 0.2);
         const spd = SPEED * (0.8 + Math.random()*0.6);
-        // same hitbox as regular asteroids
+        
         const r = AST_SIZE * 0.42;
         asteroids.push({ x: boss.x - boss.r*0.6, y: boss.y, vx: Math.cos(angle)*spd, vy: Math.sin(angle)*spd, r, rot: 0, vr:(Math.random()*2-1)*1.5 });
       }
-      // bullets hit boss (circle vs point)
+      
       for (const b of bullets){
         if(!b.gone){ const dx=b.x-boss.x, dy=b.y-boss.y; if(dx*dx+dy*dy < boss.r*boss.r){ b.gone=true; boss.hp -= 1; if (boss.hp <= 0){
-              // boss defeated
+              
               spawnExplosion(boss.x,boss.y,boss.r);
               score += 20; hudScore.textContent = score;
-              bossActive=false; boss=null; bossIndex++; nextBossAt += 100; // next threshold
-              // brief grace: clear bullets and any remaining boss-thrown asteroids
+              bossActive=false; boss=null; bossIndex++; nextBossAt += 100; 
+              
               bullets = bullets.filter(bb=>!bb.gone);
               asteroids = [];
               break;
@@ -1216,7 +1212,7 @@ function update(dt){
     }
   }
   bullets = bullets.filter(b=> !b.gone && b.x < W+200 && b.x > -200 && b.y > -200 && b.y < H+200 && (b.life==null || b.life>0));
-  // Ship dies if it hits any remaining asteroid/boss (OBB-circle)
+  
   {
     const halfW = (ship.hitW||SHIP_W*0.65)*0.5;
     const halfH = (ship.hitH||SHIP_H*0.55)*0.5;
@@ -1228,16 +1224,16 @@ function update(dt){
       if (obbCircleIntersect(ship.x, ship.y, halfW, halfH, tilt, boss.x, boss.y, boss.r)) { die('asteroid'); }
     }
   }
-  // Update effects
+  
   updateEffects(dt);
-  // camera shake decay
+  
   if (camShakeT > 0){ camShakeT = Math.max(0, camShakeT - dt); camShakeMag *= 0.85; }
 
-  // Blackout systems
+  
   if (gameMode==='blackout'){
-    // flare spawn
+    
     flareTimer += dt;
-    const flareInterval = 2.5 + Math.random()*2.0; // 2.5-4.5s
+    const flareInterval = 2.5 + Math.random()*2.0; 
     if (flareTimer > flareInterval){
       flareTimer = 0;
       const fy = Math.random()*(H-160)+80;
@@ -1246,7 +1242,7 @@ function update(dt){
       flares.push({ x:fx, y:fy, r: 12 + Math.random()*8, vx: -(SPEED*0.9 + Math.random()*SPEED*0.4), a:1, rot:0, vr: (Math.random()<0.5?-1:1)*vr });
     }
     for (const f of flares){ f.x += f.vx*dt; f.rot += f.vr*dt; }
-    // collect flare (OBB-circle)
+    
     const nf=[];
     for (const f of flares){
       const halfW = (ship.hitW||SHIP_W*0.65)*0.5;
@@ -1258,49 +1254,49 @@ function update(dt){
       } else if (f.x > -40) nf.push(f);
     }
     flares = nf;
-    // decay boost
+    
     if (flareBoost > 0){ flareBoost = Math.max(0, flareBoost - flareBoostDecay * dt); }
-  // (no lightning in space)
+  
   }
-  // Rift Runner systems (stability & gates)
+  
   if (gameMode==='rift'){
     if (riftPaused){ return; }
-    // If meltdown active, just count down
+    
     if (riftMeltdown){
       meltdownTimer -= dt;
-      camShakeMag = 70; camShakeT = 0.3; // sustained extreme shake
+      camShakeMag = 70; camShakeT = 0.3; 
       if (meltdownTimer <= 0){ stability = 0; riftMeltdown=false; stopMeltdownAlarm(); die('meltdown'); return; }
     } else {
-      // Drain escalates slightly with score; design average ~3.3/sec baseline over run
-  // Gentle ramp: + up to 25% by very high score (keeps late-game tension)
+      
+  
   const ramp = Math.min(0.25, score / 2400 * 0.25);
-  // Removed low-health multiplier to avoid perceived "jump" near 40%.
+  
   const drainRatePerSec = STABILITY_DRAIN_BASE * (1 + ramp) * (timeSlowTimer>0?0.45:1);
       const effDrain = drainRatePerSec * dt;
       stability -= effDrain;
-      // Predict time remaining until meltdown trigger
+      
       const timeLeft = drainRatePerSec > 0 ? stability / drainRatePerSec : 9999;
       if (timeLeft < 3 && !gameOver){
         const pct = Math.max(0, Math.min(1, (3 - timeLeft)/3));
-        camShakeMag = Math.max(camShakeMag, 28 + pct*70); // up to ~98
+        camShakeMag = Math.max(camShakeMag, 28 + pct*70); 
         camShakeT = Math.max(camShakeT, 0.18 + pct*0.28);
       }
       if (stability <= 0){
         stability = 0; riftMeltdown = true; meltdownTimer = 5; startMeltdownAlarm();
-        return; // enter meltdown phase instead of immediate death
+        return; 
       }
     }
     if (timeSlowTimer>0){ timeSlowTimer -= dt; if (timeSlowTimer<0) timeSlowTimer=0; }
-    // Spawn cadence: combination of score milestones & time-based to guarantee gates even if player misses scoring
+    
     const interval = 14 - Math.min(6, Math.floor(score/160));
     gateSpawnTimer += dt;
-    const timeLimit = 2.8 - Math.min(1.4, score/400); // faster over time
+    const timeLimit = 2.8 - Math.min(1.4, score/400); 
     if (gateSpawnTimer > timeLimit){
       gateSpawnTimer = 0; addGate(W + 260 + Math.random()*60);
     } else if (score>0 && score !== lastGateScore && score % interval === 0){
       lastGateScore = score; gateSpawnTimer = 0; addGate(W + 220);
     }
-    // Update gates
+    
     for (const g of gates){
       g.x -= SPEED * dt * (1 + Math.max(0,(score-200)/1200));
       g.wobblePhase += dt;
@@ -1309,7 +1305,7 @@ function update(dt){
       } else if (g.type==='drift'){
         g.y += Math.sin(g.wobblePhase*0.8)*14*dt + Math.cos(g.wobblePhase*1.3)*10*dt;
       }
-      // clamp
+      
       g.y = Math.max(70, Math.min(H-70, g.y));
     }
     for (const g of gates){
@@ -1317,7 +1313,7 @@ function update(dt){
         g.scored = true; totalGates++;
         const dy = Math.abs(ship.y - g.y);
         let perfectRadius = 24;
-        if (g.type==='squeeze') perfectRadius = 18; // harder
+        if (g.type==='squeeze') perfectRadius = 18; 
         const nearRadius = 64;
         if (dy < perfectRadius){
           stability = Math.min(100, stability + STABILITY_PERFECT + (g.type==='squeeze'?5:0));
@@ -1345,37 +1341,37 @@ function die(reason){
 }
 
 function draw(){
-  // space background gradient
+  
   const g = ctx.createLinearGradient(0,0,0,H); g.addColorStop(0,'#040d22'); g.addColorStop(1,'#090212'); ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
-  // camera shake
+  
   if (camShakeT > 0){
-    const k = camShakeT; // already decaying in update
+    const k = camShakeT; 
     const dx = (Math.random()*2-1) * camShakeMag * k;
     const dy = (Math.random()*2-1) * camShakeMag * k;
     ctx.save(); ctx.translate(dx, dy);
   } else {
     ctx.save();
   }
-  // stars + shooting stars
+  
   drawBackground();
 
-  // Note: flares will be drawn under the darkness mask later for better realism
+  
 
-  // pipes / skyscrapers
+  
   for (const o of obstacles){
     ctx.save();
     ctx.shadowColor='#1e90ff'; ctx.shadowBlur=12;
-    // top
+    
   if (isReady(imgSkyscraper)) { ctx.drawImage(imgSkyscraper, o.x, 0, PIPE_W, o.heightTop); }
   else { ctx.fillStyle='#1e90ff'; ctx.fillRect(o.x,0,PIPE_W,o.heightTop); }
-    // bottom
+    
     const bY = H - o.heightBot;
   if (isReady(imgSkyscraper)) { ctx.drawImage(imgSkyscraper, o.x, bY, PIPE_W, o.heightBot); }
   else { ctx.fillStyle='#1e90ff'; ctx.fillRect(o.x,bY,PIPE_W,o.heightBot); }
     ctx.restore();
   }
 
-  // asteroids
+  
   for (const a of asteroids){
     ctx.save(); ctx.translate(a.x,a.y); ctx.rotate(a.rot); ctx.shadowColor='#fff'; ctx.shadowBlur=8;
   if (isReady(imgAsteroid)) { ctx.drawImage(imgAsteroid, -AST_SIZE/2, -AST_SIZE/2, AST_SIZE, AST_SIZE); }
@@ -1383,7 +1379,7 @@ function draw(){
     ctx.restore();
   }
 
-  // Rift gates
+  
   if (gameMode==='rift'){
     for (const g2 of gates){
       ctx.save();
@@ -1407,7 +1403,7 @@ function draw(){
     }
   }
 
-  // boss asteroid (shooter)
+  
   if (gameMode==='shooter' && bossActive && boss){
     ctx.save(); ctx.translate(boss.x,boss.y); ctx.rotate(boss.rot); ctx.shadowColor='#fff'; ctx.shadowBlur=16;
     if (isReady(imgBoss)){
@@ -1416,7 +1412,7 @@ function draw(){
       ctx.fillStyle='#cfcfcf'; ctx.beginPath(); ctx.arc(0,0,boss.r,0,Math.PI*2); ctx.fill();
     }
     ctx.restore();
-    // HP bar
+    
     const barW = 220, barH = 10; const hpK = Math.max(0, boss.hp)/boss.maxHp;
     const bx = Math.min(Math.max(20,boss.x - barW/2), W - barW - 20);
     const by = Math.max(20, boss.y - boss.r - 24);
@@ -1425,10 +1421,10 @@ function draw(){
     ctx.strokeStyle='rgba(255,255,255,0.8)'; ctx.strokeRect(bx,by,barW,barH);
   }
 
-  // explosion effects
+  
   drawEffects();
 
-  // bullets (both modes) — neon green with glow
+  
   ctx.save();
   ctx.fillStyle = '#00ff88';
   ctx.shadowColor = '#00ff88';
@@ -1443,7 +1439,7 @@ function draw(){
   }
   ctx.restore();
 
-  // Rift HUD (after ship & blackout mask for clarity)
+  
   if (gameMode==='rift'){
     ctx.save();
     const barW = 220, barH = 16, x = 14, y = 14;
@@ -1461,16 +1457,16 @@ function draw(){
     if (totalGates>0){ const perfPct = Math.round((perfectGates/totalGates)*100); ctx.fillText(`Perfect ${perfPct}%`, x+140, y+barH+12); }
     if (timeSlowTimer>0){ ctx.fillStyle='#9bdcff'; ctx.fillText('Slow', x+barW+10, y+12); }
     ctx.restore();
-    // Screen glitch overlay based on instability
+    
   const instab = riftMeltdown ? 1 : (1 - stability/100);
-    // Ambient shake when very unstable
+    
   if (!gameOver && !riftMeltdown && instab > 0.55){
       camShakeMag = Math.max(camShakeMag, 6 + instab*14);
       camShakeT = Math.min(0.25, Math.max(camShakeT, 0.08 + instab*0.12));
     }
     if (instab > 0.12 || (gameOver && gameMode==='rift') || riftMeltdown){
       ctx.save();
-      // Displaced slices
+      
       const boost = (gameOver && gameMode==='rift') || riftMeltdown ? 2.2 : 1;
       const effInstab = Math.min(1, instab * ((gameOver && gameMode==='rift') || riftMeltdown ? 1.8:1));
       const slices = Math.min(56, (14 + Math.floor(effInstab*46))*boost);
@@ -1482,7 +1478,7 @@ function draw(){
         ctx.globalAlpha = 0.18 + effInstab*0.32;
         ctx.drawImage(cvs, 0, y0, W, h, xShift, y0, W, h);
       }
-      // RGB channel jitter (simple overlay rectangles simulating chromatic aberration)
+      
       if (effInstab > 0.25){
         const off = effInstab * ((gameOver && gameMode==='rift') || riftMeltdown ? 26:8);
         ctx.globalCompositeOperation='lighter';
@@ -1490,7 +1486,7 @@ function draw(){
         ctx.fillStyle = 'rgba(255,60,120,0.4)'; ctx.fillRect(off,0,W,H);
         ctx.fillStyle = 'rgba(60,160,255,0.35)'; ctx.fillRect(-off,0,W,H);
       }
-      // Occasional crack flash
+      
       if (Math.random() < effInstab*0.22 + (((gameOver && gameMode==='rift') || riftMeltdown)?0.45:0)){
         ctx.globalCompositeOperation='screen';
         ctx.strokeStyle = 'rgba(200,240,255,'+(0.35+effInstab*0.5).toFixed(3)+')';
@@ -1501,7 +1497,7 @@ function draw(){
         ctx.stroke();
       }
       if ((gameOver && gameMode==='rift') || riftMeltdown){
-        // White flash pulses & red tint overlay
+        
         if (Math.random()<0.5){
           ctx.globalCompositeOperation='overlay';
           ctx.fillStyle='rgba(255,255,255,'+(0.07+Math.random()*0.18)+')';
@@ -1523,18 +1519,18 @@ function draw(){
       }
     }
   }
-  // ship
+  
   ctx.save(); ctx.translate(ship.x, ship.y); const tilt = Math.max(-0.6, Math.min(0.6, ship.vy / 600)); ctx.rotate(tilt);
   if (isReady(imgShip)) { ctx.drawImage(imgShip, -SHIP_W/2, -SHIP_H/2, SHIP_W, SHIP_H); }
   else { ctx.fillStyle='#4da7ff'; ctx.beginPath(); ctx.ellipse(0,0,SHIP_W/2,SHIP_H/2,0,0,Math.PI*2); ctx.fill(); }
-  // DEBUG: uncomment to visualize collision circle
-  // // Hitbox visual (local ship space):
-  // ctx.strokeStyle='rgba(255,0,0,0.5)'; ctx.strokeRect(- (ship.hitW||SHIP_W*0.65)/2, - (ship.hitH||SHIP_H*0.55)/2, (ship.hitW||SHIP_W*0.65), (ship.hitH||SHIP_H*0.55));
+  
+  
+  
   ctx.restore();
 
-  // Draw flares and then an opaque darkness mask with a forward-facing cone headlight
+  
   if (gameMode==='blackout'){
-    // flares as additive glow beneath the mask
+    
     ctx.save();
     ctx.globalCompositeOperation = 'lighter';
     for (const f of flares){
@@ -1550,41 +1546,41 @@ function draw(){
     }
     ctx.restore();
 
-  // Build darkness mask in offscreen canvas and overlay it
+  
   ensureMask();
   maskCtx.save();
   maskCtx.clearRect(0,0,W,H);
   maskCtx.fillStyle = 'rgba(0,0,0,1)';
   maskCtx.fillRect(0,0,W,H);
 
-  // Headlight cone parameters (narrow near, wider far like a real flashlight)
-  const baseLen = 640; // beam length (bigger view)
+  
+  const baseLen = 640; 
   const extraLen = 640 * (0.25 + 0.75 * flareBoost);
   const len = baseLen + extraLen;
-  const nearHalfBase = 28, nearHalfExtra = 52; // slightly wider near ship
-  const farHalfBase = 200, farHalfExtra = 300;  // wider far away
+  const nearHalfBase = 28, nearHalfExtra = 52; 
+  const farHalfBase = 200, farHalfExtra = 300;  
   const nearHalf = nearHalfBase + nearHalfExtra * (0.25 + 0.75 * flareBoost);
   const farHalf  = farHalfBase  + farHalfExtra  * (0.25 + 0.75 * flareBoost);
-    // Ship direction: look slightly forward-right (like flying right)
-    const angle = Math.atan2(ship.vy, SPEED) * 0.15; // mostly forward with small tilt by vy
+    
+    const angle = Math.atan2(ship.vy, SPEED) * 0.15; 
 
-    // Compute cone polygon
+    
     const sx = ship.x, sy = ship.y;
     const dx = Math.cos(angle), dy = Math.sin(angle);
-    // Perpendicular for width
+    
     const px = -dy, py = dx;
   const noseX = sx + dx * Math.max(18, SHIP_W*0.45);
   const noseY = sy;
   const tipX = sx + dx * len, tipY = sy + dy * len;
-  // near segment (small width near the ship)
+  
   const nLeftX = noseX + px * nearHalf, nLeftY = noseY + py * nearHalf;
   const nRightX = noseX - px * nearHalf, nRightY = noseY - py * nearHalf;
-  // far segment (larger width at the tip)
+  
   const fLeftX = tipX + px * farHalf, fLeftY = tipY + py * farHalf;
   const fRightX = tipX - px * farHalf, fRightY = tipY - py * farHalf;
 
   maskCtx.globalCompositeOperation = 'destination-out';
-  // Cut a soft cone by drawing a trapezoid (narrow near, wide far) with a fade towards the tip
+  
   const coneGrad = maskCtx.createLinearGradient(noseX, noseY, tipX, tipY);
     coneGrad.addColorStop(0, 'rgba(0,0,0,1)');
   coneGrad.addColorStop(0.16, 'rgba(0,0,0,0.82)');
@@ -1598,13 +1594,13 @@ function draw(){
   maskCtx.closePath();
   maskCtx.fill();
 
-  // Remove near-circle; only the cone reveals
+  
 
     maskCtx.restore();
-    // Overlay mask on scene
+    
     ctx.drawImage(maskCvs, 0, 0);
 
-  // Redraw ship on top of darkness so it's always visible
+  
   ctx.save();
   ctx.translate(ship.x, ship.y);
   const tiltTop = Math.max(-0.6, Math.min(0.6, ship.vy / 600));
@@ -1613,19 +1609,19 @@ function draw(){
   else { ctx.fillStyle='#4da7ff'; ctx.beginPath(); ctx.ellipse(0,0,SHIP_W/2,SHIP_H/2,0,0,Math.PI*2); ctx.fill(); }
   ctx.restore();
   }
-  // debug hitbox drawing removed for release
+  
 
-  // end of camera shake
+  
   ctx.restore();
 }
 
 function loop(now){
   if(!lastTime) lastTime=now;
   let rawDt = (now-lastTime)/1000;
-  if (rawDt > 0.25) rawDt = 0.016; // clamp big pause
+  if (rawDt > 0.25) rawDt = 0.016; 
   const dt = Math.min(0.05, rawDt);
   lastTime=now;
-  // Safety: if game started and overlay somehow still visible, force hide it
+  
   if (started && !gameOver && overlay && !overlay.classList.contains('hidden')){
     console.log('[overlay] safety hide triggered');
     forceHideOverlay();
@@ -1637,16 +1633,16 @@ function loop(now){
 function primaryAction(){
   if(gameOver){ showStart(); return; }
   if(!started){ gameMode='dodge'; startMode('dodge'); return; }
-  // no single-tap flap; user must hold SPACE
+  
 }
 
-// Input
+
 addEventListener('keydown', e=>{
   const isSpace = e.code==='Space' || e.key===' ' || e.key==='Spacebar' || e.keyCode===32;
   if(isSpace){
     if(!started){ gameMode='dodge'; startMode('dodge'); }
     holdThrust = true; e.preventDefault();
-  // start audio immediately (skipping first second)
+  
   ship._thrustActive = false;
   if(!thrustPlaying || thrustSfx.paused){ startThrustAudio(); }
   }
@@ -1657,7 +1653,7 @@ addEventListener('keydown', e=>{
   if (e.key === 'Escape'){
     if (document.getElementById('infoModal')?.classList.contains('open')) closeInfo();
   }
-  // mode shortcuts when overlay visible
+  
   if (!started || gameOver){
     if (e.key==='1'){ gameMode='dodge'; startMode('dodge'); }
     if (e.key==='2'){ gameMode='shooter'; startMode('shooter'); }
@@ -1665,25 +1661,25 @@ addEventListener('keydown', e=>{
     if (e.key==='4'){ gameMode='rift'; startMode('rift'); }
   }
   if (e.key==='Escape' && document.getElementById('riftHelp')?.classList.contains('open')){ closeRiftHelp(); }
-  // hitbox debug key removed for release
+  
   if(e.code==='KeyF'){ shoot(); }
 });
 addEventListener('keyup', e=>{
   const isSpace = e.code==='Space' || e.key===' ' || e.key==='Spacebar' || e.keyCode===32;
   if(isSpace){ holdThrust = false; thrustWarmup = 0; ship._thrustActive = false; if(thrustPlaying){ fadeOutThrustAudio(220); } }
 });
-let pointerHeld=false; // no longer used for thrust; kept for potential future use
+let pointerHeld=false; 
 addEventListener('pointerdown', e=>{
   if(!started){ return; }
   if(gameOver){ return; }
-  // Mouse/touch no longer controls thrust. It only shoots now (both modes).
+  
   e.preventDefault();
   shoot();
 });
-addEventListener('pointerup', ()=>{ /* no-op for thrust */ });
-addEventListener('pointerleave', ()=>{ /* no-op for thrust */ });
-// Buttons are dynamically added in showStart/showGameOver and wired there.
-// Music toggle
+addEventListener('pointerup', ()=>{  });
+addEventListener('pointerleave', ()=>{  });
+
+
 if (musicToggle){
   musicToggle.addEventListener('click', ()=>{
     try{
@@ -1692,15 +1688,15 @@ if (musicToggle){
       musicToggle.textContent = bgm.muted? '🔇' : '🔊';
       musicToggle.title = bgm.muted? 'Unmute music' : 'Mute music';
   try{ localStorage.setItem('sd_music_muted', bgm.muted ? '1' : '0'); }catch{}
-      // If just unmuted and paused due to policy, try play
+      
       if (!bgm.muted && bgm.paused){ startBgm(); }
     }catch{}
   });
 }
 
-// Home button
+
 if (homeBtn) homeBtn.addEventListener('click', () => {
-  // If a run is active, confirm before leaving
+  
   if (started && !gameOver) {
     const leave = confirm('Leave the game and go to the homepage? Your current run will be lost.');
     if (!leave) return;
@@ -1708,20 +1704,20 @@ if (homeBtn) homeBtn.addEventListener('click', () => {
   window.location.href = 'index.html';
 });
 
-// Download button & lag notice behavior
+
 function openLagNotice(){ if(!lagNotice) return; lagNotice.classList.add('show'); lagNotice.setAttribute('aria-hidden','false'); }
 function closeLagNotice(){ if(!lagNotice) return; lagNotice.classList.remove('show'); lagNotice.setAttribute('aria-hidden','true'); }
-// Anchor directly downloads; still open modal shortly after page load automatically
+
 if (lagNotice) lagNotice.addEventListener('click', (e)=>{ if(e.target && e.target.dataset.close==='lag') closeLagNotice(); });
 document.addEventListener('keydown', (e)=>{ if(e.key==='Escape' && lagNotice?.classList.contains('show')) closeLagNotice(); });
 
-// Auto prompt once after small delay (only first visit)
+
 try{
-  // Show download popup immediately on load (no delay / info click needed)
+  
   requestAnimationFrame(()=> openLagNotice());
 }catch{}
 
-// Info modal
+
 const infoModal = document.getElementById('infoModal');
 const infoCloseBtn = document.getElementById('infoCloseBtn');
 function openInfo(){ if (!infoModal) return; infoModal.classList.add('open'); infoModal.setAttribute('aria-hidden','false'); }
@@ -1730,23 +1726,23 @@ if (infoToggle) infoToggle.addEventListener('click', ()=>{ if (infoModal?.classL
 if (infoCloseBtn) infoCloseBtn.addEventListener('click', closeInfo);
 if (infoModal) infoModal.querySelector('.backdrop')?.addEventListener('click', closeInfo);
 
-// Reset timing after visibility change so we don't accumulate giant dt
+
 document.addEventListener('visibilitychange', ()=>{
   if (!document.hidden) { lastTime = performance.now(); }
   if (document.hidden){
-    // On hide, force thrust off and stop audio cleanly
+    
     holdThrust = false; thrustWarmup = 0; ship._thrustActive = false;
     try{ cancelThrustFade(); cancelThrustFadeIn(); thrustSfx.pause(); thrustPlaying=false; thrustSfx.volume = thrustBaseVol; }catch{}
   }
 });
-// Also clear held state if window loses focus (prevents stuck keys)
+
 addEventListener('blur', ()=>{
   holdThrust = false; thrustWarmup = 0; ship._thrustActive = false;
   try{ cancelThrustFade(); cancelThrustFadeIn(); thrustSfx.pause(); thrustPlaying=false; thrustSfx.volume = thrustBaseVol; }catch{}
 });
 
-// Init
-// Restore music mute, last mode, and hitbox toggle state
+
+
 try{
   const m = localStorage.getItem('sd_music_muted');
   if (m === '1') bgm.muted = true;
@@ -1754,12 +1750,12 @@ try{
   if (musicToggle){ musicToggle.textContent = bgm.muted? '🔇' : '🔊'; musicToggle.title = bgm.muted? 'Unmute music' : 'Mute music'; }
   const lastMode = localStorage.getItem('sd_last_mode');
   if (lastMode === 'dodge' || lastMode === 'shooter' || lastMode === 'blackout'){ gameMode = lastMode; }
-  // hitbox debug state removed for release
+  
 }catch{}
 resize(); reset(); formatHi(); showStart(); requestAnimationFrame(loop);
-// Try to autoplay background music on load; if blocked, start on first interaction
+
 startBgm();
-// Ensure credit matches initial track
+
 try{ setMusicCreditFromSrc(bgm.src || 'spacedodgers_assets/prophecy.mp3'); }catch{}
 ['pointerdown','keydown'].forEach(evt=>{
   addEventListener(evt, function once(){
@@ -1767,14 +1763,14 @@ try{ setMusicCreditFromSrc(bgm.src || 'spacedodgers_assets/prophecy.mp3'); }catc
     removeEventListener(evt, once);
   }, { once:true });
 });
-// Fallback: hide overlay on first canvas click if game already started
+
 document.addEventListener('click', (e)=>{
   if (started && !gameOver && overlay && !overlay.classList.contains('hidden')){
   forceHideOverlay();
   }
 });
 
-// Wire rift help buttons & backdrop
+
 const riftHelp = document.getElementById('riftHelp');
 if (riftHelp){
   riftHelp.addEventListener('click', (e)=>{ if(e.target && e.target.dataset.close==='rift'){ closeRiftHelp(); }});

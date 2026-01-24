@@ -1,6 +1,6 @@
-/* Galactic Breakout DELUXE - Styles */
 
-/* CSS Variables */
+
+
 :root {
   --bg: #0b1020;
   --panel: #0f172a;
@@ -18,7 +18,7 @@
   --sai-left: env(safe-area-inset-left, 0px);
 }
 
-/* Reset & Base */
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -34,7 +34,7 @@ html, body {
   background: linear-gradient(160deg, #0b1020, #0f172a 55%, #0a0f1f);
 }
 
-/* Container */
+
 #gameContainer {
   position: relative;
   width: 100vw;
@@ -47,7 +47,7 @@ html, body {
               linear-gradient(160deg, #0b1020, #0f172a 55%, #0a0f1f);
 }
 
-/* Canvas */
+
 #gameCanvas {
   display: block;
   background: transparent;
@@ -55,13 +55,13 @@ html, body {
   border-radius: 8px;
 }
 
-/* Disable pointer events on game container when overlay is visible */
+
 #overlay[style*="display: flex"] ~ #gameContainer,
 #overlay[style*="display: flex"] ~ #gameContainer * {
   pointer-events: none;
 }
 
-/* HUD */
+
 .hud {
   position: fixed;
   top: 0;
@@ -97,7 +97,7 @@ html, body {
   color: var(--accent);
 }
 
-/* Mute Button */
+
 .mute-btn {
   background: rgba(56, 189, 248, 0.15);
   border: 2px solid rgba(56, 189, 248, 0.4);
@@ -126,7 +126,7 @@ html, body {
   transform: scale(0.95);
 }
 
-/* Active Power-ups Display */
+
 #activePowerups {
   position: fixed;
   bottom: 80px;
@@ -159,7 +159,7 @@ html, body {
   transition: width 0.1s linear;
 }
 
-/* Overlay */
+
 #overlay {
   position: fixed;
   inset: 0;
@@ -172,7 +172,7 @@ html, body {
   padding: 20px;
 }
 
-/* Menu */
+
 .menu, .mode-select, .pause-menu, .gameover, .achievements, .settings, .stats-view {
   position: relative;
   background: linear-gradient(180deg, var(--panel), var(--panel-2));
@@ -186,7 +186,7 @@ html, body {
   overflow: hidden;
 }
 
-/* Menu animated corner decorations */
+
 .menu::before, .menu::after,
 .mode-select::before, .mode-select::after {
   content: '';
@@ -235,7 +235,7 @@ html, body {
   50% { opacity: 1; }
 }
 
-/* Animated scanline overlay on menus (BUG FIX: moved from ::after to separate element) */
+
 .scanline-overlay {
   content: '';
   position: absolute;
@@ -277,7 +277,7 @@ html, body {
   50% { filter: drop-shadow(0 0 20px rgba(56, 189, 248, 0.8)); }
 }
 
-/* Menu particle canvas background */
+
 .menu-particles {
   position: absolute;
   top: 0;
@@ -325,7 +325,7 @@ html, body {
               inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
-/* Animated shine effect on buttons */
+
 .btn::before {
   content: '';
   position: absolute;
@@ -397,7 +397,7 @@ html, body {
   animation: none;
 }
 
-/* Mode Selection */
+
 .mode-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -418,7 +418,7 @@ html, body {
               inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
-/* Animated corner indicators on mode cards */
+
 .mode-card::before {
   content: '';
   position: absolute;
@@ -487,7 +487,7 @@ html, body {
   color: var(--text);
 }
 
-/* Shop */
+
 .shop-header {
   display: flex;
   justify-content: space-between;
@@ -543,7 +543,7 @@ html, body {
   font-weight: 600;
 }
 
-/* Achievements */
+
 .achievement-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -591,7 +591,7 @@ html, body {
   font-weight: 600;
 }
 
-/* Achievement Notification */
+
 .achievement-notification {
   position: fixed;
   top: 80px;
@@ -624,7 +624,7 @@ html, body {
   margin-top: 4px;
 }
 
-/* Stats */
+
 .stats {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -664,7 +664,7 @@ html, body {
   color: var(--warn);
 }
 
-/* Settings */
+
 .settings-grid {
   display: flex;
   flex-direction: column;
@@ -701,7 +701,7 @@ html, body {
   font-size: 14px;
 }
 
-/* Home Button */
+
 .homeBtn {
   position: fixed;
   top: max(20px, var(--sai-top));
@@ -726,7 +726,7 @@ html, body {
   transform: translateY(-2px);
 }
 
-/* Mobile Breakpoints */
+
 @media (max-width: 768px) {
   .hud {
     padding: max(0px, var(--sai-top)) max(12px, var(--sai-right)) 0 max(12px, var(--sai-left));
@@ -753,13 +753,13 @@ html, body {
   .homeBtn { padding: 8px 12px; font-size: 13px; }
 }
 
-/* Touch device optimizations */
+
 @media (hover: none) and (pointer: coarse) {
   button, .btn, .homeBtn, .mute-btn { min-height: 48px; min-width: 48px; }
   #touchHelper { bottom: max(20px, var(--sai-bottom)); }
 }
 
-/* Animations */
+
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
@@ -778,7 +778,7 @@ html, body {
   }
 }
 
-/* Responsive */
+
 @media (max-width: 900px) {
   .mode-grid, .shop-grid {
     grid-template-columns: 1fr;
@@ -871,7 +871,7 @@ html, body {
   }
 }
 
-/* Touch-friendly improvements */
+
 @media (hover: none) and (pointer: coarse) {
   .btn {
     min-height: 48px;
@@ -892,7 +892,7 @@ html, body {
   }
 }
 
-/* Prefers Reduced Motion */
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;

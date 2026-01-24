@@ -1,14 +1,9 @@
-// Galactic Assault - Main Game Loop
-// Classic vertical scrolling space shooter with tap-and-hold shooting
-
 const Game = {
-  // Core state
   canvas: null,
   ctx: null,
-  state: 'menu', // menu, loading, playing, paused, gameover, boss
-  mode: 'classic', // classic, survival, timeattack, bossrush, daily, zen
+  state: 'menu',
+  mode: 'classic',
 
-  // Game entities
   player: null,
   bullets: [],
   enemies: [],
@@ -19,7 +14,6 @@ const Game = {
   particles: [],
   damagePopups: [],
 
-  // Wave management
   wave: 1,
   enemiesRemaining: 0,
   enemySpawnTimer: 0,
@@ -27,13 +21,11 @@ const Game = {
   currentFormation: null,
   formationIndex: 0,
 
-  // Input state
   keys: {},
   mouseX: 0,
   mouseY: 0,
-  isShooting: false, // For tap-and-hold
+  isShooting: false,
 
-  // Event listener references for cleanup
   listeners: {
     resize: null,
     keydown: null,
@@ -47,7 +39,6 @@ const Game = {
     touchmove: null
   },
 
-  // Game stats
   score: 0,
   combo: 1.0,
   killStreak: 0,
@@ -55,51 +46,39 @@ const Game = {
   enemiesDestroyed: 0,
   bossesDefeated: 0,
 
-  // Active power-ups
   activePowerups: [],
 
-  // Time tracking
   lastTime: 0,
   deltaTime: 0,
   gameTime: 0,
 
-  // Effects
   screenShake: 0,
   timeScale: 1.0,
 
-  // Frame counter for performance
   frameCount: 0,
 
-  // UI decoration effects
   uiParticles: [],
   energyStreams: [],
   shockwaves: [],
   explosionFlash: null,
   glitchEffect: null,
 
-  // Initialize game
   init(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
 
-    // Set canvas size
     this.resizeCanvas();
     this.listeners.resize = () => this.resizeCanvas();
     window.addEventListener('resize', this.listeners.resize);
 
-    // Initialize background
     Background.init(CONFIG.WIDTH, CONFIG.HEIGHT);
 
-    // Setup input handlers
     this.setupInput();
 
-    // Load assets
     this.loadAssets();
   },
 
-  // Clean up event listeners to prevent memory leaks
   cleanup() {
-    // Remove all event listeners
     if (this.listeners.resize) window.removeEventListener('resize', this.listeners.resize);
     if (this.listeners.keydown) window.removeEventListener('keydown', this.listeners.keydown);
     if (this.listeners.keyup) window.removeEventListener('keyup', this.listeners.keyup);
@@ -113,7 +92,6 @@ const Game = {
     if (this.listeners.touchmove) this.canvas.removeEventListener('touchmove', this.listeners.touchmove);
     if (this.listeners.orientationchange) window.removeEventListener('orientationchange', this.listeners.orientationchange);
 
-    // Clear listener references
     this.listeners = {
       resize: null,
       keydown: null,
@@ -127,11 +105,8 @@ const Game = {
       touchend: null,
       touchmove: null
     };
-
-    // Production: console.log removed
   },
 
-  // Resize canvas to maintain aspect ratio
   resizeCanvas() {
     const container = document.getElementById('gameContainer');
     const aspectRatio = CONFIG.WIDTH / CONFIG.HEIGHT;
@@ -151,13 +126,11 @@ const Game = {
     this.canvas.style.height = height + 'px';
   },
 
-  // Load game assets
   loadAssets() {
     this.state = 'loading';
 
     AssetLoader.init(
       (loaded, total) => {
-        // Update loading screen
         const progress = (loaded / total) * 100;
         this.ctx.fillStyle = '#0a0e27';
         this.ctx.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
@@ -177,25 +150,20 @@ const Game = {
         this.ctx.fillText(`${Math.floor(progress)}%`, CONFIG.WIDTH / 2, CONFIG.HEIGHT / 2 + 20);
       },
       () => {
-        // Assets loaded - ready to play
         this.state = 'menu';
         this.startGameLoop();
       }
     );
   },
 
-  // Setup input handlers
   setupInput() {
-    // Keyboard
     this.listeners.keydown = e => {
       this.keys[e.key.toLowerCase()] = true;
 
-      // ESC to pause
       if (e.key === 'Escape' && (this.state === 'playing' || this.state === 'boss')) {
         this.pause();
       }
 
-      // Space to shoot
       if (e.key === ' ' && (this.state === 'playing' || this.state === 'boss')) {
         this.isShooting = true;
         e.preventDefault();
@@ -206,21 +174,18 @@ const Game = {
     this.listeners.keyup = e => {
       this.keys[e.key.toLowerCase()] = false;
 
-      // Space released - stop shooting
       if (e.key === ' ') {
         this.isShooting = false;
       }
     };
     window.addEventListener('keyup', this.listeners.keyup);
 
-    // Fix stuck movement: reset all keys when window loses focus
     this.listeners.blur = () => {
       this.keys = {};
       this.isShooting = false;
     };
     window.addEventListener('blur', this.listeners.blur);
 
-    // Mouse movement
     this.listeners.mousemove = e => {
       const rect = this.canvas.getBoundingClientRect();
       const scaleX = CONFIG.WIDTH / rect.width;
@@ -231,7 +196,6 @@ const Game = {
     };
     this.canvas.addEventListener('mousemove', this.listeners.mousemove);
 
-    // Mouse click - tap and hold to shoot
     this.listeners.mousedown = e => {
       if (this.state === 'playing' || this.state === 'boss') {
         this.isShooting = true;
@@ -245,12 +209,10 @@ const Game = {
     };
     this.canvas.addEventListener('mouseup', this.listeners.mouseup);
 
-    // Touch controls - tap and hold to shoot
     this.listeners.touchstart = e => {
       if (this.state === 'playing' || this.state === 'boss') {
         this.isShooting = true;
 
-        // Get touch position
         const rect = this.canvas.getBoundingClientRect();
         const scaleX = CONFIG.WIDTH / rect.width;
         const scaleY = CONFIG.HEIGHT / rect.height;
@@ -262,7 +224,6 @@ const Game = {
         e.preventDefault();
       }
     };
-    // Bug #8/#21: Add passive:false flag since we use preventDefault()
     this.canvas.addEventListener('touchstart', this.listeners.touchstart, { passive: false });
 
     this.listeners.touchmove = e => {
@@ -283,7 +244,6 @@ const Game = {
     };
     this.canvas.addEventListener('touchend', this.listeners.touchend, { passive: false });
 
-    // Bug #22: Handle orientation change
     this.listeners.orientationchange = () => {
       if (this.state === 'playing' || this.state === 'boss') {
         this.pause();
@@ -292,7 +252,6 @@ const Game = {
     window.addEventListener('orientationchange', this.listeners.orientationchange);
   },
 
-  // Create seeded random number generator for daily challenge
   createSeededRandom(seed) {
     let state = seed;
     return function() {
@@ -301,9 +260,7 @@ const Game = {
     };
   },
 
-  // Start a new game
   startGame(mode = 'classic', bossRushDifficulty = 1) {
-    // Re-initialize input handlers in case they were cleaned up
     this.setupInput();
 
     this.mode = mode;
@@ -324,14 +281,12 @@ const Game = {
     this.waveStartTime = 0;
     this.bossRushDifficulty = bossRushDifficulty;
 
-    // Daily challenge - seed based on current date
     if (mode === 'daily') {
       const today = new Date();
       this.dailySeed = today.getFullYear() * 10000 + (today.getMonth() + 1) * 100 + today.getDate();
       this.seededRandom = this.createSeededRandom(this.dailySeed);
     }
 
-    // Clear entities
     this.bullets = [];
     this.enemies = [];
     this.enemyBullets = [];
@@ -343,56 +298,44 @@ const Game = {
     this.activePowerups = [];
     this.boss = null;
 
-    // Clear UI decoration effects (BUG FIX)
     this.uiParticles = [];
     this.energyStreams = [];
     this.shockwaves = [];
     this.explosionFlash = null;
     this.glitchEffect = null;
 
-    // Reset formation state
     this.currentFormation = null;
-    this.formationIndex = 0; // Explicitly reset formation index
+    this.formationIndex = 0;
 
-    // Reset input states
     this.isShooting = false;
     this.screenShake = 0;
 
-    // Create player
     this.player = new Player(CONFIG.WIDTH / 2, CONFIG.HEIGHT - 100);
 
-    // Mode-specific player setup
     if (mode === 'zen') {
-      // Zen mode - infinite HP, invulnerable
       this.player.hp = 999999;
       this.player.maxHp = 999999;
       this.player.invulnerable = true;
     }
 
-    // Apply shop upgrades
     this.applyUpgrades();
 
-    // Start first wave
     this.startWave();
 
-    // Update stats
     const stats = Storage.getStats();
     stats.gamesPlayed = (stats.gamesPlayed || 0) + 1;
     Storage.updateStats(stats);
 
-    // Play music
     AudioManager.playMusic();
   },
 
   applyUpgrades() {
   },
 
-  // Generate formation with absolute coordinates
   generateFormation(formationKey) {
     const pattern = FORMATION_PATTERNS[formationKey];
     if (!pattern || !pattern.positions) {
       console.warn('Formation pattern not found:', formationKey);
-      // Fallback to simple line formation
       return [
         { x: CONFIG.WIDTH * 0.3, y: -50 },
         { x: CONFIG.WIDTH * 0.5, y: -100 },
@@ -400,19 +343,16 @@ const Game = {
       ];
     }
 
-    // Convert relative positions (0-1) to absolute canvas coordinates
     return pattern.positions.map(pos => ({
       x: pos.x * CONFIG.WIDTH,
-      y: 80 + (pos.y * 140), // Spawn in 80-220px zone (below HUD)
+      y: 80 + (pos.y * 140),
     }));
   },
 
-  // Start wave
   startWave() {
     this.enemiesRemaining = this.getEnemiesForWave();
     this.enemySpawnTimer = 0;
 
-    // Boss rush mode - every wave is a boss
     if (this.mode === 'bossrush') {
       this.startBossWave();
       return;
@@ -441,7 +381,6 @@ const Game = {
     }
   },
 
-  // Get number of enemies for current wave
   getEnemiesForWave() {
     if (this.mode === 'bossrush' || this.mode === 'daily') {
       return 0;
@@ -461,7 +400,6 @@ const Game = {
            (this.wave - 1) * CONFIG.ENEMIES_PER_WAVE_INCREMENT;
   },
 
-  // Start boss wave
   startBossWave() {
     if (this.mode === 'bossrush') {
       this.state = 'boss';
@@ -521,31 +459,25 @@ const Game = {
     AudioManager.playSound('bossEnter');
   },
 
-  // Main game loop
   startGameLoop() {
     this.lastTime = performance.now();
 
     const loop = (currentTime) => {
-      // Calculate delta time
       this.deltaTime = Math.min((currentTime - this.lastTime) / 1000, 0.1) * this.timeScale;
       this.lastTime = currentTime;
 
-      // Update and render
       this.update(this.deltaTime);
       this.render();
 
-      // Continue loop
       requestAnimationFrame(loop);
     };
 
     requestAnimationFrame(loop);
   },
 
-  // Update game state
   update(dt) {
     if (this.state !== 'playing' && this.state !== 'boss') return;
 
-    // Defensive: Ensure player exists during update
     if (!this.player && (this.state === 'playing' || this.state === 'boss')) {
       console.error('❌ Player is null during gameplay!');
       this.gameOver();
@@ -580,30 +512,24 @@ const Game = {
       this.modeTimer += dt;
     }
 
-    // Update background
     Background.update(dt);
 
-    // Update player
     if (this.player) {
       this.player.update(dt, this.keys, this.mouseX, CONFIG.WIDTH, CONFIG.HEIGHT);
 
-      // Tap-and-hold shooting
       if (this.isShooting && this.player.shoot()) {
         this.createPlayerBullet();
       }
     }
 
-    // Update bullets
     this.bullets = this.bullets.filter(bullet => {
       bullet.update(dt, this.enemies);
       return bullet.y > -50 && bullet.x > -50 && bullet.x < CONFIG.WIDTH + 50;
     });
 
-    // Update enemies
     this.enemies = this.enemies.filter(enemy => {
       enemy.update(dt, this.player ? this.player.x : 0, this.player ? this.player.y : 0, CONFIG.WIDTH, this.bullets);
 
-      // Enemy shoot logic - shoot every 2-4 seconds on average
       if (enemy.canShoot()) {
         this.createEnemyBullet(enemy);
       }
@@ -625,7 +551,6 @@ const Game = {
 
         if (boss.projectiles && boss.projectiles.length > 0) {
           boss.projectiles.forEach(proj => {
-            // Bug #12: Complete boss projectile validation
             if (proj && typeof proj.x === 'number' && typeof proj.y === 'number' &&
                 typeof proj.vx === 'number' && typeof proj.vy === 'number' &&
                 !isNaN(proj.x) && !isNaN(proj.y) && !isNaN(proj.vx) && !isNaN(proj.vy)) {
@@ -654,7 +579,6 @@ const Game = {
 
       if (this.boss.projectiles && this.boss.projectiles.length > 0) {
         this.boss.projectiles.forEach(proj => {
-          // Bug #12: Complete boss projectile validation
           if (proj && typeof proj.x === 'number' && typeof proj.y === 'number' &&
               typeof proj.vx === 'number' && typeof proj.vy === 'number' &&
               !isNaN(proj.x) && !isNaN(proj.y) && !isNaN(proj.vx) && !isNaN(proj.vy)) {
@@ -677,9 +601,6 @@ const Game = {
       }
     }
 
-    // Power-ups removed
-
-    // Magnet range calculation - safe null check
     const magnetRange = this.player?.magnetRange || 0;
     const playerCenterX = this.player ? this.player.x + this.player.width / 2 : 0;
     const playerCenterY = this.player ? this.player.y + this.player.height / 2 : 0;
@@ -716,22 +637,18 @@ const Game = {
       return bonus.y < CONFIG.HEIGHT + 50;
     });
 
-    // Update particles
     this.particles = this.particles.filter(particle => {
       particle.update(dt);
       return particle.life > 0;
     });
 
-    // Update damage popups
     this.damagePopups = this.damagePopups.filter(popup => {
       popup.update(dt);
       return !popup.isDead();
     });
 
-    // Update active power-ups
     this.updateActivePowerups(dt);
 
-    // Update kill streak timer
     if (this.killStreak > 0) {
       this.streakTimer -= dt;
       if (this.streakTimer <= 0) {
@@ -740,16 +657,13 @@ const Game = {
       }
     }
 
-    // Collision detection
     this.checkCollisions();
 
-    // Spawn enemies
     const hasBoss = this.boss || (this.bosses && this.bosses.length > 0);
     if (this.state === 'playing' && !hasBoss) {
       this.spawnEnemies(dt);
     }
 
-    // Check wave complete
     if (this.enemiesRemaining === 0 && this.enemies.length === 0 && !hasBoss) {
       this.waveCompleteTimer += dt * 1000;
       if (this.waveCompleteTimer >= CONFIG.WAVE_CLEAR_DELAY) {
@@ -757,14 +671,11 @@ const Game = {
       }
     }
 
-    // Update screen shake
     if (this.screenShake > 0) {
       this.screenShake *= CONFIG.SCREEN_SHAKE_DECAY;
       if (this.screenShake < 0.1) this.screenShake = 0;
     }
 
-    // Update UI decoration effects
-    // Spawn UI particles around HUD
     if (this.frameCount % 5 === 0 && this.uiParticles.length < 100) {
       this.uiParticles.push({
         x: Math.random() < 0.5 ? Math.random() * 100 : CONFIG.WIDTH - Math.random() * 100,
@@ -779,7 +690,6 @@ const Game = {
       });
     }
 
-    // Update UI particles
     this.uiParticles = this.uiParticles.filter(p => {
       p.x += p.vx * dt;
       p.y += p.vy * dt;
@@ -787,7 +697,6 @@ const Game = {
       return p.life > 0 && p.y < CONFIG.HEIGHT + 50;
     });
 
-    // Spawn energy streams (with cap to prevent performance issues)
     if (Math.random() < 0.01 && this.energyStreams.length < 5) {
       this.energyStreams.push({
         x: Math.random() < 0.5 ? -50 : CONFIG.WIDTH + 50,
@@ -798,14 +707,12 @@ const Game = {
       });
     }
 
-    // Update energy streams
     this.energyStreams = this.energyStreams.filter(s => {
       s.x += s.vx * dt;
       s.life -= dt;
       return s.life > 0;
     });
 
-    // Update shockwaves
     if (this.shockwaves) {
       this.shockwaves = this.shockwaves.filter(wave => {
         wave.radius += wave.maxRadius * dt * 4;
@@ -814,7 +721,6 @@ const Game = {
       });
     }
 
-    // Update explosion flash
     if (this.explosionFlash) {
       this.explosionFlash.life -= dt;
       if (this.explosionFlash.life <= 0) {
@@ -822,7 +728,6 @@ const Game = {
       }
     }
 
-    // Update glitch effect
     if (this.glitchEffect && this.glitchEffect.active) {
       this.glitchEffect.timer += dt;
       if (this.glitchEffect.timer >= this.glitchEffect.duration) {
@@ -830,7 +735,6 @@ const Game = {
       }
     }
 
-    // Trigger random glitch effects
     if (Math.random() < 0.02) {
       this.glitchEffect = {
         active: true,
@@ -840,11 +744,9 @@ const Game = {
       };
     }
 
-    // Update HUD
     UI.updateHUD(this);
   },
 
-  // Create player bullet based on active weapon
   createPlayerBullet() {
     const weapon = this.getActiveWeapon();
     const centerX = this.player.x + this.player.width / 2;
@@ -879,7 +781,6 @@ const Game = {
     AudioManager.playSound('playerShoot', 0.1);
   },
 
-  // Get active weapon type
   getActiveWeapon() {
     for (const powerup of this.activePowerups) {
       if (powerup.props.isWeapon) {
@@ -889,15 +790,12 @@ const Game = {
     return 'normal';
   },
 
-  // Create enemy bullet
   createEnemyBullet(enemy) {
     const props = ENEMY_PROPS[enemy.type];
 
-    // 70% chance to aim at player, 30% chance to shoot straight
     const shouldAim = Math.random() < 0.7;
 
     if (shouldAim && this.player) {
-      // Aimed at player with 70% accuracy
       const dx = this.player.x - enemy.x;
       const dy = this.player.y - enemy.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
@@ -906,14 +804,12 @@ const Game = {
 
       this.enemyBullets.push(new EnemyBullet(enemy.x, enemy.y, vx, vy));
     } else {
-      // Straight down (30% of the time)
       this.enemyBullets.push(new EnemyBullet(enemy.x, enemy.y, 0, CONFIG.ENEMY_BULLET_SPEED));
     }
 
-    AudioManager.playSound('enemyShoot', 0.15); // Pitch variation
+    AudioManager.playSound('enemyShoot', 0.15);
   },
 
-  // Spawn enemies from formation
   spawnEnemies(dt) {
     if (this.enemiesRemaining <= 0) return;
 
@@ -956,26 +852,19 @@ const Game = {
     }
   },
 
-  // Get enemy type appropriate for wave
   getEnemyTypeForWave() {
     if (this.wave <= 3) {
-      // Early waves - basic enemies
-      return Math.floor(Math.random() * 3); // Scout, Fighter, Interceptor
+      return Math.floor(Math.random() * 3);
     } else if (this.wave <= 6) {
-      // Mid waves - include medium enemies
       return Math.floor(Math.random() * 6);
     } else if (this.wave <= 9) {
-      // Advanced waves
       return Math.floor(Math.random() * 9);
     } else {
-      // Late waves - all enemies
       return Math.floor(Math.random() * 14);
     }
   },
 
-  // Collision detection
   checkCollisions() {
-    // Bullets vs enemies
     for (let i = this.bullets.length - 1; i >= 0; i--) {
       const bullet = this.bullets[i];
       let hit = false;
@@ -984,14 +873,12 @@ const Game = {
         const enemy = this.enemies[j];
 
         if (this.rectCollision(bullet, enemy)) {
-          // Damage enemy
           enemy.takeDamage(bullet.damage);
 
           if (enemy.hp <= 0) {
             this.destroyEnemy(enemy, j);
           }
 
-          // Remove bullet (unless pierce)
           if (bullet.type !== 'laser') {
             hit = true;
           }
@@ -1005,9 +892,7 @@ const Game = {
       }
     }
 
-    // Bullets vs boss(es)
     if (this.bosses && this.bosses.length > 0) {
-      // Challenge mode - check all bosses
       for (let i = this.bullets.length - 1; i >= 0; i--) {
         const bullet = this.bullets[i];
         let hit = false;
@@ -1027,7 +912,6 @@ const Game = {
         }
       }
     } else if (this.boss) {
-      // Normal mode - single boss
       for (let i = this.bullets.length - 1; i >= 0; i--) {
         const bullet = this.bullets[i];
 
@@ -1043,7 +927,6 @@ const Game = {
       }
     }
 
-    // Enemy bullets vs player
     if (this.player && !this.player.invulnerable) {
       for (let i = this.enemyBullets.length - 1; i >= 0; i--) {
         const bullet = this.enemyBullets[i];
@@ -1052,10 +935,8 @@ const Game = {
           this.player.takeDamage(bullet.damage);
           this.enemyBullets.splice(i, 1);
 
-          // Screen shake when player takes damage (INTENSE!)
           this.screenShake += 20;
 
-          // Show damage popup
           this.damagePopups.push(new DamagePopup(
             this.player.x + this.player.width / 2,
             this.player.y,
@@ -1071,20 +952,17 @@ const Game = {
       }
     }
 
-    // Enemies vs player (crash damage)
     if (this.player && !this.player.invulnerable) {
       for (let j = this.enemies.length - 1; j >= 0; j--) {
         const enemy = this.enemies[j];
 
         if (this.rectCollision(enemy, this.player)) {
           this.player.takeDamage(30);
-          enemy.takeDamage(999); // Destroy enemy
+          enemy.takeDamage(999);
           this.destroyEnemy(enemy, j);
 
-          // Screen shake when crashing into enemy (VERY INTENSE!)
           this.screenShake += 35;
 
-          // Show damage popup
           this.damagePopups.push(new DamagePopup(
             this.player.x + this.player.width / 2,
             this.player.y,
@@ -1100,9 +978,6 @@ const Game = {
       }
     }
 
-    // Power-ups removed
-
-    // Coins vs player
     if (this.player) {
       for (let i = this.coins.length - 1; i >= 0; i--) {
         const coin = this.coins[i];
@@ -1114,21 +989,18 @@ const Game = {
         }
       }
 
-      // Health bonus collection
       for (let i = this.healthBonuses.length - 1; i >= 0; i--) {
         const bonus = this.healthBonuses[i];
 
         if (this.rectCollision(bonus, this.player)) {
-          // Restore health (don't exceed max HP)
           this.player.hp = Math.min(this.player.hp + bonus.healthRestore, this.player.maxHp);
           this.healthBonuses.splice(i, 1);
-          AudioManager.playSound('powerup'); // Reuse powerup sound
+          AudioManager.playSound('powerup');
         }
       }
     }
   },
 
-  // Rectangle collision
   rectCollision(a, b) {
     return a.x < b.x + b.width &&
            a.x + a.width > b.x &&
@@ -1180,17 +1052,13 @@ const Game = {
     }
   },
 
-  // Destroy enemy
   destroyEnemy(enemy, index) {
-    // Remove from array
     this.enemies.splice(index, 1);
 
-    // Update stats
     this.enemiesDestroyed++;
     this.killStreak++;
-    this.streakTimer = 3; // 3 second window
+    this.streakTimer = 3;
 
-    // Update combo
     this.combo = Math.min(5.0, 1.0 + this.killStreak * 0.1);
 
     const points = Math.floor(ENEMY_PROPS[enemy.type].score * this.combo * (this.scoreMultiplier || 1));
@@ -1204,16 +1072,12 @@ const Game = {
       this.healthBonuses.push(new HealthBonus(enemy.x, enemy.y));
     }
 
-    // Create explosion particles
     this.createExplosion(enemy.x, enemy.y, ENEMY_PROPS[enemy.type].color);
 
-    // Update storage
     Storage.addBricks(1);
 
-    // Sound
-    AudioManager.playSound('explosion', 0.2); // Pitch variation
+    AudioManager.playSound('explosion', 0.2);
 
-    // Screen shake (more intense)
     this.screenShake += 8;
   },
 
@@ -1223,7 +1087,6 @@ const Game = {
 
     this.bosses.splice(index, 1);
 
-    // Drop rewards (fewer than normal boss)
     for (let i = 0; i < 5; i++) {
       const angle = (i / 5) * Math.PI * 2;
       const dist = 40;
@@ -1232,19 +1095,14 @@ const Game = {
       this.coins.push(new Coin(x, y, 50));
     }
 
-    // 1 health bonus per challenge boss
     this.healthBonuses.push(new HealthBonus(boss.x, boss.y));
 
-    // Explosion
     this.createExplosion(boss.x, boss.y, '#ff0000', 40);
 
-    // Sound
     AudioManager.playSound('bossDeath');
 
-    // Screen shake
     this.screenShake += 10;
 
-    // If all bosses defeated, next wave
     if (this.bosses.length === 0) {
       this.state = 'playing';
       this.nextWave();
@@ -1255,7 +1113,6 @@ const Game = {
     this.bossesDefeated++;
     this.score += Math.floor(5000 * (this.scoreMultiplier || 1));
 
-    // Drop lots of coin rewards (no power-ups)
     for (let i = 0; i < 15; i++) {
       const angle = (i / 10) * Math.PI * 2;
       const dist = 80;
@@ -1265,14 +1122,13 @@ const Game = {
       this.coins.push(new Coin(x, y, 100));
     }
 
-    // Drop 1-5 health bonuses (weighted: 1=common, 5=rare)
     let healthBonusCount;
     const roll = Math.random();
-    if (roll < 0.01) healthBonusCount = 5;      // 1% chance for 5
-    else if (roll < 0.06) healthBonusCount = 4; // 5% chance for 4
-    else if (roll < 0.21) healthBonusCount = 3; // 15% chance for 3
-    else if (roll < 0.51) healthBonusCount = 2; // 30% chance for 2
-    else healthBonusCount = 1;                  // 49% chance for 1
+    if (roll < 0.01) healthBonusCount = 5;
+    else if (roll < 0.06) healthBonusCount = 4;
+    else if (roll < 0.21) healthBonusCount = 3;
+    else if (roll < 0.51) healthBonusCount = 2;
+    else healthBonusCount = 1;
 
     for (let i = 0; i < healthBonusCount; i++) {
       const angle = (i / healthBonusCount) * Math.PI * 2 + Math.PI / 2;
@@ -1283,32 +1139,23 @@ const Game = {
       this.healthBonuses.push(new HealthBonus(x, y));
     }
 
-    // Explosion (massive!)
     this.createExplosion(this.boss.x, this.boss.y, '#ff0000', 80);
 
-    // Update storage
     Storage.addBossDefeated(this.boss.bossNumber);
 
-    // Sound
     AudioManager.playSound('bossDeath');
 
-    // Screen shake
     this.screenShake += 20;
 
-    // Remove boss
     this.boss = null;
     this.state = 'playing';
-    // Bug #14: Allow screen shake to decay naturally instead of instant reset
 
-    // Next wave
     this.nextWave();
   },
 
-  // Collect power-up
   collectPowerup(powerup) {
     const props = POWERUP_PROPS[powerup.type];
 
-    // Add to active power-ups
     this.activePowerups.push({
       type: props.name.toLowerCase().replace(/ /g, '_'),
       props: props,
@@ -1318,7 +1165,6 @@ const Game = {
     AudioManager.playSound('powerup');
   },
 
-  // Update active power-ups
   updateActivePowerups(dt) {
     this.activePowerups = this.activePowerups.filter(powerup => {
       powerup.timer -= dt * 1000;
@@ -1326,11 +1172,9 @@ const Game = {
     });
   },
 
-  // Create explosion particles (enhanced with shockwaves)
   createExplosion(x, y, color, count = 30) {
-    const MAX_PARTICLES = 300; // Limit to prevent performance degradation
+    const MAX_PARTICLES = 300;
 
-    // Add shockwave ring
     if (!this.shockwaves) this.shockwaves = [];
     this.shockwaves.push({
       x: x,
@@ -1341,44 +1185,39 @@ const Game = {
       color: color
     });
 
-    // Add explosion flash effect
     this.explosionFlash = { x: x, y: y, life: 0.1, radius: count * 3 };
 
     for (let i = 0; i < count; i++) {
-      // Stop creating particles if we hit the limit
       if (this.particles.length >= MAX_PARTICLES) break;
 
       const angle = (i / count) * Math.PI * 2 + (Math.random() - 0.5) * 0.3;
-      const speed = 100 + Math.random() * 200; // Increased from 150
+      const speed = 100 + Math.random() * 200;
 
       this.particles.push({
         x: x,
         y: y,
         vx: Math.cos(angle) * speed,
         vy: Math.sin(angle) * speed,
-        life: 1.0 + Math.random() * 0.5, // Increased lifetime
+        life: 1.0 + Math.random() * 0.5,
         color: color,
-        size: 3 + Math.random() * 6, // Increased size
-        glow: true, // Add glow flag
+        size: 3 + Math.random() * 6,
+        glow: true,
         update(dt) {
           this.x += this.vx * dt;
           this.y += this.vy * dt;
           this.life -= dt * 1.2;
-          this.vy += 200 * dt; // Gravity
-          this.vx *= 0.98; // Air resistance
+          this.vy += 200 * dt;
+          this.vx *= 0.98;
         }
       });
     }
   },
 
-  // Next wave
   nextWave() {
-    // Time attack mode - give time bonus
     if (this.mode === 'timeattack' && this.modeTimer > 0) {
-      const timeBonus = Math.max(0, Math.floor((60 - this.modeTimer) * 100)); // Bonus for fast completion
+      const timeBonus = Math.max(0, Math.floor((60 - this.modeTimer) * 100));
       if (timeBonus > 0) {
         this.score += timeBonus;
-        // Show bonus message
         this.damagePopups.push({
           x: CONFIG.WIDTH / 2,
           y: CONFIG.HEIGHT / 3,
@@ -1409,10 +1248,9 @@ const Game = {
           }
         });
       }
-      this.modeTimer = 0; // Reset timer for next wave
+      this.modeTimer = 0;
     }
 
-    // Boss rush - end game after 5 bosses
     if (this.mode === 'bossrush' && this.bossesDefeated >= 5) {
       this.bossRushVictory();
       return;
@@ -1423,19 +1261,17 @@ const Game = {
     this.startWave();
   },
 
-  // Pause game
   pause() {
     if (this.state === 'playing' || this.state === 'boss') {
       this.state = 'paused';
-      this.keys = {}; // Reset all key states
+      this.keys = {};
       this.isShooting = false;
-      if (this.player) this.player.resetMovement(); // Reset player velocity
+      if (this.player) this.player.resetMovement();
       UI.showPause();
       AudioManager.pauseMusic();
     }
   },
 
-  // Resume game
   resume() {
     this.state = this.boss ? 'boss' : 'playing';
     AudioManager.playMusic();
@@ -1456,7 +1292,6 @@ const Game = {
   },
 
   gameOver() {
-    // Bug #17: Reset combo and killStreak on death
     this.combo = 1.0;
     this.killStreak = 0;
 
@@ -1483,13 +1318,10 @@ const Game = {
     AudioManager.playSound('gameover');
   },
 
-  // Render game
   render() {
-    // Clear canvas
     this.ctx.fillStyle = '#0a0e27';
     this.ctx.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
 
-    // Apply screen shake (always save/restore to prevent canvas corruption)
     this.ctx.save();
     if (this.screenShake > 0) {
       const shakeX = (Math.random() - 0.5) * this.screenShake;
@@ -1497,41 +1329,29 @@ const Game = {
       this.ctx.translate(shakeX, shakeY);
     }
 
-    // Draw background
     Background.draw(this.ctx);
 
-    // Draw game entities
     if (this.state === 'playing' || this.state === 'boss' || this.state === 'paused') {
-      // Draw coins
       this.coins.forEach(coin => coin.draw(this.ctx));
 
-      // Draw health bonuses
       this.healthBonuses.forEach(bonus => bonus.draw(this.ctx));
 
-      // Power-ups removed
-
-      // Draw bullets
       this.bullets.forEach(bullet => bullet.draw(this.ctx));
 
-      // Draw enemy bullets
       this.enemyBullets.forEach(bullet => bullet.draw(this.ctx));
 
-      // Draw enemies
       this.enemies.forEach(enemy => enemy.draw(this.ctx));
 
-      // Draw boss(es)
       if (this.bosses && this.bosses.length > 0) {
         this.bosses.forEach(boss => boss.draw(this.ctx));
       } else if (this.boss) {
         this.boss.draw(this.ctx);
       }
 
-      // Draw player
       if (this.player) {
         this.player.draw(this.ctx);
       }
 
-      // Draw particles
       this.particles.forEach(particle => {
         this.ctx.fillStyle = particle.color;
         this.ctx.globalAlpha = particle.life;
@@ -1539,13 +1359,9 @@ const Game = {
       });
       this.ctx.globalAlpha = 1;
 
-      // Draw damage popups
       this.damagePopups.forEach(popup => popup.draw(this.ctx));
 
-      // ===== UI DECORATIONS =====
-      // Add decorative borders and visual polish to the UI
       if (this.state === 'playing' || this.state === 'boss') {
-        // Top decorative border line (under stats bar)
         const gradient1 = this.ctx.createLinearGradient(0, 62, CONFIG.WIDTH, 62);
         gradient1.addColorStop(0, 'rgba(56, 189, 248, 0)');
         gradient1.addColorStop(0.5, 'rgba(56, 189, 248, 0.8)');
@@ -1553,14 +1369,12 @@ const Game = {
         this.ctx.fillStyle = gradient1;
         this.ctx.fillRect(0, 62, CONFIG.WIDTH, 2);
 
-        // Animated corner accents (top-left)
         const pulseTime = Date.now() / 1000;
         const pulse = Math.sin(pulseTime * 2) * 0.3 + 0.7;
 
         this.ctx.strokeStyle = `rgba(56, 189, 248, ${pulse})`;
         this.ctx.lineWidth = 3;
 
-        // Top-left corner
         this.ctx.beginPath();
         this.ctx.moveTo(10, 70);
         this.ctx.lineTo(10, 90);
@@ -1568,7 +1382,6 @@ const Game = {
         this.ctx.lineTo(30, 70);
         this.ctx.stroke();
 
-        // Top-right corner
         this.ctx.beginPath();
         this.ctx.moveTo(CONFIG.WIDTH - 10, 70);
         this.ctx.lineTo(CONFIG.WIDTH - 10, 90);
@@ -1576,7 +1389,6 @@ const Game = {
         this.ctx.lineTo(CONFIG.WIDTH - 30, 70);
         this.ctx.stroke();
 
-        // Bottom-left corner (near player)
         this.ctx.beginPath();
         this.ctx.moveTo(10, CONFIG.HEIGHT - 70);
         this.ctx.lineTo(10, CONFIG.HEIGHT - 90);
@@ -1584,7 +1396,6 @@ const Game = {
         this.ctx.lineTo(30, CONFIG.HEIGHT - 70);
         this.ctx.stroke();
 
-        // Bottom-right corner (near player)
         this.ctx.beginPath();
         this.ctx.moveTo(CONFIG.WIDTH - 10, CONFIG.HEIGHT - 70);
         this.ctx.lineTo(CONFIG.WIDTH - 10, CONFIG.HEIGHT - 90);
@@ -1592,7 +1403,6 @@ const Game = {
         this.ctx.lineTo(CONFIG.WIDTH - 30, CONFIG.HEIGHT - 70);
         this.ctx.stroke();
 
-        // Side scanning lines (animated)
         const scanY = ((pulseTime * 50) % CONFIG.HEIGHT);
         this.ctx.strokeStyle = `rgba(56, 189, 248, ${0.3 * pulse})`;
         this.ctx.lineWidth = 1;
@@ -1601,7 +1411,6 @@ const Game = {
         this.ctx.lineTo(CONFIG.WIDTH, scanY);
         this.ctx.stroke();
 
-        // Vignette effect on edges
         const vignetteGradient = this.ctx.createRadialGradient(
           CONFIG.WIDTH / 2, CONFIG.HEIGHT / 2, CONFIG.HEIGHT * 0.3,
           CONFIG.WIDTH / 2, CONFIG.HEIGHT / 2, CONFIG.HEIGHT * 0.7
@@ -1611,13 +1420,11 @@ const Game = {
         this.ctx.fillStyle = vignetteGradient;
         this.ctx.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
 
-        // Boss warning flash
         if (this.state === 'boss' && this.boss && this.boss.entering) {
           const flashAlpha = Math.sin(pulseTime * 10) * 0.15 + 0.15;
           this.ctx.fillStyle = `rgba(239, 68, 68, ${flashAlpha})`;
           this.ctx.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
 
-          // "BOSS INCOMING" text
           this.ctx.fillStyle = `rgba(255, 255, 255, ${flashAlpha * 3})`;
           this.ctx.font = 'bold 48px Arial';
           this.ctx.textAlign = 'center';
@@ -1627,10 +1434,6 @@ const Game = {
           this.ctx.shadowBlur = 0;
         }
 
-        // ===== MASSIVE DECORATION UPGRADE =====
-
-        // 1.1 Animated Scanlines & Grid System
-        // Horizontal scanlines (CRT effect)
         const scanlineCount = 40;
         const scanlineSpeed = pulseTime * 30;
         for (let i = 0; i < scanlineCount; i++) {
@@ -1643,7 +1446,6 @@ const Game = {
           this.ctx.stroke();
         }
 
-        // Vertical grid overlay
         const gridSpacing = 50;
         for (let x = 0; x < CONFIG.WIDTH; x += gridSpacing) {
           const offset = (pulseTime * 10) % gridSpacing;
@@ -1656,7 +1458,6 @@ const Game = {
           this.ctx.stroke();
         }
 
-        // Diagonal scanner beam
         const beamPos = (pulseTime * 80) % (CONFIG.WIDTH + CONFIG.HEIGHT);
         const beamGradient = this.ctx.createLinearGradient(
           beamPos - 100, 0,
@@ -1668,12 +1469,9 @@ const Game = {
         this.ctx.fillStyle = beamGradient;
         this.ctx.fillRect(beamPos - 100, 0, 200, CONFIG.HEIGHT);
 
-        // 1.2 Enhanced HUD Frames & Borders
-        // Enhanced corner brackets with triple layers
         const bracketSize = 40;
         const bracketThickness = 4;
 
-        // Top-left corner (triple-layered)
         for (let layer = 0; layer < 3; layer++) {
           const offset = layer * 8;
           const alpha = pulse * (1 - layer * 0.3);
@@ -1687,7 +1485,6 @@ const Game = {
           this.ctx.stroke();
         }
 
-        // Top-right corner (triple-layered)
         for (let layer = 0; layer < 3; layer++) {
           const offset = layer * 8;
           const alpha = pulse * (1 - layer * 0.3);
@@ -1701,7 +1498,6 @@ const Game = {
           this.ctx.stroke();
         }
 
-        // Bottom-left corner (triple-layered)
         for (let layer = 0; layer < 3; layer++) {
           const offset = layer * 8;
           const alpha = pulse * (1 - layer * 0.3);
@@ -1715,7 +1511,6 @@ const Game = {
           this.ctx.stroke();
         }
 
-        // Bottom-right corner (triple-layered)
         for (let layer = 0; layer < 3; layer++) {
           const offset = layer * 8;
           const alpha = pulse * (1 - layer * 0.3);
@@ -1729,24 +1524,20 @@ const Game = {
           this.ctx.stroke();
         }
 
-        // HUD Panel frames around stats
         const hudPanels = [
-          { x: 5, y: 5, w: 200, h: 50 }, // Left panel
-          { x: CONFIG.WIDTH - 205, y: 5, w: 200, h: 50 }, // Right panel
+          { x: 5, y: 5, w: 200, h: 50 },
+          { x: CONFIG.WIDTH - 205, y: 5, w: 200, h: 50 },
         ];
 
         hudPanels.forEach(panel => {
-          // Outer glow
           this.ctx.strokeStyle = `rgba(56, 189, 248, ${0.2 * pulse})`;
           this.ctx.lineWidth = 3;
           this.ctx.strokeRect(panel.x, panel.y, panel.w, panel.h);
 
-          // Inner accent line
           this.ctx.strokeStyle = `rgba(56, 189, 248, ${0.4 * pulse})`;
           this.ctx.lineWidth = 1;
           this.ctx.strokeRect(panel.x + 3, panel.y + 3, panel.w - 6, panel.h - 6);
 
-          // Corner dots
           [
             [panel.x, panel.y],
             [panel.x + panel.w, panel.y],
@@ -1760,7 +1551,6 @@ const Game = {
           });
         });
 
-        // Side panel tech lines
         const panelLines = [
           { x: 10, y: CONFIG.HEIGHT / 3, length: 60 },
           { x: 10, y: CONFIG.HEIGHT * 2/3, length: 80 },
@@ -1778,8 +1568,6 @@ const Game = {
           this.ctx.stroke();
         });
 
-        // 1.3 Holographic Effects & Glitches
-        // Horizontal distortion bands (occasional)
         if (Math.random() < 0.05) {
           const distortY = Math.random() * CONFIG.HEIGHT;
           const distortHeight = 2 + Math.random() * 4;
@@ -1791,7 +1579,6 @@ const Game = {
           this.ctx.restore();
         }
 
-        // Glitch effect (chromatic aberration)
         if (this.glitchEffect && this.glitchEffect.active) {
           this.ctx.save();
           this.ctx.globalCompositeOperation = 'screen';
@@ -1801,15 +1588,12 @@ const Game = {
           this.ctx.restore();
         }
 
-        // 1.4 UI Particle Systems
-        // Render UI particles
         this.uiParticles.forEach(p => {
           const alpha = (p.life / p.maxLife) * p.alpha;
           this.ctx.fillStyle = p.color;
           this.ctx.globalAlpha = alpha;
           this.ctx.fillRect(p.x, p.y, p.size, p.size);
 
-          // Glow
           this.ctx.shadowBlur = 5;
           this.ctx.shadowColor = p.color;
           this.ctx.fillRect(p.x, p.y, p.size, p.size);
@@ -1817,7 +1601,6 @@ const Game = {
         });
         this.ctx.globalAlpha = 1;
 
-        // Render energy streams
         this.energyStreams.forEach(s => {
           if (s.life > 0) {
             const grad = this.ctx.createLinearGradient(s.x, 0, s.x + s.width, 0);
@@ -1829,7 +1612,6 @@ const Game = {
           }
         });
 
-        // Render shockwaves
         if (this.shockwaves) {
           this.shockwaves.forEach(wave => {
             this.ctx.save();
@@ -1845,7 +1627,6 @@ const Game = {
           });
         }
 
-        // Render explosion flash
         if (this.explosionFlash && this.explosionFlash.life > 0) {
           const flashGrad = this.ctx.createRadialGradient(
             this.explosionFlash.x, this.explosionFlash.y, 0,
@@ -1863,21 +1644,16 @@ const Game = {
         }
       }
 
-      // ===== PART 4: SCREEN-WIDE EFFECTS =====
-
-      // 4.3 Chromatic aberration during intense moments (boss fights or heavy damage)
       if (this.state === 'boss' || this.screenShake > 25) {
         const intensity = Math.min(this.screenShake / 50, 0.3);
 
         this.ctx.save();
         this.ctx.globalCompositeOperation = 'screen';
 
-        // Red channel shift
         this.ctx.globalAlpha = intensity;
         this.ctx.fillStyle = 'rgba(255, 0, 0, 1)';
         this.ctx.drawImage(this.canvas, 3, 0);
 
-        // Blue channel shift
         this.ctx.fillStyle = 'rgba(0, 0, 255, 1)';
         this.ctx.drawImage(this.canvas, -3, 0);
 
@@ -1885,7 +1661,6 @@ const Game = {
       }
     }
 
-    // Restore canvas state (always restore to match save)
     this.ctx.restore();
   }
 };

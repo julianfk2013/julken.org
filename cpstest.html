@@ -63,7 +63,7 @@
     .muted{color:#9ca3af}
     @media (max-width:720px){ .stats{grid-template-columns: repeat(2, 1fr)} }
 
-  /* Modal overlay */
+  
   .modal{position:fixed; inset:0; z-index:50; display:none; place-items:center; background:rgba(0,0,0,.45); backdrop-filter: blur(8px)}
   .modal.show{display:grid}
   .modalBox{width:min(92vw, 640px); background:linear-gradient(180deg, var(--panel), var(--panel-2)); border:1px solid rgba(255,255,255,.12); border-radius:16px; box-shadow:var(--shadow); padding:16px}
@@ -72,7 +72,7 @@
   .modalActions{display:flex; gap:8px; justify-content:flex-end}
   .animalImg{display:block; width:160px; height:160px; object-fit:contain; margin:6px auto 12px auto; filter: drop-shadow(0 8px 24px rgba(0,0,0,.4))}
 
-  /* Mobile Breakpoints */
+  
   @media (max-width: 768px) {
     .card { width: 95%; margin: 20px auto; }
     input, select, textarea { font-size: 16px !important; }
@@ -89,7 +89,7 @@
     .btn, .btnIcon { font-size: 14px; padding: 10px 12px; }
   }
 
-  /* Touch device optimizations */
+  
   @media (hover: none) and (pointer: coarse) {
     button, .btn, .btnIcon { min-height: 48px; min-width: 48px; padding: 14px 16px; }
     #clickZone { min-height: 200px; }
@@ -135,7 +135,7 @@
     </div>
   </section>
 
-  <!-- Results Modal -->
+  
   <div id="modal" class="modal" aria-modal="true" role="dialog" aria-labelledby="modalTitle">
     <div class="modalBox">
       <h2 id="modalTitle" class="modalTitle">Results</h2>
@@ -174,7 +174,7 @@
       set(k,v){ try{ localStorage.setItem(k, JSON.stringify(v)); }catch{} }
     };
 
-    // SFX
+    
     function createSFX(){
       let ctx=null, gain=null, muted=false;
       function ensure(){ if(!ctx){ try{ ctx=new (window.AudioContext||window.webkitAudioContext)(); }catch{} } if(ctx && !gain){ gain=ctx.createGain(); gain.gain.value = muted?0:0.16; gain.connect(ctx.destination);} }
@@ -189,7 +189,7 @@
     const SFX = createSFX();
     soundBtn.addEventListener('click', ()=>{ const on = SFX.toggle(); soundBtn.textContent = on? '🔊' : '🔇'; });
 
-    let duration = 5; // seconds
+    let duration = 5; 
     let running = false; let countingDown = false;
     let startTs = 0; let clicks = 0; let rafId = 0;
     const best = store.get('cps_best', { all: 0 });
@@ -207,7 +207,7 @@
 
     function preCountdown(cb){ if(countingDown||running) return; countingDown=true; let n=3; countdownEl.textContent = n; countdownEl.classList.remove('hidden'); const tick=()=>{ if(n<=1){ countdownEl.classList.add('hidden'); countingDown=false; cb(); } else { n--; countdownEl.textContent = n; setTimeout(tick, 1000); } }; setTimeout(tick, 1000); }
 
-    function start(){ if(running||countingDown) return; // apply custom time if given
+    function start(){ if(running||countingDown) return; 
       const custom = Number(customTime.value); if(custom && custom>0){ setMode(custom); }
       clicks=0; clicksEl.textContent='0'; resultEl.textContent='Go!'; resultEl.classList.remove('muted'); preCountdown(()=>{ running=true; startTs=performance.now(); loop(); }); }
     startBtn.addEventListener('click', start);
@@ -220,7 +220,7 @@
       resultEl.innerHTML = `<b>Result:</b> ${clicks} clicks in ${total}s → <b>${fmt(cps)} CPS</b> — ${animal}`;
       updateBest(cps);
       SFX.done();
-      // Show modal overlay
+      
       if(modal && modalContent){
         const imgFile = (function(){
           const m = { turtle:'turtle.png', rabbit:'rabbit.png', leopard:'Leopard.png', falcon:'falcon.png', flash:'flash.png' };
@@ -235,7 +235,7 @@
       }
     }
 
-    // Modal actions
+    
     if(modalClose){ modalClose.addEventListener('click', ()=>{ modal.classList.remove('show'); }); }
     if(modalRestart){ modalRestart.addEventListener('click', ()=>{ modal.classList.remove('show'); start(); }); }
 
@@ -243,20 +243,20 @@
     target.addEventListener('pointerdown', clickTarget);
 
     function getAnimal(cps){
-      if(cps < 3) return 'Turtle';      // very slow
-      else if(cps < 6) return 'Rabbit'; // casual
-      else if(cps < 9) return 'Leopard';// fast
-      else if(cps < 12) return 'Falcon';// very fast
-      else return 'Flash';              // insane
+      if(cps < 3) return 'Turtle';      
+      else if(cps < 6) return 'Rabbit'; 
+      else if(cps < 9) return 'Leopard';
+      else if(cps < 12) return 'Falcon';
+      else return 'Flash';              
     }
 
-    // Init
+    
     bestEl.textContent = fmt(best.all||0);
   })();
   </script>
 
   <script>
-  // Background stars with shooting meteors
+  
   (function(){
     const c = document.getElementById('bgCanvas'); if(!c) return; const dpr = Math.max(1, window.devicePixelRatio||1); const ctx = c.getContext('2d');
     const stars = []; const meteors = []; let w=0,h=0; let nextMeteor=0;
