@@ -22,6 +22,17 @@ const TappyGame = {
 
   flashTimer: 0,
   debugMode: false,
+  cheatMode: false,
+  cheatScoreTimer: 0,
+
+  crashTimer: 0,
+  crashDuration: 1800,
+  shakeIntensity: 0,
+  birdFallRotation: 0,
+  birdHitGround: false,
+  deadBirdX: 0,
+  deadBirdY: 0,
+  deadBirdRotation: 0,
 
   init(canvas, assets) {
     this.canvas = canvas;
@@ -42,12 +53,8 @@ const TappyGame = {
   },
 
   resizeCanvas() {
-    
     this.canvas.width = CONFIG.WIDTH;
     this.canvas.height = CONFIG.HEIGHT;
-
-    
-    console.log(`Canvas resized: Internal ${CONFIG.WIDTH}x${CONFIG.HEIGHT}, Display ${this.canvas.clientWidth}x${this.canvas.clientHeight}`);
   },
 
   setupInput() {
@@ -55,10 +62,8 @@ const TappyGame = {
     window.addEventListener('keydown', (e) => {
       this.keys[e.key.toLowerCase()] = true;
 
-      
       if (e.key.toLowerCase() === 'h') {
         this.debugMode = !this.debugMode;
-        console.log(`🔍 Debug mode: ${this.debugMode ? 'ON' : 'OFF'}`);
       }
 
       if ((e.key === ' ' || e.key === 'ArrowUp') && this.state === 'playing') {
@@ -87,7 +92,6 @@ const TappyGame = {
   },
 
   startGame() {
-    console.log('🎮 Starting game...');
     this.state = 'playing';
     this.score = 0;
     this.pipeSpawnTimer = 0;
@@ -95,6 +99,10 @@ const TappyGame = {
     this.scoreScale = 1;
     this.scoreAnimTimer = 0;
     this.scoreRotation = 0;
+    this.crashTimer = 0;
+    this.shakeIntensity = 0;
+    this.birdFallRotation = 0;
+    this.birdHitGround = false;
 
     this.bird = new Bird(CONFIG.BIRD_X, CONFIG.BIRD_START_Y);
     this.pipes = [];
@@ -102,12 +110,8 @@ const TappyGame = {
 
     TappyStorage.incrementGames();
 
-    console.log('✅ Game started! Bird created at', CONFIG.BIRD_X, CONFIG.BIRD_START_Y);
-
-    
     setTimeout(() => {
       if (this.state === 'playing') {
-        console.log('Spawning first pipe...');
         this.spawnPipe();
       }
     }, 1000);
@@ -118,7 +122,6 @@ const TappyGame = {
       this.pausedState = 'playing';
       this.state = 'paused';
       AudioManager.pauseMusic();
-      console.log('⏸ Game paused');
     }
   },
 
@@ -127,7 +130,6 @@ const TappyGame = {
       this.state = 'playing';
       this.pausedState = null;
       AudioManager.playMusic();
-      console.log('▶ Game resumed');
     }
   },
 
@@ -148,70 +150,128 @@ const TappyGame = {
   },
 
   update(dt) {
-    if (this.state !== 'playing' || this.state === 'paused') return;
+    if (this.state === 'paused') return;
 
-    
+    if (this.state === 'crashing') {
+      this.crashTimer += dt * 1000;
+
+      const crashProgress = this.crashTimer / this.crashDuration;
+
+      if (this.crashTimer < 400) {
+        this.shakeIntensity = 15 * (1 - this.crashTimer / 400);
+      } else {
+        this.shakeIntensity = 0;
+
+        if (!this.birdHitGround) {
+          const bounds = this.bird.getBounds();
+          const groundY = CONFIG.HEIGHT - CONFIG.GROUND_HEIGHT;
+
+          if (bounds.y + bounds.height < groundY) {
+            this.bird.velocity += CONFIG.GRAVITY * dt * 1.5;
+            this.bird.y += this.bird.velocity * dt;
+            this.birdFallRotation += dt * 720;
+          } else {
+            this.bird.y = groundY - bounds.height - CONFIG.BIRD_HITBOX_PADDING;
+            this.bird.velocity = 0;
+            this.birdHitGround = true;
+            this.birdFallRotation = Math.floor(this.birdFallRotation / 360) * 360;
+          }
+        }
+      }
+
+      this.particles = this.particles.filter(particle => {
+        particle.update(dt);
+        return !particle.dead;
+      });
+
+      if (this.crashTimer >= this.crashDuration) {
+        this.state = 'gameover';
+        this.bird.dead = true;
+        this.deadBirdX = this.bird.x;
+        this.deadBirdY = this.bird.y;
+        this.deadBirdRotation = this.birdFallRotation;
+        AudioManager.playSound('die');
+        TappyUI.showGameOver(this);
+      }
+
+      return;
+    }
+
+    if (this.state === 'gameover') {
+      this.deadBirdX -= CONFIG.GROUND_SCROLL_SPEED * dt;
+      return;
+    }
+
+    if (this.state !== 'playing') return;
+
     const speedMultiplier = Math.min(
       1 + (this.score * CONFIG.PIPE_SPEED_INCREASE) / CONFIG.PIPE_SPEED,
       CONFIG.PIPE_MAX_SPEED / CONFIG.PIPE_SPEED
     );
 
-    Background.update(dt, speedMultiplier);
+    if (!this.cheatMode) {
+      Background.update(dt, speedMultiplier);
+    }
 
-    
     this.bird.update(dt);
 
-    
+    if (this.cheatMode) {
+      this.cheatScoreTimer += dt * 1000;
+      if (this.cheatScoreTimer >= 10) {
+        this.cheatScoreTimer = 0;
+        this.score += 1234;
+      }
+    }
+
     this.pipeSpawnTimer += dt * 1000;
     if (this.pipeSpawnTimer >= CONFIG.PIPE_SPAWN_INTERVAL) {
       this.pipeSpawnTimer = 0;
       this.spawnPipe();
     }
 
-    
     const currentSpeed = Math.min(
       CONFIG.PIPE_SPEED + (this.score * CONFIG.PIPE_SPEED_INCREASE),
       CONFIG.PIPE_MAX_SPEED
     );
 
-    
     this.pipes = this.pipes.filter(pipe => {
       pipe.update(dt, currentSpeed);
 
-      
       if (!pipe.scored && this.bird.x + this.bird.width / 2 > pipe.x + pipe.width / 2) {
         pipe.scored = true;
         this.score++;
-        
-        this.scoreScale = 1.5;
-        this.scoreAnimTimer = 300; 
+
+        if (!this.cheatMode) {
+          this.scoreScale = 1.5;
+          this.scoreAnimTimer = 300;
+        }
       }
 
       return !pipe.destroyed;
     });
 
-    
     this.particles = this.particles.filter(particle => {
       particle.update(dt);
       return !particle.dead;
     });
 
-    
     this.checkCollisions();
 
-    
-    if (this.scoreAnimTimer > 0) {
-      this.scoreAnimTimer -= dt * 1000;
-      
-      const progress = this.scoreAnimTimer / 300;
-      this.scoreScale = 1 + (0.5 * progress);
+    if (!this.cheatMode) {
+      if (this.scoreAnimTimer > 0) {
+        this.scoreAnimTimer -= dt * 1000;
+
+        const progress = this.scoreAnimTimer / 300;
+        this.scoreScale = 1 + (0.5 * progress);
+      } else {
+        this.scoreScale = 1;
+      }
     } else {
       this.scoreScale = 1;
     }
-    
-    this.scoreRotation += dt * 30; 
 
-    
+    this.scoreRotation += dt * 30;
+
     if (this.flashTimer > 0) {
       this.flashTimer -= dt * 1000;
     }
@@ -220,54 +280,53 @@ const TappyGame = {
   },
 
   spawnPipe() {
-    
-    
+
+    const gapReduction = Math.min(this.score * 2, 80);
+    const currentGap = Math.max(CONFIG.PIPE_GAP - gapReduction, 120);
+
     const random = Math.random();
     let gapY;
 
     if (random < 0.8) {
-      
+
       const variation = (Math.random() - 0.5) * 2 * CONFIG.GAP_VARIATION;
-      gapY = CONFIG.GAP_CENTER_Y - (CONFIG.PIPE_GAP / 2) + variation;
+      gapY = CONFIG.GAP_CENTER_Y - (currentGap / 2) + variation;
     } else if (random < 0.9) {
-      
+
       const variation = -Math.random() * CONFIG.GAP_VARIATION;
-      gapY = CONFIG.GAP_CENTER_Y - (CONFIG.PIPE_GAP / 2) + variation;
+      gapY = CONFIG.GAP_CENTER_Y - (currentGap / 2) + variation;
     } else {
-      
+
       const variation = Math.random() * CONFIG.GAP_VARIATION;
-      gapY = CONFIG.GAP_CENTER_Y - (CONFIG.PIPE_GAP / 2) + variation;
+      gapY = CONFIG.GAP_CENTER_Y - (currentGap / 2) + variation;
     }
 
-    
+
     const minGapY = CONFIG.PIPE_MIN_HEIGHT;
-    const maxGapY = CONFIG.HEIGHT - CONFIG.GROUND_HEIGHT - CONFIG.PIPE_GAP - CONFIG.PIPE_MIN_HEIGHT;
+    const maxGapY = CONFIG.HEIGHT - CONFIG.GROUND_HEIGHT - currentGap - CONFIG.PIPE_MIN_HEIGHT;
     gapY = Math.max(minGapY, Math.min(maxGapY, gapY));
 
-    const pipe = new Pipe(CONFIG.WIDTH, gapY, CONFIG.PIPE_GAP);
+    const pipe = new Pipe(CONFIG.WIDTH, gapY, currentGap);
     this.pipes.push(pipe);
-    console.log(`🟢 Pipe spawned at gapY: ${Math.round(gapY)}, Total pipes: ${this.pipes.length}`);
   },
 
   checkCollisions() {
-    
+    if (this.cheatMode) return;
+
     const bounds = this.bird.getBounds();
 
-    
     if (bounds.y + bounds.height >= CONFIG.HEIGHT - CONFIG.GROUND_HEIGHT) {
       const padding = CONFIG.BIRD_HITBOX_PADDING;
       this.bird.y = CONFIG.HEIGHT - CONFIG.GROUND_HEIGHT - bounds.height - padding;
-      this.bird.velocity = Math.min(this.bird.velocity, 0); 
+      this.bird.velocity = Math.min(this.bird.velocity, 0);
     }
 
-    
     if (bounds.y <= 0) {
       const padding = CONFIG.BIRD_HITBOX_PADDING;
       this.bird.y = -padding;
-      this.bird.velocity = Math.max(this.bird.velocity, 0); 
+      this.bird.velocity = Math.max(this.bird.velocity, 0);
     }
 
-    
     for (const pipe of this.pipes) {
       if (this.rectCollision(bounds, pipe.getTopPipeBounds()) ||
           this.rectCollision(bounds, pipe.getBottomPipeBounds())) {
@@ -275,6 +334,26 @@ const TappyGame = {
         return;
       }
     }
+  },
+
+  cheat() {
+    this.cheatMode = !this.cheatMode;
+    if (this.cheatMode) {
+      this.scoreScale = 1;
+      this.scoreAnimTimer = 0;
+      this.cheatScoreTimer = 0;
+    }
+    console.log(`Cheat mode ${this.cheatMode ? 'ENABLED' : 'DISABLED'}`);
+    return this.cheatMode ? '🚀 ZOOOOOM! Noclip activated!' : '🐌 Back to normal';
+  },
+
+  disablecheat() {
+    if (this.cheatMode) {
+      this.cheatMode = false;
+      console.log('Cheat mode DISABLED');
+      return '🐌 Back to normal';
+    }
+    return 'Cheat mode is already off';
   },
 
   rectCollision(a, b) {
@@ -285,14 +364,18 @@ const TappyGame = {
   },
 
   gameOver() {
-    this.state = 'gameover';
-    this.bird.dead = true;
+    this.state = 'crashing';
+    this.crashTimer = 0;
     this.flashTimer = CONFIG.FLASH_DURATION;
+    this.shakeIntensity = 15;
+    this.birdFallRotation = this.bird.rotation;
+    this.birdHitGround = false;
 
-    
-    for (let i = 0; i < CONFIG.PARTICLE_COUNT; i++) {
-      const angle = (Math.PI * 2 * i) / CONFIG.PARTICLE_COUNT;
-      const speed = 200 + Math.random() * 100;
+    AudioManager.playSound('hit');
+
+    for (let i = 0; i < CONFIG.PARTICLE_COUNT * 2; i++) {
+      const angle = (Math.PI * 2 * i) / (CONFIG.PARTICLE_COUNT * 2);
+      const speed = 250 + Math.random() * 150;
       const vx = Math.cos(angle) * speed;
       const vy = Math.sin(angle) * speed;
 
@@ -302,39 +385,70 @@ const TappyGame = {
         vx,
         vy,
         COLORS.PARTICLE,
-        4 + Math.random() * 4
+        4 + Math.random() * 6
       ));
     }
 
-    
     if (this.score > TappyStorage.getHighScore()) {
       TappyStorage.setHighScore(this.score);
     }
 
     TappyStorage.addToTotalScore(this.score);
-
-    AudioManager.playSound('die');
-
-    
-    TappyUI.showGameOver(this);
   },
 
   render() {
-    
     this.ctx.clearRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
 
-    
+    this.ctx.save();
+
+    if (this.state === 'crashing' && this.shakeIntensity > 0) {
+      const shakeX = (Math.random() - 0.5) * this.shakeIntensity;
+      const shakeY = (Math.random() - 0.5) * this.shakeIntensity;
+      this.ctx.translate(shakeX, shakeY);
+    }
+
     Background.draw(this.ctx);
 
-    if (this.state === 'playing' || this.state === 'paused' || this.state === 'gameover') {
-      
+    if (this.state === 'playing' || this.state === 'paused' || this.state === 'gameover' || this.state === 'crashing') {
       this.pipes.forEach(pipe => pipe.draw(this.ctx));
 
-      
       this.particles.forEach(particle => particle.draw(this.ctx));
 
-      
-      if (this.bird && !this.bird.dead) {
+      if (this.state === 'crashing') {
+        this.ctx.save();
+        this.ctx.translate(this.bird.x + this.bird.width / 2, this.bird.y + this.bird.height / 2);
+        this.ctx.rotate((this.birdFallRotation * Math.PI) / 180);
+
+        if (Assets.birdImg && Assets.birdImg.complete) {
+          this.ctx.drawImage(Assets.birdImg, -this.bird.width / 2, -this.bird.height / 2, this.bird.width, this.bird.height);
+        } else {
+          const gradient = this.ctx.createRadialGradient(0, -5, 5, 0, 0, this.bird.width / 2);
+          gradient.addColorStop(0, COLORS.BIRD);
+          gradient.addColorStop(1, COLORS.BIRD_ACCENT);
+          this.ctx.fillStyle = gradient;
+          this.ctx.beginPath();
+          this.ctx.arc(0, 0, this.bird.width / 2, 0, Math.PI * 2);
+          this.ctx.fill();
+        }
+        this.ctx.restore();
+      } else if (this.state === 'gameover' && this.deadBirdX > -this.bird.width) {
+        this.ctx.save();
+        this.ctx.translate(this.deadBirdX + this.bird.width / 2, this.deadBirdY + this.bird.height / 2);
+        this.ctx.rotate((this.deadBirdRotation * Math.PI) / 180);
+
+        if (Assets.birdImg && Assets.birdImg.complete) {
+          this.ctx.drawImage(Assets.birdImg, -this.bird.width / 2, -this.bird.height / 2, this.bird.width, this.bird.height);
+        } else {
+          const gradient = this.ctx.createRadialGradient(0, -5, 5, 0, 0, this.bird.width / 2);
+          gradient.addColorStop(0, COLORS.BIRD);
+          gradient.addColorStop(1, COLORS.BIRD_ACCENT);
+          this.ctx.fillStyle = gradient;
+          this.ctx.beginPath();
+          this.ctx.arc(0, 0, this.bird.width / 2, 0, Math.PI * 2);
+          this.ctx.fill();
+        }
+        this.ctx.restore();
+      } else if (this.bird && !this.bird.dead) {
         this.bird.draw(this.ctx);
       }
 
@@ -389,23 +503,19 @@ const TappyGame = {
         this.ctx.fillRect(0, 0, CONFIG.WIDTH, CONFIG.HEIGHT);
       }
 
-      
       if (this.debugMode) {
         this.ctx.strokeStyle = '#00ff00';
         this.ctx.lineWidth = 2;
         this.ctx.setLineDash([5, 5]);
 
-        
         if (this.bird) {
           const birdBounds = this.bird.getBounds();
           this.ctx.strokeRect(birdBounds.x, birdBounds.y, birdBounds.width, birdBounds.height);
 
-          
           this.ctx.strokeStyle = '#ffff00';
           this.ctx.strokeRect(this.bird.x, this.bird.y, this.bird.width, this.bird.height);
         }
 
-        
         this.ctx.strokeStyle = '#ff0000';
         this.pipes.forEach(pipe => {
           const topBounds = pipe.getTopPipeBounds();
@@ -414,7 +524,6 @@ const TappyGame = {
           this.ctx.strokeRect(bottomBounds.x, bottomBounds.y, bottomBounds.width, bottomBounds.height);
         });
 
-        
         this.ctx.strokeStyle = '#ff00ff';
         this.ctx.beginPath();
         this.ctx.moveTo(0, CONFIG.HEIGHT - CONFIG.GROUND_HEIGHT);
@@ -423,7 +532,6 @@ const TappyGame = {
 
         this.ctx.setLineDash([]);
 
-        
         this.ctx.fillStyle = '#00ff00';
         this.ctx.font = 'bold 16px Arial';
         this.ctx.textAlign = 'left';
@@ -435,8 +543,12 @@ const TappyGame = {
         }
       }
     }
+
+    this.ctx.restore();
   },
 };
 
 
 window.TappyGame = TappyGame;
+window.cheat = () => TappyGame.cheat();
+window.disablecheat = () => TappyGame.disablecheat();

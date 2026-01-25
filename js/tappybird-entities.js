@@ -71,7 +71,6 @@ const AudioManager = {
 
   playSound(name, pitchVariation = 0) {
     if (!this.sounds[name]) {
-      console.warn(`Sound not loaded: ${name}`);
       return;
     }
 
@@ -144,16 +143,11 @@ const AudioManager = {
       this.init();
     }
 
-    console.log(`🔊 Setting volume to ${Math.round(volume * 100)}%`);
-
-    
     this.settings.sfxVolume = volume;
     this.settings.musicVolume = volume;
 
-    
     if (this.music) {
       this.music.volume = volume;
-      console.log(`Music volume set to ${volume}`);
     }
 
     
@@ -172,8 +166,6 @@ const AudioManager = {
     if (!this.initialized) {
       this.init();
     }
-
-    console.log(`🔇 Setting muted to ${muted}`);
 
     this.settings.muted = muted;
 
@@ -320,8 +312,6 @@ class Pipe {
       width: this.width,
       height: CONFIG.HEIGHT - CONFIG.GROUND_HEIGHT - (this.gapY + this.gapHeight),
     };
-
-    console.log(`Pipe created: top height=${this.topPipe.height}, gap at y=${gapY}, bottom start=${this.bottomPipe.y}, bottom height=${this.bottomPipe.height}, pipe width=${this.width}`);
   }
 
   update(dt, speed = CONFIG.PIPE_SPEED) {
