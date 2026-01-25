@@ -23,6 +23,7 @@ const TappyUI = {
         <p style="margin-top: 20px; font-size: 12px; color: var(--muted); opacity: 0.7;">
           🌙 Watch the day/night cycle as you play! 🌞
         </p>
+        <button class="reset-btn" onclick="TappyUI.showResetConfirmation();" title="Reset all progress">🗑️ Reset Progress</button>
       </div>
     `;
 
@@ -210,6 +211,56 @@ const TappyUI = {
       const settings = TappyStorage.getSettings();
       volumeBtn.textContent = settings.muted ? '🔇' : '🔊';
     }
+  },
+
+  showResetConfirmation() {
+    const overlay = document.getElementById('overlay');
+    const menuContent = document.getElementById('menuContent');
+
+    menuContent.innerHTML = `
+      <div class="reset-confirmation">
+        <h2>⚠️ Reset Progress ⚠️</h2>
+        <p style="color: var(--muted); margin: 20px 0; font-size: 16px;">
+          Are you sure you want to reset all your progress?
+        </p>
+        <p style="color: var(--danger); margin-bottom: 30px; font-size: 14px;">
+          This will permanently delete:
+        </p>
+        <div style="text-align: left; margin: 0 auto 30px; max-width: 300px;">
+          <div style="margin-bottom: 8px;">🏆 High Score: ${TappyStorage.getHighScore()}</div>
+          <div style="margin-bottom: 8px;">🎮 Games Played: ${TappyStorage.getTotalGames()}</div>
+          <div style="margin-bottom: 8px;">⭐ Total Points: ${TappyStorage.getTotalScore()}</div>
+        </div>
+        <div class="menu-buttons">
+          <button class="btn" onclick="TappyUI.showMenu();">← Cancel</button>
+          <button class="btn primary" style="background: var(--danger); border-color: var(--danger);" onclick="TappyUI.confirmReset();">🗑️ Reset Everything</button>
+        </div>
+      </div>
+    `;
+
+    overlay.style.display = 'flex';
+  },
+
+  confirmReset() {
+    TappyStorage.resetAll();
+
+    const menuContent = document.getElementById('menuContent');
+    menuContent.innerHTML = `
+      <div class="reset-confirmation">
+        <h2>✅ Progress Reset ✅</h2>
+        <p style="color: var(--good); margin: 20px 0; font-size: 16px;">
+          All progress has been cleared!
+        </p>
+        <p style="color: var(--muted); margin-bottom: 30px; font-size: 14px;">
+          Start fresh and set new records! 🎯
+        </p>
+        <div class="menu-buttons">
+          <button class="btn primary" onclick="TappyUI.showMenu();">← Back to Menu</button>
+        </div>
+      </div>
+    `;
+
+    this.updateHUD({ score: 0 });
   },
 };
 

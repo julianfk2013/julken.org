@@ -74,4 +74,10 @@ const TappyStorage = {
     settings[key] = value;
     this.set(this.KEYS.SETTINGS, settings);
   },
+
+  resetAll() {
+    Object.values(this.KEYS).forEach(key => {
+      localStorage.removeItem(key);
+    });
+  },
 };
