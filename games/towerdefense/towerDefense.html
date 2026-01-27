@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Space Defense - Tower Defense</title>
+  <link rel="icon" type="image/png" sizes="16x16" href="../../favicon_16x16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../../favicon_32x32.png" />
+  <link rel="icon" type="image/png" sizes="256x256" href="../../favicon_256x256.png" />
+  <link rel="stylesheet" href="towerDefense_style.css?v=4">
+</head>
+<body>
+  <a class="homeBtn" href="../../index.html" aria-label="Home">🏠 Home</a>
+
+  <div id="game-container">
+    <div id="wave-announcement" class="wave-announcement hidden">
+      <div class="wave-announcement-content">
+        <span class="wave-label">WAVE</span>
+        <span id="wave-number" class="wave-number">1</span>
+        <span class="wave-sublabel">INCOMING!</span>
+      </div>
+    </div>
+    <div id="start-wave-overlay" class="hidden">
+      <button id="start-wave-btn" class="start-wave-big-btn">
+        START WAVE
+      </button>
+    </div>
+    <div id="wave-complete" class="wave-complete hidden">
+      <div class="wave-complete-content">
+        <button id="wave-complete-close" class="wave-complete-close">&times;</button>
+        <span class="complete-label">WAVE COMPLETE!</span>
+        <span class="complete-message">Prepare for the next wave</span>
+      </div>
+    </div>
+    <canvas id="game"></canvas>
+
+    <div id="sidebar">
+      <div id="resources">
+        <div class="resource-item">
+          <span class="label">💰 Credits:</span>
+          <span id="money" class="value">100</span>
+        </div>
+        <div class="resource-item">
+          <span class="label">❤️ Lives:</span>
+          <span id="lives" class="value">20</span>
+        </div>
+        <div class="resource-item">
+          <span class="label">🌊 Wave:</span>
+          <span id="wave" class="value">0/10</span>
+        </div>
+        <div class="resource-item">
+          <span class="label">⭐ Score:</span>
+          <span id="score" class="value">0</span>
+        </div>
+      </div>
+
+      <div id="game-controls">
+        <button id="pause-btn" class="control-btn">⏸️ Pause</button>
+        <div class="music-control">
+          <button id="music-btn" class="control-btn">🔇 Music</button>
+          <div id="volume-slider" class="volume-slider hidden">
+            <input type="range" id="volume-range" min="0" max="100" value="40">
+            <span id="volume-value">40%</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="tower-selection">
+        <h3>Build Towers</h3>
+        <div class="tower-buttons">
+          <button class="tower-btn" data-tower="laser">
+            <div class="tower-icon laser-icon"></div>
+            <div class="tower-name">Laser</div>
+            <div class="tower-cost">💰 100</div>
+          </button>
+          <button class="tower-btn" data-tower="rocket">
+            <div class="tower-icon rocket-icon"></div>
+            <div class="tower-name">Rocket</div>
+            <div class="tower-cost">💰 150</div>
+          </button>
+          <button class="tower-btn" data-tower="plasma">
+            <div class="tower-icon plasma-icon"></div>
+            <div class="tower-name">Plasma</div>
+            <div class="tower-cost">💰 120</div>
+          </button>
+          <button class="tower-btn" data-tower="tesla">
+            <div class="tower-icon tesla-icon"></div>
+            <div class="tower-name">Tesla</div>
+            <div class="tower-cost">💰 200</div>
+          </button>
+          <button class="tower-btn" data-tower="sniper">
+            <div class="tower-icon sniper-icon"></div>
+            <div class="tower-name">Sniper</div>
+            <div class="tower-cost">💰 250</div>
+          </button>
+          <button class="tower-btn" data-tower="flame">
+            <div class="tower-icon flame-icon"></div>
+            <div class="tower-name">Flame</div>
+            <div class="tower-cost">💰 180</div>
+          </button>
+          <button class="tower-btn" data-tower="railgun">
+            <div class="tower-icon railgun-icon"></div>
+            <div class="tower-name">Railgun</div>
+            <div class="tower-cost">💰 300</div>
+          </button>
+          <button class="tower-btn" data-tower="freeze">
+            <div class="tower-icon freeze-icon"></div>
+            <div class="tower-name">Freeze</div>
+            <div class="tower-cost">💰 160</div>
+          </button>
+          <button class="tower-btn annihilator-btn" data-tower="annihilator">
+            <div class="tower-icon annihilator-icon"></div>
+            <div class="tower-name">☠️ DOOM</div>
+            <div class="tower-cost">💰 10000</div>
+          </button>
+        </div>
+      </div>
+
+      <div id="tower-info" style="display: none;">
+        <h3>Tower Info</h3>
+        <div id="tower-stats">
+          <div class="stat-row">
+            <span class="stat-label">Type:</span>
+            <span id="tower-type-display">-</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Level:</span>
+            <span id="tower-level-display">1</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Damage:</span>
+            <span id="tower-damage-display">-</span>
+          </div>
+          <div class="stat-row">
+            <span class="stat-label">Range:</span>
+            <span id="tower-range-display">-</span>
+          </div>
+        </div>
+        <button id="upgrade-btn" class="action-btn">
+          Upgrade (💰 <span id="upgrade-cost">150</span>)
+        </button>
+        <button id="sell-btn" class="action-btn sell">
+          Sell (💰 <span id="sell-value">50</span>)
+        </button>
+      </div>
+
+      <div id="wave-control" style="display: none;">
+        <div id="wave-timer" style="display: none;">
+          Next wave in: <span id="wave-countdown">10</span>s
+        </div>
+      </div>
+
+      <div id="game-info">
+        <p class="info-text">Click towers to build, then click map to place</p>
+        <p class="info-text">Defend your base from alien waves!</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pause Overlay -->
+  <div id="pause-overlay" class="overlay" style="display: none;">
+    <div class="menu-content">
+      <h1>⏸️ PAUSED</h1>
+      <button class="menu-btn" id="btn-resume">Resume Game</button>
+      <button class="menu-btn" id="btn-quit">Quit to Menu</button>
+    </div>
+  </div>
+
+  <!-- Menu Overlay -->
+  <div id="menu-overlay" class="overlay">
+    <div class="menu-content">
+      <h1>🚀 SPACE DEFENSE 🚀</h1>
+      <p class="subtitle">Defend your space station from alien invaders!</p>
+
+      <div class="difficulty-selection">
+        <h3>Select Difficulty</h3>
+        <button class="menu-btn" id="btn-easy">
+          Easy - Single Path
+        </button>
+        <button class="menu-btn" id="btn-hard">
+          Hard - Multiple Paths
+        </button>
+        <button class="menu-btn" id="btn-endless-easy">
+          Endless - Single Path
+        </button>
+        <button class="menu-btn" id="btn-endless-hard">
+          Endless - Multiple Paths
+        </button>
+      </div>
+
+      <div class="instructions">
+        <h4>How to Play:</h4>
+        <ul>
+          <li>💰 Start with 400 credits and 15 lives</li>
+          <li>🔨 Build towers to defend your base</li>
+          <li>👾 Kill enemies to earn more credits</li>
+          <li>📈 Upgrade towers for more power</li>
+          <li>🌊 Survive 10 waves to win!</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Victory/Defeat Overlay -->
+  <div id="result-overlay" class="overlay" style="display: none;">
+    <div class="menu-content">
+      <h1 id="result-title">Victory!</h1>
+      <p id="result-message">You defended the space station!</p>
+      <button class="menu-btn" id="btn-restart">Play Again</button>
+      <button class="menu-btn" id="btn-menu">Main Menu</button>
+    </div>
+  </div>
+
+  <script src="towerDefense_config.js?v=4"></script>
+  <script src="towerDefense_assets.js?v=4"></script>
+  <script src="towerDefense_pathfinding.js?v=4"></script>
+  <script src="towerDefense_towers.js?v=4"></script>
+  <script src="towerDefense_enemies.js?v=4"></script>
+  <script src="towerDefense_projectiles.js?v=4"></script>
+  <script src="towerDefense_ui.js?v=4"></script>
+  <script src="towerDefense_game.js?v=4"></script>
+</body>
+</html>

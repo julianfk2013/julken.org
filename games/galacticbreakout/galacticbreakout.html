@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Galactic Assault — Classic Space Shooter</title>
+  <link rel="icon" type="image/png" sizes="16x16" href="../../favicon_16x16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../../favicon_32x32.png" />
+  <link rel="icon" type="image/png" sizes="256x256" href="../../favicon_256x256.png" />
+  <link rel="stylesheet" href="breakout.css" />
+</head>
+<body>
+  
+  <a class="homeBtn" href="../../index.html">🏠 Home</a>
+
+  
+  <div class="hud">
+    <div class="hud-item">
+      <span class="hud-label">Score:</span>
+      <span class="hud-value" id="score">0</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Level:</span>
+      <span class="hud-value" id="level">1</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Lives:</span>
+      <span class="hud-value" id="lives">❤️❤️❤️</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Combo:</span>
+      <span class="hud-value" id="combo">1.0x</span>
+    </div>
+    <div class="hud-item">
+      <span class="hud-label">Coins:</span>
+      <span class="hud-value" id="coins">0</span>
+    </div>
+    <div class="hud-item">
+      <button id="muteBtn" class="mute-btn" title="Toggle Music">🔊</button>
+    </div>
+  </div>
+
+  
+  <div id="activePowerups"></div>
+
+  
+  <div id="touchHelper" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(56, 189, 248, 0.2); border: 2px solid #38bdf8; border-radius: 12px; padding: 12px 20px; color: #38bdf8; font-size: 14px; z-index: 150; backdrop-filter: blur(10px);">
+    👆 Tap and hold to shoot
+  </div>
+
+  
+  <div id="gameContainer">
+    <canvas id="gameCanvas"></canvas>
+  </div>
+
+  
+  <div id="overlay">
+    <div id="menuContent"></div>
+  </div>
+
+  
+  <script src="js/config.js"></script>
+  <script src="js/storage.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/galacticassault-assets.js"></script>
+  <script src="js/galacticassault-background.js"></script>
+  <script src="js/galacticassault-entities.js"></script>
+  
+  <script src="js/ui.js"></script>
+  <script src="js/galacticassault-game.js"></script>
+
+  
+  <script>
+    
+    window.addEventListener('DOMContentLoaded', () => {
+      console.log('🚀 Galactic Assault - Initializing...');
+
+      const canvas = document.getElementById('gameCanvas');
+      if (!canvas) {
+        console.error('❌ Canvas not found!');
+        return;
+      }
+
+      
+      console.log('📌 Step 1: Initialize AudioManager');
+      AudioManager.init();
+
+      
+      console.log('📌 Step 2: Load audio files');
+      AudioManager.loadSound('playerShoot', 'breakout_assets/mixkit-short-laser-gun-shot-1670.wav');
+      AudioManager.loadSound('enemyShoot', 'breakout_assets/mixkit-short-laser-gun-shot-1670.wav');
+      AudioManager.loadSound('explosion', 'breakout_assets/mixkit-arcade-space-shooter-dead-notification-272.wav');
+      AudioManager.loadSound('hit', 'breakout_assets/mixkit-falling-hit-757.wav');
+      AudioManager.loadSound('thrust', 'breakout_assets/thrust.mp3');
+      AudioManager.loadSound('powerup', 'breakout_assets/mixkit-falling-hit-757.wav');
+      AudioManager.loadSound('bossDeath', 'breakout_assets/mixkit-arcade-space-shooter-dead-notification-272.wav');
+      AudioManager.loadSound('shieldHit', 'breakout_assets/mixkit-falling-hit-757.wav');
+      AudioManager.loadSound('coinCollect', 'breakout_assets/retro-coin-4-236671.mp3');
+      AudioManager.loadSound('bossEnter', 'breakout_assets/mixkit-arcade-space-shooter-dead-notification-272.wav');
+      AudioManager.loadSound('gameover', 'breakout_assets/game-over-arcade-6435.mp3');
+      AudioManager.loadMusic('breakout_assets/soundtrack.mp3');
+
+      
+      console.log('📌 Step 3: Initialize game');
+      Game.init(canvas);
+      UI.showMenu();
+
+      
+      console.log('📌 Step 4: Setup audio unlock');
+      function unlockAudio() {
+        console.log('🔓 User interaction detected - unlocking audio...');
+        AudioManager.playMusic();
+
+        
+        setTimeout(() => {
+          AudioManager.getStatus();
+        }, 1000);
+      }
+
+      
+      ['click', 'touchstart', 'keydown'].forEach(eventType => {
+        document.addEventListener(eventType, unlockAudio, { once: true });
+      });
+
+      console.log('✅ Initialization complete. Click anywhere to start audio.');
+
+      
+      const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+      if (isTouchDevice) {
+        const touchHelper = document.getElementById('touchHelper');
+
+        
+        let hasShot = false;
+        setInterval(() => {
+          if (Game.state === 'playing' || Game.state === 'boss') {
+            if (Game.bullets && Game.bullets.length > 0) {
+              hasShot = true;
+            }
+            touchHelper.style.display = hasShot ? 'none' : 'block';
+          } else {
+            touchHelper.style.display = 'none';
+            hasShot = false;
+          }
+        }, 100);
+      }
+
+      
+      const muteBtn = document.getElementById('muteBtn');
+      if (muteBtn) {
+        muteBtn.addEventListener('click', () => {
+          AudioManager.toggleMusic();
+          
+          muteBtn.textContent = AudioManager.music.paused ? '🔇' : '🔊';
+          muteBtn.title = AudioManager.music.paused ? 'Unmute Music' : 'Mute Music';
+
+          
+          try {
+            localStorage.setItem('galactic_assault_music_muted', AudioManager.music.paused ? '1' : '0');
+            console.log('🔊 Music preference saved:', AudioManager.music.paused ? 'MUTED' : 'PLAYING');
+          } catch (e) {
+            console.warn('Could not save music preference');
+          }
+        });
+
+        
+        try {
+          const wasMuted = localStorage.getItem('galactic_assault_music_muted') === '1';
+          if (wasMuted && AudioManager.music) {
+            AudioManager.music.pause();
+            muteBtn.textContent = '🔇';
+            muteBtn.title = 'Unmute Music';
+            console.log('🔇 Restored muted state from preferences');
+          }
+        } catch (e) {
+          console.warn('Could not restore music preference');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

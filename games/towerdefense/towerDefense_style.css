@@ -1,0 +1,1163 @@
+:root {
+  --sai-top: env(safe-area-inset-top, 0px);
+  --sai-right: env(safe-area-inset-right, 0px);
+  --sai-bottom: env(safe-area-inset-bottom, 0px);
+  --sai-left: env(safe-area-inset-left, 0px);
+
+  --bg: #0a0e1a;
+  --panel: #1a2840;
+  --border: #4a7aa0;
+  --text: #ffffff;
+  --accent: #00d4ff;
+  --money: #ffcc00;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  font-family: 'Courier New', monospace;
+  color: var(--text);
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.homeBtn {
+  position: fixed;
+  left: 10px;
+  top: 10px;
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(26,35,50,0.9);
+  border: 2px solid var(--accent);
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 700;
+  backdrop-filter: blur(6px);
+  text-shadow: 0 0 8px var(--accent);
+}
+
+.homeBtn:hover {
+  background: rgba(0,255,255,0.1);
+}
+
+#game-container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+#game {
+  flex: 1;
+  display: block;
+  background: var(--bg);
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  cursor: crosshair;
+  min-width: 0;
+}
+
+#sidebar {
+  width: 320px;
+  min-width: 320px;
+  max-width: 320px;
+  background: var(--panel);
+  border-left: 3px solid var(--border);
+  padding: 16px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: -4px 0 20px rgba(0,0,0,0.5);
+}
+
+#resources {
+  background: rgba(0,0,0,0.3);
+  padding: 12px;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+}
+
+.resource-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.resource-item .label {
+  color: rgba(255,255,255,0.7);
+}
+
+.resource-item .value {
+  color: var(--accent);
+  text-shadow: 0 0 4px var(--accent);
+}
+
+/* Game Controls - Pause/Music */
+#game-controls {
+  display: flex;
+  gap: 10px;
+  background: linear-gradient(180deg, rgba(10,20,35,0.95) 0%, rgba(5,15,25,0.95) 100%);
+  padding: 12px;
+  border-radius: 12px;
+  border: 2px solid rgba(0,212,255,0.3);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+.control-btn {
+  flex: 1;
+  padding: 14px 12px;
+  border: 2px solid rgba(0,212,255,0.4);
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(20,40,60,0.95) 0%, rgba(10,25,40,0.95) 100%);
+  color: var(--text);
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.6);
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    inset 0 -1px 0 rgba(0,0,0,0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.control-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.control-btn:hover::before {
+  left: 100%;
+}
+
+.control-btn:hover {
+  border-color: var(--accent);
+  background: linear-gradient(180deg, rgba(0,60,90,0.95) 0%, rgba(0,40,60,0.95) 100%);
+  box-shadow:
+    0 0 20px rgba(0,212,255,0.4),
+    0 6px 16px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.15);
+  transform: translateY(-2px);
+  color: var(--accent);
+  text-shadow: 0 0 10px var(--accent);
+}
+
+.control-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+.control-btn.active {
+  background: linear-gradient(180deg, rgba(0,100,130,0.95) 0%, rgba(0,70,90,0.95) 100%);
+  border-color: var(--accent);
+  color: var(--accent);
+  text-shadow: 0 0 12px var(--accent);
+  box-shadow:
+    0 0 24px rgba(0,212,255,0.5),
+    0 4px 12px rgba(0,0,0,0.4),
+    inset 0 1px 0 rgba(255,255,255,0.2);
+  animation: btn-glow 2s ease-in-out infinite;
+}
+
+@keyframes btn-glow {
+  0%, 100% { box-shadow: 0 0 24px rgba(0,212,255,0.5), 0 4px 12px rgba(0,0,0,0.4); }
+  50% { box-shadow: 0 0 32px rgba(0,212,255,0.7), 0 4px 16px rgba(0,0,0,0.4); }
+}
+
+/* Music Control with Volume Slider */
+.music-control {
+  position: relative;
+  flex: 1;
+}
+
+.music-control .control-btn {
+  width: 100%;
+}
+
+.volume-slider {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, rgba(15,30,50,0.98) 0%, rgba(10,20,35,0.98) 100%);
+  border: 2px solid rgba(0,212,255,0.4);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.5), 0 0 20px rgba(0,212,255,0.2);
+  z-index: 100;
+  min-width: 140px;
+}
+
+.volume-slider.hidden {
+  display: none;
+}
+
+.volume-slider input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  background: linear-gradient(90deg, rgba(0,212,255,0.3), rgba(0,212,255,0.1));
+  border-radius: 4px;
+  outline: none;
+  cursor: pointer;
+}
+
+.volume-slider input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #00d4ff, #0088cc);
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,212,255,0.5), 0 0 12px rgba(0,212,255,0.3);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.volume-slider input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 12px rgba(0,212,255,0.7), 0 0 16px rgba(0,212,255,0.5);
+}
+
+.volume-slider input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #00d4ff, #0088cc);
+  border-radius: 50%;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0,212,255,0.5);
+}
+
+#volume-value {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+  text-shadow: 0 0 8px var(--accent);
+}
+
+#tower-selection h3,
+#tower-info h3 {
+  font-size: 16px;
+  margin-bottom: 12px;
+  color: var(--accent);
+  text-shadow: 0 0 8px var(--accent);
+}
+
+.tower-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.tower-btn {
+  background: rgba(0,0,0,0.4);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--text);
+  font-family: 'Courier New', monospace;
+}
+
+.tower-btn:hover {
+  border-color: var(--accent);
+  background: rgba(0,255,255,0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,255,255,0.3);
+}
+
+.tower-btn.selected {
+  border-color: var(--accent);
+  background: rgba(0,255,255,0.2);
+  box-shadow: 0 0 16px rgba(0,255,255,0.5);
+}
+
+.tower-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.tower-btn:disabled:hover {
+  transform: none;
+  box-shadow: none;
+}
+
+.tower-icon {
+  width: 40px;
+  height: 40px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Laser Tower - Hexagon with beam */
+.laser-icon {
+  background: radial-gradient(circle, #00ffff 0%, #0088ff 60%, #004488 100%);
+  clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
+  box-shadow: 0 0 12px #00ffff, inset 0 0 10px rgba(255,255,255,0.4);
+  animation: pulse-cyan 2s ease-in-out infinite;
+}
+
+.laser-icon::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 3px;
+  right: -4px;
+  background: linear-gradient(90deg, #00ffff, transparent);
+  box-shadow: 0 0 6px #00ffff;
+  animation: beam-pulse 1s ease-in-out infinite;
+}
+
+/* Rocket Tower - Angular launcher */
+.rocket-icon {
+  background: linear-gradient(135deg, #ff6644 0%, #ff2200 50%, #aa0000 100%);
+  border-radius: 4px;
+  box-shadow: 0 0 12px #ff4444, inset 0 0 10px rgba(255,255,255,0.4);
+  animation: pulse-red 2s ease-in-out infinite;
+}
+
+.rocket-icon::before {
+  content: '';
+  position: absolute;
+  width: 0;
+  height: 0;
+  right: -6px;
+  border-left: 8px solid #ff4444;
+  border-top: 5px solid transparent;
+  border-bottom: 5px solid transparent;
+  filter: drop-shadow(0 0 4px #ff4444);
+}
+
+.rocket-icon::after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #ffffff;
+}
+
+/* Plasma Tower - Ringed energy sphere */
+.plasma-icon {
+  background: radial-gradient(circle, #dd44ff 0%, #aa00ff 50%, #6600aa 100%);
+  border-radius: 50%;
+  box-shadow: 0 0 12px #aa44ff, inset 0 0 10px rgba(255,255,255,0.4);
+  animation: pulse-purple 2s ease-in-out infinite;
+}
+
+.plasma-icon::before {
+  content: '';
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border: 2px solid #dd44ff;
+  border-radius: 50%;
+  opacity: 0.6;
+  animation: ring-expand 2s ease-in-out infinite;
+}
+
+.plasma-icon::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: #ffffff;
+  border-radius: 50%;
+  opacity: 0.8;
+  box-shadow: 0 0 10px #ffffff;
+}
+
+/* Tesla Tower - Electric coil with zigzag */
+.tesla-icon {
+  background: linear-gradient(135deg, #ffff44 0%, #ffdd00 50%, #aaaa00 100%);
+  clip-path: polygon(20% 0%, 80% 0%, 100% 30%, 80% 50%, 100% 70%, 80% 100%, 20% 100%, 0% 70%, 20% 50%, 0% 30%);
+  box-shadow: 0 0 12px #ffff00, inset 0 0 10px rgba(255,255,255,0.4);
+  animation: pulse-yellow 2s ease-in-out infinite;
+}
+
+.tesla-icon::after {
+  content: '';
+  position: absolute;
+  width: 3px;
+  height: 20px;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    #ffffff 10%,
+    transparent 20%,
+    #ffffff 30%,
+    transparent 40%,
+    #ffffff 50%,
+    transparent 60%,
+    #ffffff 70%,
+    transparent 80%,
+    #ffffff 90%,
+    transparent 100%);
+  box-shadow: 0 0 8px #ffff00;
+  animation: lightning-flicker 0.8s ease-in-out infinite;
+}
+
+@keyframes pulse-cyan {
+  0%, 100% { box-shadow: 0 0 12px #00ffff, inset 0 0 10px rgba(255,255,255,0.4); }
+  50% { box-shadow: 0 0 20px #00ffff, inset 0 0 15px rgba(255,255,255,0.6); }
+}
+
+@keyframes pulse-red {
+  0%, 100% { box-shadow: 0 0 12px #ff4444, inset 0 0 10px rgba(255,255,255,0.4); }
+  50% { box-shadow: 0 0 20px #ff4444, inset 0 0 15px rgba(255,255,255,0.6); }
+}
+
+@keyframes pulse-purple {
+  0%, 100% { box-shadow: 0 0 12px #aa44ff, inset 0 0 10px rgba(255,255,255,0.4); }
+  50% { box-shadow: 0 0 20px #aa44ff, inset 0 0 15px rgba(255,255,255,0.6); }
+}
+
+@keyframes pulse-yellow {
+  0%, 100% { box-shadow: 0 0 12px #ffff00, inset 0 0 10px rgba(255,255,255,0.4); }
+  50% { box-shadow: 0 0 20px #ffff00, inset 0 0 15px rgba(255,255,255,0.6); }
+}
+
+@keyframes beam-pulse {
+  0%, 100% { opacity: 0.6; width: 16px; }
+  50% { opacity: 1; width: 20px; }
+}
+
+@keyframes ring-expand {
+  0%, 100% { transform: scale(0.8); opacity: 0.6; }
+  50% { transform: scale(1.1); opacity: 0.3; }
+}
+
+@keyframes lightning-flicker {
+  0%, 100% { opacity: 0.8; }
+  25% { opacity: 1; }
+  50% { opacity: 0.6; }
+  75% { opacity: 1; }
+}
+
+@keyframes flame-dance {
+  0%, 100% { transform: translateY(0) scale(1); opacity: 0.8; }
+  50% { transform: translateY(-2px) scale(1.1); opacity: 1; }
+}
+
+/* Sniper Tower - Long barrel with scope */
+.sniper-icon {
+  background: linear-gradient(135deg, #00ff66 0%, #00aa44 50%, #006622 100%);
+  border-radius: 4px 0 0 4px;
+  box-shadow: 0 0 12px #00ff66, inset 0 0 10px rgba(255,255,255,0.4);
+  animation: pulse-green 2s ease-in-out infinite;
+}
+
+.sniper-icon::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 4px;
+  right: -16px;
+  background: linear-gradient(90deg, #00ff66, #00aa44);
+  box-shadow: 0 0 6px #00ff66;
+}
+
+.sniper-icon::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border: 2px solid #00ff66;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #00ff66, inset 0 0 4px #ffffff;
+}
+
+/* Flame Tower - Fire shape with flames */
+.flame-icon {
+  background: linear-gradient(0deg, #ff4400 0%, #ff6600 50%, #ff8800 100%);
+  clip-path: polygon(50% 0%, 70% 30%, 85% 60%, 70% 100%, 30% 100%, 15% 60%, 30% 30%);
+  box-shadow: 0 0 12px #ff6600, inset 0 0 10px rgba(255,255,255,0.4);
+  animation: pulse-orange 2s ease-in-out infinite;
+}
+
+.flame-icon::before {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background: radial-gradient(circle, #ffff00 0%, #ff8800 50%, transparent 100%);
+  clip-path: polygon(50% 0%, 70% 40%, 60% 100%, 40% 100%, 30% 40%);
+  animation: flame-dance 1s ease-in-out infinite;
+}
+
+.flame-icon::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 12px;
+  background: radial-gradient(circle, #ffffff 0%, #ffff00 40%, transparent 100%);
+  clip-path: polygon(50% 0%, 65% 50%, 50% 100%, 35% 50%);
+  animation: flame-dance 1.2s ease-in-out infinite reverse;
+}
+
+@keyframes pulse-green {
+  0%, 100% { box-shadow: 0 0 12px #00ff66, inset 0 0 10px rgba(255,255,255,0.4); }
+  50% { box-shadow: 0 0 20px #00ff66, inset 0 0 15px rgba(255,255,255,0.6); }
+}
+
+@keyframes pulse-orange {
+  0%, 100% { box-shadow: 0 0 12px #ff6600, inset 0 0 10px rgba(255,255,255,0.4); }
+  50% { box-shadow: 0 0 20px #ff6600, inset 0 0 15px rgba(255,255,255,0.6); }
+}
+
+/* Railgun Tower - Long barrel with energy core */
+.railgun-icon {
+  background: linear-gradient(135deg, #00ccff 0%, #0088ff 50%, #0055aa 100%);
+  border-radius: 4px 0 0 4px;
+  box-shadow: 0 0 12px #00aaff, inset 0 0 10px rgba(255,255,255,0.4);
+  animation: pulse-lightblue 2s ease-in-out infinite;
+}
+
+.railgun-icon::before {
+  content: '';
+  position: absolute;
+  width: 24px;
+  height: 3px;
+  right: -18px;
+  background: linear-gradient(90deg, #00aaff, #ffffff, #00aaff);
+  box-shadow: 0 0 8px #00aaff;
+  animation: railgun-charge 1.5s ease-in-out infinite;
+}
+
+.railgun-icon::after {
+  content: '';
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: radial-gradient(circle, #ffffff 0%, #00ddff 50%, transparent 100%);
+  box-shadow: 0 0 10px #00ddff;
+  animation: pulse-lightblue 1s ease-in-out infinite;
+}
+
+@keyframes pulse-lightblue {
+  0%, 100% { box-shadow: 0 0 12px #00aaff, inset 0 0 10px rgba(255,255,255,0.4); }
+  50% { box-shadow: 0 0 20px #00aaff, inset 0 0 15px rgba(255,255,255,0.6); }
+}
+
+@keyframes railgun-charge {
+  0%, 100% { opacity: 0.6; box-shadow: 0 0 8px #00aaff; }
+  50% { opacity: 1; box-shadow: 0 0 16px #00aaff, 0 0 24px #00aaff; }
+}
+
+/* Freeze Tower - Ice crystal shape */
+.freeze-icon {
+  background: radial-gradient(circle, #ffffff 0%, #88ddff 40%, #44aadd 100%);
+  clip-path: polygon(50% 0%, 65% 35%, 100% 35%, 70% 55%, 80% 100%, 50% 70%, 20% 100%, 30% 55%, 0% 35%, 35% 35%);
+  box-shadow: 0 0 12px #88ddff, inset 0 0 10px rgba(255,255,255,0.6);
+  animation: pulse-ice 2s ease-in-out infinite;
+}
+
+.freeze-icon::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255,255,255,0.4);
+  border-radius: 50%;
+  animation: freeze-ring 2s ease-in-out infinite;
+}
+
+.freeze-icon::after {
+  content: '';
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #ffffff;
+}
+
+@keyframes pulse-ice {
+  0%, 100% { box-shadow: 0 0 12px #88ddff, inset 0 0 10px rgba(255,255,255,0.6); }
+  50% { box-shadow: 0 0 24px #88ddff, inset 0 0 15px rgba(255,255,255,0.8); }
+}
+
+@keyframes freeze-ring {
+  0%, 100% { transform: scale(0.8); opacity: 0.6; }
+  50% { transform: scale(1.2); opacity: 0.3; }
+}
+
+/* ANNIHILATOR Tower - ULTIMATE WEAPON OF DOOM */
+.annihilator-btn {
+  background: linear-gradient(180deg, rgba(80,0,0,0.95) 0%, rgba(40,0,0,0.95) 100%) !important;
+  border-color: #ff0000 !important;
+  animation: annihilator-btn-pulse 0.5s ease-in-out infinite !important;
+}
+
+.annihilator-btn:hover {
+  background: linear-gradient(180deg, rgba(120,0,0,0.95) 0%, rgba(60,0,0,0.95) 100%) !important;
+  box-shadow: 0 0 30px #ff0000, 0 0 60px #ff6600 !important;
+}
+
+.annihilator-btn .tower-name {
+  color: #ff0000 !important;
+  text-shadow: 0 0 10px #ff0000, 0 0 20px #ff6600 !important;
+  animation: doom-text 0.3s ease-in-out infinite !important;
+}
+
+.annihilator-btn .tower-cost {
+  color: #ffff00 !important;
+  text-shadow: 0 0 8px #ffff00 !important;
+}
+
+@keyframes annihilator-btn-pulse {
+  0%, 100% { box-shadow: 0 0 20px #ff0000, inset 0 0 10px rgba(255,0,0,0.3); }
+  50% { box-shadow: 0 0 40px #ff0000, 0 0 60px #ff6600, inset 0 0 20px rgba(255,0,0,0.5); }
+}
+
+@keyframes doom-text {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.annihilator-icon {
+  background: radial-gradient(circle, #ffffff 0%, #ffff00 20%, #ff6600 40%, #ff0000 60%, #880000 100%);
+  border-radius: 50%;
+  box-shadow:
+    0 0 20px #ff0000,
+    0 0 40px #ff6600,
+    0 0 60px #ffff00,
+    inset 0 0 15px rgba(255,255,255,0.8);
+  animation: annihilator-pulse 0.3s ease-in-out infinite;
+}
+
+.annihilator-icon::before {
+  content: '';
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border: 3px solid #ff0000;
+  border-radius: 50%;
+  animation: annihilator-ring 0.5s linear infinite;
+  box-shadow: 0 0 15px #ff0000;
+}
+
+.annihilator-icon::after {
+  content: '☠';
+  position: absolute;
+  font-size: 14px;
+  color: #000000;
+  text-shadow: 0 0 5px #ff0000;
+  animation: skull-shake 0.1s ease-in-out infinite;
+}
+
+@keyframes annihilator-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px #ff0000, 0 0 40px #ff6600, 0 0 60px #ffff00, inset 0 0 15px rgba(255,255,255,0.8);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 40px #ff0000, 0 0 80px #ff6600, 0 0 120px #ffff00, inset 0 0 20px rgba(255,255,255,1);
+    transform: scale(1.1);
+  }
+}
+
+@keyframes annihilator-ring {
+  0% { transform: scale(0.8) rotate(0deg); opacity: 1; }
+  100% { transform: scale(1.5) rotate(180deg); opacity: 0; }
+}
+
+@keyframes skull-shake {
+  0%, 100% { transform: translateX(-1px); }
+  50% { transform: translateX(1px); }
+}
+
+.tower-name {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.tower-cost {
+  font-size: 11px;
+  color: var(--money);
+}
+
+#tower-stats {
+  background: rgba(0,0,0,0.3);
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 10px;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 12px;
+}
+
+.stat-label {
+  color: rgba(255,255,255,0.7);
+}
+
+.action-btn {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  background: rgba(0,0,0,0.4);
+  color: var(--text);
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 8px;
+}
+
+.action-btn:hover {
+  border-color: var(--accent);
+  background: rgba(0,255,255,0.1);
+}
+
+.action-btn.primary {
+  background: rgba(0,255,255,0.2);
+  border-color: var(--accent);
+  color: var(--accent);
+  text-shadow: 0 0 4px var(--accent);
+}
+
+.action-btn.primary:hover {
+  background: rgba(0,255,255,0.3);
+  box-shadow: 0 0 12px rgba(0,255,255,0.5);
+}
+
+.action-btn.sell {
+  background: rgba(255,68,68,0.2);
+  border-color: #ff4444;
+  color: #ff4444;
+}
+
+.action-btn.sell:hover {
+  background: rgba(255,68,68,0.3);
+  border-color: #ff6666;
+}
+
+.action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+#wave-timer {
+  text-align: center;
+  font-size: 13px;
+  padding: 8px;
+  background: rgba(0,0,0,0.3);
+  border-radius: 6px;
+  color: var(--accent);
+}
+
+#game-info {
+  margin-top: auto;
+  padding-top: 16px;
+  border-top: 2px solid var(--border);
+}
+
+.info-text {
+  font-size: 11px;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+/* Overlays */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10,14,26,0.95);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(8px);
+}
+
+.menu-content {
+  text-align: center;
+  max-width: 500px;
+  padding: 32px;
+}
+
+.menu-content h1 {
+  font-size: 48px;
+  margin-bottom: 16px;
+  color: var(--accent);
+  text-shadow: 0 0 20px var(--accent), 0 0 40px var(--accent);
+  animation: glow 2s ease-in-out infinite;
+}
+
+@keyframes glow {
+  0%, 100% { text-shadow: 0 0 20px var(--accent), 0 0 40px var(--accent); }
+  50% { text-shadow: 0 0 30px var(--accent), 0 0 60px var(--accent); }
+}
+
+.subtitle {
+  font-size: 16px;
+  color: rgba(255,255,255,0.8);
+  margin-bottom: 32px;
+}
+
+.difficulty-selection {
+  margin-bottom: 32px;
+}
+
+.difficulty-selection h3 {
+  font-size: 18px;
+  margin-bottom: 16px;
+  color: var(--accent);
+}
+
+.menu-btn {
+  display: block;
+  width: 100%;
+  padding: 16px 24px;
+  margin-bottom: 12px;
+  border: 3px solid var(--accent);
+  border-radius: 8px;
+  background: rgba(0,255,255,0.1);
+  color: var(--accent);
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-shadow: 0 0 8px var(--accent);
+}
+
+.menu-btn:hover {
+  background: rgba(0,255,255,0.2);
+  box-shadow: 0 0 20px rgba(0,255,255,0.5);
+  transform: translateY(-2px);
+}
+
+.instructions {
+  text-align: left;
+  background: rgba(0,0,0,0.3);
+  padding: 16px;
+  border-radius: 8px;
+  border: 2px solid var(--border);
+}
+
+.instructions h4 {
+  font-size: 14px;
+  margin-bottom: 12px;
+  color: var(--accent);
+}
+
+.instructions ul {
+  list-style: none;
+  padding: 0;
+}
+
+.instructions li {
+  font-size: 13px;
+  margin-bottom: 8px;
+  color: rgba(255,255,255,0.8);
+}
+
+@media (max-width: 900px) {
+  #game-container {
+    flex-direction: column;
+  }
+
+  #sidebar {
+    width: 100%;
+    max-height: 40%;
+    border-left: none;
+    border-top: 3px solid var(--border);
+  }
+
+  .tower-buttons {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Start Wave Button Overlay */
+#start-wave-overlay {
+  position: absolute;
+  top: 80px;
+  left: 0;
+  right: 320px;
+  z-index: 99;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#start-wave-overlay.hidden {
+  display: none;
+}
+
+.start-wave-big-btn {
+  padding: 20px 60px;
+  font-size: 28px;
+  font-weight: 900;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 4px;
+  color: #ffffff;
+  background: linear-gradient(135deg, rgba(0,212,255,0.3) 0%, rgba(0,100,200,0.4) 100%);
+  border: 4px solid var(--accent);
+  border-radius: 16px;
+  cursor: pointer;
+  text-shadow: 0 0 20px var(--accent), 0 0 40px var(--accent);
+  box-shadow:
+    0 0 30px rgba(0,212,255,0.5),
+    0 0 60px rgba(0,212,255,0.3),
+    inset 0 0 20px rgba(0,212,255,0.2);
+  animation: start-btn-pulse 1.5s ease-in-out infinite;
+  transition: all 0.2s ease;
+}
+
+.start-wave-big-btn:hover {
+  transform: scale(1.05);
+  background: linear-gradient(135deg, rgba(0,212,255,0.5) 0%, rgba(0,150,255,0.5) 100%);
+  box-shadow:
+    0 0 50px rgba(0,212,255,0.7),
+    0 0 80px rgba(0,212,255,0.5),
+    inset 0 0 30px rgba(0,212,255,0.3);
+}
+
+.start-wave-big-btn:active {
+  transform: scale(0.98);
+}
+
+.start-wave-big-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  animation: none;
+}
+
+@keyframes start-btn-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 30px rgba(0,212,255,0.5),
+      0 0 60px rgba(0,212,255,0.3),
+      inset 0 0 20px rgba(0,212,255,0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 50px rgba(0,212,255,0.7),
+      0 0 80px rgba(0,212,255,0.5),
+      inset 0 0 30px rgba(0,212,255,0.3);
+  }
+}
+
+/* Wave Announcement Banner */
+.wave-announcement {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 320px;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  pointer-events: none;
+}
+
+.wave-announcement.hidden {
+  display: none;
+}
+
+.wave-announcement-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(20,30,50,0.95) 100%);
+  border: 4px solid var(--accent);
+  border-radius: 16px;
+  padding: 20px 60px;
+  box-shadow:
+    0 0 40px rgba(0,212,255,0.6),
+    0 0 80px rgba(0,212,255,0.3),
+    inset 0 0 30px rgba(0,212,255,0.1);
+  animation: wave-banner-pulse 0.5s ease-out, wave-banner-glow 1s ease-in-out infinite;
+}
+
+.wave-label {
+  font-size: 18px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.8);
+  letter-spacing: 8px;
+  text-transform: uppercase;
+}
+
+.wave-number {
+  font-size: 72px;
+  font-weight: 900;
+  color: var(--accent);
+  text-shadow:
+    0 0 20px var(--accent),
+    0 0 40px var(--accent),
+    0 0 60px var(--accent);
+  line-height: 1;
+  animation: wave-number-pulse 0.8s ease-in-out infinite;
+}
+
+.wave-sublabel {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ff4444;
+  letter-spacing: 4px;
+  text-shadow: 0 0 10px #ff4444;
+  animation: wave-sublabel-flash 0.3s ease-in-out infinite;
+}
+
+@keyframes wave-banner-pulse {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes wave-banner-glow {
+  0%, 100% { box-shadow: 0 0 40px rgba(0,212,255,0.6), 0 0 80px rgba(0,212,255,0.3), inset 0 0 30px rgba(0,212,255,0.1); }
+  50% { box-shadow: 0 0 60px rgba(0,212,255,0.8), 0 0 100px rgba(0,212,255,0.5), inset 0 0 40px rgba(0,212,255,0.2); }
+}
+
+@keyframes wave-number-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+@keyframes wave-sublabel-flash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Wave Complete Banner - Centered */
+.wave-complete {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 100;
+  pointer-events: none;
+}
+
+.wave-complete.hidden {
+  display: none;
+}
+
+.wave-complete-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, rgba(0,50,0,0.95) 0%, rgba(0,80,40,0.95) 100%);
+  border: 4px solid #00ff88;
+  border-radius: 16px;
+  padding: 30px 60px;
+  box-shadow:
+    0 0 40px rgba(0,255,136,0.6),
+    0 0 80px rgba(0,255,136,0.3);
+  animation: wave-complete-popup 0.5s ease-out;
+}
+
+.wave-complete-close {
+  position: absolute;
+  top: 8px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.7);
+  font-size: 28px;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+  pointer-events: auto;
+  transition: color 0.2s, transform 0.2s;
+}
+
+.wave-complete-close:hover {
+  color: #ffffff;
+  transform: scale(1.2);
+}
+
+.complete-label {
+  font-size: 36px;
+  font-weight: 900;
+  color: #00ff88;
+  text-shadow: 0 0 20px #00ff88, 0 0 40px #00ff88;
+  letter-spacing: 4px;
+}
+
+.complete-message {
+  font-size: 16px;
+  color: rgba(255,255,255,0.9);
+  text-align: center;
+}
+
+@keyframes wave-complete-popup {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@media (max-width: 900px) {
+  #start-wave-overlay {
+    right: 0;
+    top: 60px;
+  }
+
+  .start-wave-big-btn {
+    padding: 16px 40px;
+    font-size: 22px;
+  }
+
+  .wave-announcement {
+    right: 0;
+    top: auto;
+    bottom: 40%;
+  }
+}

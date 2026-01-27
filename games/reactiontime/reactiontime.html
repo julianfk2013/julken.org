@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Reaction Time Test — Julken</title>
+  <link rel="icon" type="image/png" sizes="16x16" href="../../favicon_16x16.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="../../favicon_32x32.png" />
+  <link rel="icon" type="image/png" sizes="256x256" href="../../favicon_256x256.png" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+    :root{
+      --bg:#0b0f18; --fg:#e7eefc; --muted:#9fb0d1;
+      --card:#12192a; --card2:#0f1524; --acc:#6aa8ff; --acc2:#a46aff; --good:#37d67a; --bad:#ff5c7a; --warn:#ffc247;
+      --sai-top: env(safe-area-inset-top, 0px);
+      --sai-right: env(safe-area-inset-right, 0px);
+      --sai-bottom: env(safe-area-inset-bottom, 0px);
+      --sai-left: env(safe-area-inset-left, 0px);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Poppins,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+      color:var(--fg); background: radial-gradient(1200px 800px at 70% -10%, rgba(100,130,255,.12), transparent 60%),
+                 radial-gradient(900px 700px at 10% 110%, rgba(200,120,255,.12), transparent 60%), var(--bg);
+      overflow-x:hidden;
+    }
+
+    
+    #bgCanvas{position:fixed; inset:0; z-index:0; pointer-events:none; display:block}
+
+    header{position:sticky; top:0; top: max(0px, var(--sai-top)); z-index:2; background:linear-gradient(180deg, rgba(10,14,25,.9), rgba(10,14,25,.6) 70%, transparent); -webkit-backdrop-filter:saturate(120%) blur(6px); backdrop-filter:saturate(120%) blur(6px); padding-top: max(0px, var(--sai-top))}
+    .nav{max-width:960px; margin:0 auto; padding:12px max(16px, var(--sai-right)) 12px max(16px, var(--sai-left)); display:flex; align-items:center; justify-content:center;}
+    .brand{display:flex; align-items:center; gap:10px}
+    .dot{width:10px; height:10px; border-radius:50%; background:linear-gradient(135deg,var(--acc),var(--acc2)); box-shadow:0 0 12px rgba(110,160,255,.7)}
+    .title{font-weight:700; letter-spacing:.3px}
+
+    .wrap{position:relative; z-index:1; max-width:960px; margin:20px auto; padding:0 16px;}
+    .cards{display:grid; grid-template-columns:1fr; gap:16px}
+    @media (min-width:680px){ .cards{ grid-template-columns: 1fr 1fr; } }
+    @media (min-width:980px){ .cards{ grid-template-columns: 2fr 1fr; } }
+
+    .card{background:linear-gradient(180deg, var(--card), var(--card2)); border:1px solid rgba(255,255,255,.06); border-radius:16px; box-shadow:0 8px 30px rgba(0,0,0,.25); overflow:hidden}
+    .body{padding:18px}
+    .titleRow{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:10px}
+    .card h2{font-size:18px; margin:0}
+    .muted{color:var(--muted); font-size:13px}
+
+    
+    .stage{
+      position:relative; height:340px; border-radius:14px; overflow:hidden; user-select:none; cursor:pointer;
+      display:grid; place-items:center; background:linear-gradient(180deg,#12203a,#0c1428);
+      border:1px solid rgba(255,255,255,.06);
+    }
+    .stage.ready{background:linear-gradient(180deg,#1a2542,#101a31)}
+    .stage.wait{background:linear-gradient(180deg,#1c2130,#141a26)}
+  
+  .stage.go{background:linear-gradient(180deg,#0fbd53,#0a7a38)}
+    .stage.tooSoon{background:linear-gradient(180deg,#3a1422,#290e18)}
+    .stage .msg{font-size:22px; text-align:center; padding:0 14px}
+    .stage .sub{font-size:13px; color:var(--muted); margin-top:6px}
+
+    
+    .rt{ font-size:48px; font-weight:700; letter-spacing:.5px; display:flex; align-items:baseline; gap:6px; }
+    .rt .unit{font-size:14px; color:var(--muted)}
+    .pill{display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; background:#0f1a33; border:1px solid rgba(255,255,255,.06); color:#bcd3ff; font-size:12px}
+
+    
+    .statRow{display:flex; gap:10px; flex-wrap:wrap; margin-top:10px}
+    .stat{flex:1; min-width:130px; background:#0e1528; border:1px solid rgba(255,255,255,.06); border-radius:12px; padding:10px 12px}
+    .stat .label{font-size:12px; color:var(--muted)}
+    .stat .val{font-size:18px; font-weight:700}
+
+    
+    .btn{appearance:none; border:1px solid rgba(255,255,255,.08); color:#eaf2ff; background:#132140; padding:10px 14px; border-radius:10px; font-weight:600; cursor:pointer}
+    .btn:hover{background:#172a52}
+    .btnRow{display:flex; gap:10px; flex-wrap:wrap}
+
+    footer{opacity:.8; text-align:center; padding:24px 0 36px}
+    a.home{color:#bcd3ff; text-underline-offset:3px}
+
+    
+    @media (max-width: 768px) {
+      .rt .value { font-size: clamp(48px, 12vw, 72px); }
+      .statRow { gap: 8px; }
+      .stat { min-width: 100px; padding: 8px 10px; }
+      input, select, textarea { font-size: 16px !important; }
+    }
+
+    @media (max-width: 414px) {
+      .wrap { padding: 0 12px; }
+      .card { margin-bottom: 12px; }
+      .statRow { flex-direction: column; }
+      .stat { width: 100%; }
+    }
+
+    @media (max-width: 375px) {
+      body { font-size: 14px; }
+      .btn { font-size: 14px; padding: 10px 14px; }
+      .rt .value { font-size: clamp(40px, 10vw, 64px); }
+    }
+
+    
+    @media (hover: none) and (pointer: coarse) {
+      button, .btn { min-height: 48px; min-width: 48px; padding: 14px 18px; }
+      #clickArea { min-height: 200px; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="bgCanvas" aria-hidden="true"></canvas>
+  <a class="homeBtn" href="../../index.html" aria-label="Home" style="position:fixed; left:10px; top:10px; z-index:80; display:inline-flex; align-items:center; gap:6px; padding:8px 10px; border-radius:10px; background: rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.16); color:#e7eefc; text-decoration:none; font-weight:700; backdrop-filter: blur(6px);">🏠 Home</a>
+  <header>
+    <nav class="nav">
+      <div class="brand"><span class="dot"></span><div class="title">Reaction Time Test</div></div>
+    </nav>
+  </header>
+
+  <div class="wrap">
+    <div class="cards">
+      
+      <article class="card">
+        <div class="body">
+          <div class="titleRow">
+            <h2>How fast are you?</h2>
+            <span class="pill" id="statePill">Idle</span>
+          </div>
+
+          <div id="stage" class="stage" role="button" aria-label="Reaction stage" tabindex="0">
+            <div class="msg" id="msg">
+              Click to start. When the screen turns green, click as fast as you can.
+              <div class="sub">Tip: You can also press Space.</div>
+            </div>
+          </div>
+
+          <div class="statRow">
+            <div class="stat">
+              <div class="label">Best</div>
+              <div class="val" id="bestVal">—</div>
+            </div>
+            <div class="stat">
+              <div class="label">Average (last 5)</div>
+              <div class="val" id="avgVal">—</div>
+            </div>
+            <div class="stat">
+              <div class="label">Last</div>
+              <div class="val" id="lastVal">—</div>
+            </div>
+          </div>
+
+          <div class="btnRow" style="margin-top:12px">
+            <button class="btn" id="resetBtn" type="button">Reset Stats</button>
+            <button class="btn" id="shareBtn" type="button">Share</button>
+            <a class="btn" href="../../index.html">Home</a>
+          </div>
+        </div>
+      </article>
+
+      
+      <article class="card">
+        <div class="body">
+          <h2 style="margin-bottom:6px">About</h2>
+          <p class="muted" style="margin-top:4px">
+            Click (or press Space) to start. Wait for green, then click. False starts don’t count.
+            Your best and moving average are saved on this device.
+          </p>
+          <ul class="muted" style="margin:10px 0 0 18px">
+            <li>States: Idle → Waiting → Go → Result</li>
+            <li>Random delay: 1000–3000 ms</li>
+            <li>Accessibility: Space to play, stage is focusable</li>
+          </ul>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <footer>
+    <small class="muted">© <span id="yr"></span> Julken</small>
+  </footer>
+
+  <script>
+    
+    (function(){
+      const c = document.getElementById('bgCanvas');
+      const dpr = Math.max(1, Math.min(2, window.devicePixelRatio||1));
+      const ctx = c.getContext('2d');
+      let W=0,H=0, stars=[], mouseX=0, mouseY=0, t=0;
+
+      function resize(){
+        W = c.width = Math.floor(innerWidth*dpr);
+        H = c.height = Math.floor(innerHeight*dpr);
+        c.style.width = innerWidth+'px'; c.style.height = innerHeight+'px';
+        const count = Math.floor((innerWidth*innerHeight)/12000);
+        stars = new Array(count).fill(0).map(()=>({
+          x: Math.random()*W, y: Math.random()*H, r: (Math.random()*1.2+0.2)*dpr, a: Math.random()*6.28, s: Math.random()*0.4+0.1
+        }));
+      }
+      window.addEventListener('resize', resize, {passive:true});
+      window.addEventListener('mousemove', e=>{ mouseX = e.clientX/innerWidth - 0.5; mouseY = e.clientY/innerHeight - 0.5; }, {passive:true});
+      resize();
+
+      function nebula(){
+        const g1 = ctx.createRadialGradient(W*0.7,H*0.2,0, W*0.7,H*0.2, W*0.35);
+        g1.addColorStop(0,'rgba(120,150,255,0.14)'); g1.addColorStop(1,'transparent');
+        ctx.fillStyle=g1; ctx.beginPath(); ctx.arc(W*0.7,H*0.2,W*0.35,0,Math.PI*2); ctx.fill();
+
+        const g2 = ctx.createRadialGradient(W*0.2,H*0.9,0, W*0.2,H*0.9, W*0.45);
+        g2.addColorStop(0,'rgba(210,120,255,0.12)'); g2.addColorStop(1,'transparent');
+        ctx.fillStyle=g2; ctx.beginPath(); ctx.arc(W*0.2,H*0.9,W*0.45,0,Math.PI*2); ctx.fill();
+      }
+
+      function tick(){
+        t+=0.016;
+        ctx.clearRect(0,0,W,H);
+        nebula();
+
+        
+        ctx.save();
+        ctx.translate(W*0.5,H*0.2);
+        for(let i=0;i<90;i++){
+          ctx.fillStyle = `rgba(255,240,220,${0.03})`;
+          ctx.rotate(0.07);
+          ctx.beginPath();
+          ctx.ellipse(0,0, i*3*dpr, i*0.5*dpr, 0, 0, Math.PI*2);
+          ctx.fill();
+        }
+        ctx.restore();
+
+        
+        for(const s of stars){
+          s.x += Math.cos(s.a)*s.s; s.y += Math.sin(s.a)*s.s;
+          if(s.x<0) s.x+=W; if(s.x>W) s.x-=W; if(s.y<0) s.y+=H; if(s.y>H) s.y-=H;
+          const px = s.x + mouseX*10*dpr, py = s.y + mouseY*8*dpr;
+          const tw = (Math.sin(t*3 + s.a*4)+1)/2 * 0.6 + 0.2;
+          ctx.fillStyle = `rgba(220,235,255,${0.5*tw})`;
+          ctx.beginPath(); ctx.arc(px,py,s.r,0,6.28); ctx.fill();
+        }
+
+        requestAnimationFrame(tick);
+      }
+      requestAnimationFrame(tick);
+    })();
+
+    
+    (function(){
+      const stage = document.getElementById('stage');
+      const msg = document.getElementById('msg');
+      const pill = document.getElementById('statePill');
+      const bestEl = document.getElementById('bestVal');
+      const avgEl = document.getElementById('avgVal');
+      const lastEl = document.getElementById('lastVal');
+      const resetBtn = document.getElementById('resetBtn');
+      const shareBtn = document.getElementById('shareBtn');
+      document.getElementById('yr').textContent = new Date().getFullYear();
+
+  let state = 'idle'; 
+  
+  let waitRAF = 0, goRAF = 0; 
+  let startAt = 0, targetAt = 0; 
+      
+      let audioCtx = null; let audioUnlocked = false;
+      function getAudio(){
+        if(!audioCtx){
+          try{ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
+          catch{ audioCtx = null; }
+        }
+        return audioCtx;
+      }
+      function unlockAudio(){
+        const ctx = getAudio();
+        if(ctx && ctx.state === 'suspended') ctx.resume().catch(()=>{});
+        audioUnlocked = true;
+      }
+      function beep(){
+        const ctx = getAudio();
+        if(!ctx) return;
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = 'sine';
+        o.frequency.setValueAtTime(880, ctx.currentTime); 
+        g.gain.setValueAtTime(0.001, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.2, ctx.currentTime + 0.005);
+        g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.18);
+        o.connect(g).connect(ctx.destination);
+        o.start();
+        o.stop(ctx.currentTime + 0.2);
+      }
+      let history = loadHistory();
+
+      renderStats();
+
+      function setState(next){
+        stage.classList.remove('wait','go','tooSoon','ready');
+        state = next;
+        if(state==='idle'){ pill.textContent='Idle'; msg.innerHTML = 'Click to start. When the screen turns green, click as fast as you can.<div class="sub">Tip: You can also press Space.</div>'; stage.classList.add('ready'); }
+        else if(state==='wait'){ pill.textContent='Waiting...'; msg.innerHTML = 'Wait for green...<div class="sub">Don’t click early.</div>'; stage.classList.add('wait'); }
+        else if(state==='go'){ pill.textContent='Go!'; msg.innerHTML = '<div class="rt"><span id="rtNum">0</span><span class="unit">ms</span></div><div class="sub">Click now!</div>'; stage.classList.add('go'); }
+        else if(state==='tooSoon'){ pill.textContent='Too soon'; msg.innerHTML = 'Too early!<div class="sub">Click to try again.</div>'; stage.classList.add('tooSoon'); }
+        else if(state==='result'){ pill.textContent='Result'; }
+      }
+
+  function start(){
+        cancelAnimationFrame(waitRAF);
+        cancelAnimationFrame(goRAF);
+        setState('wait');
+        const delay = 1000 + Math.random()*2000; 
+        targetAt = performance.now() + delay;
+        const waitLoop = () => {
+          if(state !== 'wait') return; 
+          const now = performance.now();
+          if (now >= targetAt) {
+            startAt = now;
+            setState('go');
+    if(audioUnlocked) beep();
+            const num = document.getElementById('rtNum');
+            const tick = () => {
+              if(state !== 'go') return;
+              const v = Math.floor(performance.now() - startAt);
+              if(num) num.textContent = v;
+              goRAF = requestAnimationFrame(tick);
+            };
+            goRAF = requestAnimationFrame(tick);
+            return;
+          }
+          waitRAF = requestAnimationFrame(waitLoop);
+        };
+        waitRAF = requestAnimationFrame(waitLoop);
+      }
+
+      function tooSoon(){
+        if (state !== 'wait') return;
+        cancelAnimationFrame(waitRAF);
+        setState('tooSoon');
+      }
+
+      function finish(){
+        if (state !== 'go') return;
+        cancelAnimationFrame(goRAF);
+        const rt = Math.max(0, Math.floor(performance.now() - startAt));
+        setState('result');
+        msg.innerHTML = `<div class="rt"><span>${rt}</span><span class="unit">ms</span></div><div class="sub">Click to try again.</div>`;
+        lastEl.textContent = rt + ' ms';
+        history.push(rt);
+        if(history.length>50) history.shift();
+        saveHistory();
+        renderStats();
+      }
+
+      function renderStats(){
+        if(history.length){
+          const best = Math.min(...history);
+          bestEl.textContent = best + ' ms';
+          const last5 = history.slice(-5);
+          const avg = Math.round(last5.reduce((a,b)=>a+b,0)/last5.length);
+          avgEl.textContent = avg + ' ms';
+          lastEl.textContent = history[history.length-1] + ' ms';
+        }else{
+          bestEl.textContent = '—'; avgEl.textContent = '—'; lastEl.textContent = '—';
+        }
+      }
+
+      function loadHistory(){
+        try{
+          const raw = localStorage.getItem('rt_history_v1');
+          const arr = raw ? JSON.parse(raw) : [];
+          return Array.isArray(arr) ? arr.filter(n=>Number.isFinite(n)&&n>=0) : [];
+        }catch{return []}
+      }
+      function saveHistory(){
+        try{ localStorage.setItem('rt_history_v1', JSON.stringify(history)); }catch{}
+      }
+
+      stage.addEventListener('pointerdown', (e)=>{
+        e.preventDefault();
+        unlockAudio();
+        stage.focus({preventScroll:true});
+        if(state==='idle') start();
+        else if(state==='wait') tooSoon();
+        else if(state==='go') finish();
+        else if(state==='result' || state==='tooSoon') setState('idle');
+      });
+
+    stage.addEventListener('keydown', (e)=>{
+        if(e.code==='Space'){
+          
+          if (e.repeat) { e.preventDefault(); return; }
+          e.preventDefault();
+      unlockAudio();
+          if(state==='idle') start();
+          else if(state==='wait') tooSoon();
+          else if(state==='go') finish();
+          else if(state==='result' || state==='tooSoon') setState('idle');
+        }
+      });
+
+      resetBtn.addEventListener('click', ()=>{
+        history = []; saveHistory(); renderStats(); setState('idle');
+      });
+
+      shareBtn.addEventListener('click', async ()=>{
+        let best = history.length ? Math.min(...history) : null;
+        const txt = best ? `My best reaction time is ${best} ms on Julken!` : `Try the Reaction Time Test on Julken!`;
+        try{
+          await navigator.clipboard.writeText(txt + ' ' + location.href);
+          shareBtn.textContent = 'Copied!'; setTimeout(()=>shareBtn.textContent='Share',1200);
+        }catch{
+          alert(txt);
+        }
+      });
+
+      setState('idle');
+    })();
+  </script>
+</body>
+</html>
