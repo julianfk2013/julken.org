@@ -12,6 +12,86 @@
   --money: #ffcc00;
 }
 
+/* Landscape orientation hint for mobile */
+#orientationHint {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 14, 26, 0.97);
+  backdrop-filter: blur(12px);
+  flex-direction: column;
+  gap: 20px;
+  text-align: center;
+  padding: 20px;
+}
+
+#orientationHint.show {
+  display: flex;
+}
+
+#orientationHint .rotate-icon {
+  font-size: 72px;
+  animation: rotate-phone 2s ease-in-out infinite;
+}
+
+@keyframes rotate-phone {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-20deg); }
+  75% { transform: rotate(90deg); }
+}
+
+#orientationHint h2 {
+  font-size: 28px;
+  color: var(--accent);
+  text-shadow: 0 0 20px var(--accent);
+  margin: 0;
+}
+
+#orientationHint p {
+  font-size: 16px;
+  color: rgba(255, 255, 255, 0.8);
+  max-width: 300px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+#orientationHint .dismiss-btn {
+  margin-top: 10px;
+  padding: 14px 32px;
+  border: 2px solid var(--accent);
+  border-radius: 8px;
+  background: rgba(0, 212, 255, 0.15);
+  color: var(--accent);
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-shadow: 0 0 8px var(--accent);
+}
+
+#orientationHint .dismiss-btn:hover,
+#orientationHint .dismiss-btn:active {
+  background: rgba(0, 212, 255, 0.3);
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+}
+
+/* Hide orientation hint in landscape or on desktop */
+@media (orientation: landscape) {
+  #orientationHint {
+    display: none !important;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  #orientationHint {
+    display: none !important;
+  }
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -31,8 +111,8 @@ html, body {
 
 .homeBtn {
   position: fixed;
-  left: 10px;
-  top: 10px;
+  left: max(10px, var(--sai-left));
+  top: max(10px, var(--sai-top));
   z-index: 100;
   display: inline-flex;
   align-items: center;
@@ -1159,5 +1239,481 @@ html, body {
     right: 0;
     top: auto;
     bottom: 40%;
+  }
+}
+
+/* ============================================
+   MOBILE RESPONSIVE DESIGN
+   ============================================ */
+
+/* Tablet Portrait (768px) */
+@media (max-width: 768px) {
+  .homeBtn {
+    left: max(10px, var(--sai-left));
+    top: max(10px, var(--sai-top));
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+
+  #sidebar {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    max-height: 45vh;
+    border-left: none;
+    border-top: 3px solid var(--border);
+    padding: 12px;
+    padding-bottom: calc(12px + var(--sai-bottom));
+  }
+
+  .tower-buttons {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+
+  .tower-btn {
+    padding: 8px 4px;
+  }
+
+  .tower-icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .tower-name {
+    font-size: 10px;
+  }
+
+  .tower-cost {
+    font-size: 9px;
+  }
+
+  .menu-content {
+    padding: 20px;
+    max-width: 95vw;
+  }
+
+  .menu-content h1 {
+    font-size: 32px;
+  }
+
+  .menu-btn {
+    padding: 14px 20px;
+    font-size: 14px;
+  }
+
+  .instructions {
+    padding: 12px;
+  }
+
+  .instructions li {
+    font-size: 12px;
+  }
+
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Phone Landscape */
+@media (max-width: 900px) and (orientation: landscape) {
+  #game-container {
+    flex-direction: row;
+  }
+
+  #sidebar {
+    position: fixed;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    left: auto;
+    width: 220px !important;
+    max-width: 220px;
+    min-width: 220px;
+    max-height: 100vh;
+    height: 100vh;
+    border-top: none;
+    border-left: 3px solid var(--border);
+    padding-right: calc(12px + var(--sai-right));
+    overflow-y: auto;
+  }
+
+  #game {
+    margin-right: 220px;
+  }
+
+  .tower-buttons {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+  }
+
+  .tower-btn {
+    padding: 6px 4px;
+  }
+
+  .tower-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .tower-name {
+    font-size: 9px;
+  }
+
+  .tower-cost {
+    font-size: 8px;
+  }
+
+  #resources {
+    padding: 8px;
+  }
+
+  .resource-item {
+    font-size: 11px;
+    padding: 3px 0;
+  }
+
+  #game-controls {
+    padding: 8px;
+    gap: 6px;
+  }
+
+  .control-btn {
+    padding: 10px 8px;
+    font-size: 11px;
+  }
+
+  #tower-selection h3,
+  #tower-info h3 {
+    font-size: 13px;
+    margin-bottom: 8px;
+  }
+
+  #game-info {
+    display: none;
+  }
+
+  .start-wave-big-btn {
+    padding: 12px 30px;
+    font-size: 18px;
+  }
+
+  .homeBtn {
+    left: max(12px, calc(var(--sai-left) + 4px));
+    top: max(8px, var(--sai-top));
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+}
+
+/* Phone Portrait (480px and below) */
+@media (max-width: 480px) {
+  #game-container {
+    flex-direction: column;
+  }
+
+  #sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    width: 100% !important;
+    max-width: 100%;
+    min-width: 0;
+    height: auto;
+    max-height: 50vh;
+    border-radius: 20px 20px 0 0;
+    border-left: none;
+    border-top: 3px solid var(--border);
+    padding: 12px 12px calc(12px + var(--sai-bottom));
+    box-shadow: 0 -8px 30px rgba(0,0,0,0.6);
+    overflow-y: auto;
+    z-index: 50;
+  }
+
+  #game {
+    height: calc(50vh - var(--sai-top, 0px));
+    margin-bottom: 0;
+  }
+
+  .tower-buttons {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+
+  .tower-btn {
+    padding: 10px 6px;
+    min-height: 70px;
+  }
+
+  .tower-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .tower-name {
+    font-size: 10px;
+  }
+
+  .tower-cost {
+    font-size: 9px;
+  }
+
+  #resources {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4px;
+    padding: 10px;
+  }
+
+  .resource-item {
+    font-size: 12px;
+    padding: 4px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 6px;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  #game-controls {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .control-btn {
+    padding: 12px 10px;
+    font-size: 12px;
+  }
+
+  #tower-selection h3,
+  #tower-info h3 {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  #game-info {
+    display: none;
+  }
+
+  .homeBtn {
+    left: max(8px, var(--sai-left));
+    top: max(8px, var(--sai-top));
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .menu-content {
+    padding: 16px;
+    max-width: 100%;
+    margin: 0 8px;
+  }
+
+  .menu-content h1 {
+    font-size: 24px;
+    margin-bottom: 12px;
+  }
+
+  .subtitle {
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+
+  .difficulty-selection h3 {
+    font-size: 15px;
+    margin-bottom: 12px;
+  }
+
+  .menu-btn {
+    padding: 14px 16px;
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  .instructions {
+    padding: 10px;
+  }
+
+  .instructions h4 {
+    font-size: 12px;
+    margin-bottom: 8px;
+  }
+
+  .instructions li {
+    font-size: 11px;
+    margin-bottom: 6px;
+  }
+
+  .start-wave-big-btn {
+    padding: 14px 28px;
+    font-size: 16px;
+    letter-spacing: 2px;
+  }
+
+  #start-wave-overlay {
+    top: 40px;
+  }
+
+  .wave-announcement-content {
+    padding: 14px 30px;
+  }
+
+  .wave-label {
+    font-size: 14px;
+    letter-spacing: 4px;
+  }
+
+  .wave-number {
+    font-size: 48px;
+  }
+
+  .wave-sublabel {
+    font-size: 16px;
+    letter-spacing: 2px;
+  }
+
+  .wave-complete-content {
+    padding: 20px 30px;
+  }
+
+  .complete-label {
+    font-size: 24px;
+    letter-spacing: 2px;
+  }
+
+  .complete-message {
+    font-size: 13px;
+  }
+
+  /* Tower info panel adjustments */
+  #tower-info {
+    padding: 10px;
+  }
+
+  #tower-stats {
+    padding: 8px;
+    margin-bottom: 8px;
+  }
+
+  .stat-row {
+    font-size: 11px;
+    padding: 3px 0;
+  }
+
+  .action-btn {
+    padding: 12px;
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+}
+
+/* Very Small Phones (375px and below) */
+@media (max-width: 375px) {
+  .tower-buttons {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+  }
+
+  .tower-btn {
+    padding: 8px 4px;
+    min-height: 60px;
+  }
+
+  .tower-icon {
+    width: 26px;
+    height: 26px;
+  }
+
+  .tower-name {
+    font-size: 9px;
+  }
+
+  .tower-cost {
+    font-size: 8px;
+  }
+
+  .menu-content h1 {
+    font-size: 20px;
+  }
+
+  .menu-btn {
+    padding: 12px 14px;
+    font-size: 12px;
+  }
+
+  .start-wave-big-btn {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+
+  .resource-item {
+    font-size: 11px;
+  }
+
+  .control-btn {
+    padding: 10px 8px;
+    font-size: 11px;
+  }
+}
+
+/* Touch Device Optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .tower-btn,
+  .control-btn,
+  .action-btn,
+  .menu-btn,
+  .start-wave-big-btn {
+    min-height: 48px;
+    min-width: 48px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  .tower-btn:active,
+  .control-btn:active,
+  .action-btn:active,
+  .menu-btn:active {
+    transform: scale(0.96);
+    transition: transform 0.1s;
+  }
+
+  .homeBtn {
+    min-height: 44px;
+    min-width: 44px;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Prevent accidental double-tap zoom */
+  * {
+    touch-action: manipulation;
+  }
+
+  /* Larger touch targets for volume slider */
+  .volume-slider input[type="range"]::-webkit-slider-thumb {
+    width: 28px;
+    height: 28px;
+  }
+
+  .volume-slider input[type="range"]::-moz-range-thumb {
+    width: 28px;
+    height: 28px;
+  }
+
+  .wave-complete-close {
+    min-width: 44px;
+    min-height: 44px;
+    font-size: 32px;
+  }
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

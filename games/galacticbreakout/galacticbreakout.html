@@ -7,10 +7,9 @@
   <link rel="icon" type="image/png" sizes="16x16" href="../../favicon_16x16.png" />
   <link rel="icon" type="image/png" sizes="32x32" href="../../favicon_32x32.png" />
   <link rel="icon" type="image/png" sizes="256x256" href="../../favicon_256x256.png" />
-  <link rel="stylesheet" href="breakout.css" />
+  <link rel="stylesheet" href="breakout.css?v=13" />
 </head>
 <body>
-  
   <a class="homeBtn" href="../../index.html">🏠 Home</a>
 
   
@@ -44,8 +43,25 @@
   <div id="activePowerups"></div>
 
   
-  <div id="touchHelper" style="display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(56, 189, 248, 0.2); border: 2px solid #38bdf8; border-radius: 12px; padding: 12px 20px; color: #38bdf8; font-size: 14px; z-index: 150; backdrop-filter: blur(10px);">
-    👆 Tap and hold to shoot
+  <!-- Mobile touch controls -->
+  <div id="mobileControls" style="display: none;">
+    <!-- Joystick on left side -->
+    <div id="joystickContainer">
+      <div id="joystickBase">
+        <div id="joystickKnob"></div>
+      </div>
+    </div>
+    <!-- Shoot button on right side -->
+    <button id="shootBtn">🔫</button>
+  </div>
+
+  <!-- Portrait orientation hint for mobile users in landscape -->
+  <div id="portraitHint">
+    <div class="portrait-hint-content">
+      <span class="portrait-hint-icon">📱</span>
+      <span class="portrait-hint-text">Rotate to portrait mode for best experience</span>
+      <button id="portraitHintDismiss" class="portrait-hint-btn">Got it</button>
+    </div>
   </div>
 
   
@@ -53,27 +69,116 @@
     <canvas id="gameCanvas"></canvas>
   </div>
 
-  
+  <!-- Eruda mobile console -->
+  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+  <script>eruda.init();</script>
+
   <div id="overlay">
     <div id="menuContent"></div>
   </div>
 
   
-  <script src="js/config.js"></script>
+  <script src="js/config.js?v=3"></script>
   <script src="js/storage.js"></script>
-  <script src="js/engine.js"></script>
+  <script src="js/engine.js?v=3"></script>
   <script src="js/galacticassault-assets.js"></script>
-  <script src="js/galacticassault-background.js"></script>
-  <script src="js/galacticassault-entities.js"></script>
+  <script src="js/galacticassault-background.js?v=2"></script>
+  <script src="js/galacticassault-entities.js?v=2"></script>
   
   <script src="js/ui.js"></script>
-  <script src="js/galacticassault-game.js"></script>
+  <script src="js/galacticassault-game.js?v=14"></script>
 
   
   <script>
-    
+
     window.addEventListener('DOMContentLoaded', () => {
       console.log('🚀 Galactic Assault - Initializing...');
+
+      // Mobile Debug System
+      const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+      const debugPanel = document.getElementById('mobileDebug');
+      const debugLog = document.getElementById('debugLog');
+      let debugMessages = [];
+
+      function mobileLog(msg) {
+        const time = new Date().toLocaleTimeString().split(' ')[0];
+        debugMessages.unshift(`[${time}] ${msg}`);
+        if (debugMessages.length > 20) debugMessages.pop();
+        if (debugLog) {
+          debugLog.innerHTML = debugMessages.join('<br>');
+        }
+        console.log('[DEBUG]', msg);
+      }
+
+      // Show debug panel on mobile (triple-tap to toggle)
+      if (isTouchDevice && debugPanel) {
+        debugPanel.style.display = 'block';
+        mobileLog('Debug enabled');
+        mobileLog(`Touch: ${isTouchDevice}`);
+        mobileLog(`Screen: ${window.innerWidth}x${window.innerHeight}`);
+
+        let tapCount = 0;
+        let tapTimer = null;
+        document.addEventListener('touchend', (e) => {
+          tapCount++;
+          if (tapTimer) clearTimeout(tapTimer);
+          tapTimer = setTimeout(() => {
+            if (tapCount >= 3) {
+              debugPanel.style.display = debugPanel.style.display === 'none' ? 'block' : 'none';
+            }
+            tapCount = 0;
+          }, 300);
+        });
+      }
+
+      // Override console.log for mobile
+      const originalLog = console.log;
+      console.log = function(...args) {
+        originalLog.apply(console, args);
+        if (isTouchDevice && debugLog) {
+          mobileLog(args.map(a => typeof a === 'object' ? JSON.stringify(a) : a).join(' '));
+        }
+      };
+
+      // Track touch events on mode cards
+      document.addEventListener('touchstart', (e) => {
+        if (e.target.closest('.mode-card')) {
+          mobileLog('Touch START on mode-card');
+        }
+      }, { passive: true });
+
+      document.addEventListener('touchend', (e) => {
+        if (e.target.closest('.mode-card')) {
+          const mode = e.target.closest('.mode-card').dataset?.mode;
+          mobileLog(`Touch END on mode-card: ${mode}`);
+        }
+      }, { passive: true });
+
+      document.addEventListener('click', (e) => {
+        if (e.target.closest('.mode-card')) {
+          const mode = e.target.closest('.mode-card').dataset?.mode;
+          mobileLog(`CLICK on mode-card: ${mode}`);
+        }
+      }, { passive: true });
+
+      // Log Game state changes
+      setInterval(() => {
+        if (typeof Game !== 'undefined' && debugLog) {
+          const stateEl = document.getElementById('debugState');
+          if (!stateEl) {
+            const div = document.createElement('div');
+            div.id = 'debugState';
+            div.style.borderTop = '1px solid #0f0';
+            div.style.marginTop = '4px';
+            div.style.paddingTop = '4px';
+            debugLog.parentNode.appendChild(div);
+          }
+          const st = document.getElementById('debugState');
+          if (st) {
+            st.innerHTML = `State: ${Game.state}<br>Player: ${Game.player ? 'OK' : 'NULL'}<br>Audio: ${AudioManager.audioUnlocked ? 'unlocked' : 'locked'}`;
+          }
+        }
+      }, 500);
 
       const canvas = document.getElementById('gameCanvas');
       if (!canvas) {
@@ -109,42 +214,73 @@
       console.log('📌 Step 4: Setup audio unlock');
       function unlockAudio() {
         console.log('🔓 User interaction detected - unlocking audio...');
+
+        // Unlock audio on mobile first
+        AudioManager.unlockAudio();
+
+        // Then try to play music
         AudioManager.playMusic();
 
-        
+        // Log status after a delay
         setTimeout(() => {
-          AudioManager.getStatus();
+          const status = AudioManager.getStatus();
+          console.log('🔊 Audio status:', status);
         }, 1000);
       }
 
-      
+      // Listen for user interaction to unlock audio
       ['click', 'touchstart', 'keydown'].forEach(eventType => {
         document.addEventListener(eventType, unlockAudio, { once: true });
       });
 
       console.log('✅ Initialization complete. Click anywhere to start audio.');
 
-      
-      const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+      // Show/hide mobile controls based on game state
+      // isTouchDevice already declared above
       if (isTouchDevice) {
-        const touchHelper = document.getElementById('touchHelper');
-
-        
-        let hasShot = false;
+        const mobileControls = document.getElementById('mobileControls');
         setInterval(() => {
           if (Game.state === 'playing' || Game.state === 'boss') {
-            if (Game.bullets && Game.bullets.length > 0) {
-              hasShot = true;
-            }
-            touchHelper.style.display = hasShot ? 'none' : 'block';
+            mobileControls.style.display = 'block';
           } else {
-            touchHelper.style.display = 'none';
-            hasShot = false;
+            mobileControls.style.display = 'none';
           }
         }, 100);
       }
 
       
+      // Portrait orientation hint for mobile users
+      const portraitHint = document.getElementById('portraitHint');
+      const portraitHintDismiss = document.getElementById('portraitHintDismiss');
+      let portraitHintDismissed = false;
+
+      function checkOrientation() {
+        const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+        const isLandscape = window.innerWidth > window.innerHeight;
+        const isSmallScreen = window.innerWidth < 900 || window.innerHeight < 500;
+
+        // Show hint on mobile devices in landscape mode (unless dismissed)
+        if (isTouchDevice && isLandscape && isSmallScreen && !portraitHintDismissed) {
+          portraitHint.style.display = 'flex';
+        } else {
+          portraitHint.style.display = 'none';
+        }
+      }
+
+      if (portraitHintDismiss) {
+        portraitHintDismiss.addEventListener('click', () => {
+          portraitHintDismissed = true;
+          portraitHint.style.display = 'none';
+        });
+      }
+
+      // Check orientation on load and resize
+      checkOrientation();
+      window.addEventListener('resize', checkOrientation);
+      window.addEventListener('orientationchange', () => {
+        setTimeout(checkOrientation, 100);
+      });
+
       const muteBtn = document.getElementById('muteBtn');
       if (muteBtn) {
         muteBtn.addEventListener('click', () => {

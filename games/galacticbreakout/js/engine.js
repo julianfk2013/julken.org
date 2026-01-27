@@ -141,10 +141,21 @@ const AudioManager = {
   initialized: false,
   filesLoaded: 0,
   totalFiles: 0,
+  audioUnlocked: false,
 
   init() {
     this.settings = Storage.getSettings();
     this.initialized = true;
+    console.log('🔊 AudioManager initialized');
+  },
+
+  unlockAudio() {
+    if (this.audioUnlocked) return;
+
+    // Modern iOS/Safari unlocks audio on user interaction automatically
+    // Just mark as unlocked - no need to play sounds which can cause audio glitches
+    this.audioUnlocked = true;
+    console.log('🔓 Audio unlocked');
   },
 
   loadSound(name, src) {
@@ -156,20 +167,27 @@ const AudioManager = {
     this.totalFiles++;
     const audio = new Audio();
 
+    // Store immediately so it's available even before fully loaded
+    audio.volume = this.settings?.sfxVolume || 0.7;
+    this.sounds[name] = audio;
+
     audio.addEventListener('canplaythrough', () => {
       this.filesLoaded++;
-      audio.volume = this.settings.sfxVolume;
-      this.sounds[name] = audio;
+      console.log(`🔊 Sound ready: ${name}`);
+    }, { once: true });
+
+    audio.addEventListener('loadeddata', () => {
+      console.log(`🔊 Sound loaded: ${name}`);
     }, { once: true });
 
     audio.addEventListener('error', (e) => {
       console.error(`❌ Failed to load sound: ${name} from ${src}`, e);
-      console.error('   Check if file exists:', src);
       this.filesLoaded++;
     });
 
     audio.src = src;
     audio.preload = 'auto';
+    audio.load(); // Explicitly call load() for mobile
   },
 
   loadMusic(src) {
@@ -181,24 +199,31 @@ const AudioManager = {
     this.totalFiles++;
     this.music = new Audio(src);
     this.music.loop = true;
-    this.music.volume = this.settings.musicVolume;
+    this.music.volume = this.settings?.musicVolume || 0.5;
 
     this.music.addEventListener('canplaythrough', () => {
       this.filesLoaded++;
+      console.log('🎵 Music ready');
     }, { once: true });
 
     this.music.addEventListener('error', (e) => {
       console.error(`❌ Failed to load music from ${src}`, e);
-      console.error('   Check if file exists:', src);
       this.filesLoaded++;
     });
 
     this.music.preload = 'auto';
+    this.music.load(); // Explicitly call load() for mobile
   },
 
   playSound(name, pitchVariation = 0) {
     if (!this.sounds[name]) {
-      console.warn(`⚠️ Sound not loaded: ${name}`);
+      console.warn(`⚠️ Sound not found: ${name}`);
+      return;
+    }
+
+    // Check if audio element has loaded
+    if (this.sounds[name].readyState < 2) {
+      // Audio not ready yet, skip silently
       return;
     }
 
@@ -210,13 +235,15 @@ const AudioManager = {
         sound.playbackRate = 1 + (Math.random() - 0.5) * pitchVariation;
       }
 
-      sound.play()
-        .catch((e) => {
-          console.error(`❌ Failed to play sound: ${name}`, e.message);
-          if (e.name === 'NotAllowedError') {
-            console.error('   → User interaction required. Click anywhere first.');
+      const playPromise = sound.play();
+      if (playPromise) {
+        playPromise.catch((e) => {
+          // Silently ignore NotAllowedError - will work after user interaction
+          if (e.name !== 'NotAllowedError') {
+            console.warn(`⚠️ Sound play failed: ${name}`, e.message);
           }
         });
+      }
     } catch (e) {
       console.error(`❌ Error playing sound: ${name}`, e);
     }
@@ -228,14 +255,27 @@ const AudioManager = {
       return;
     }
 
-    this.music.play()
-      .then(() => {})
-      .catch((e) => {
-        console.error('❌ Failed to play music:', e.message);
-        if (e.name === 'NotAllowedError') {
-          console.error('   → User interaction required. Click anywhere first.');
-        }
-      });
+    // Check if music is ready
+    if (this.music.readyState < 2) {
+      console.log('🎵 Music not ready yet, will play when ready');
+      this.music.addEventListener('canplaythrough', () => {
+        this.music.play().catch(() => {});
+      }, { once: true });
+      return;
+    }
+
+    const playPromise = this.music.play();
+    if (playPromise) {
+      playPromise
+        .then(() => {
+          console.log('🎵 Music playing');
+        })
+        .catch((e) => {
+          if (e.name !== 'NotAllowedError') {
+            console.warn('⚠️ Music play failed:', e.message);
+          }
+        });
+    }
   },
 
   pauseMusic() {

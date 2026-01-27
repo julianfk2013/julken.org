@@ -63,27 +63,27 @@ const UI = {
         <div class="scanline-overlay"></div>
         <h2>Select Game Mode</h2>
         <div class="mode-grid">
-          <div class="mode-card" onclick="Game.startGame('classic'); UI.hideOverlay();">
+          <div class="mode-card" data-mode="classic">
             <h3>Classic</h3>
             <p>Progressive waves with boss fights every 5 waves</p>
           </div>
-          <div class="mode-card" onclick="Game.startGame('survival'); UI.hideOverlay();">
+          <div class="mode-card" data-mode="survival">
             <h3>Survival</h3>
             <p>Enemies get faster and more aggressive over time</p>
           </div>
-          <div class="mode-card" onclick="Game.startGame('timeattack'); UI.hideOverlay();">
+          <div class="mode-card" data-mode="timeattack">
             <h3>Time Attack</h3>
             <p>Instant enemy spawns. Race the clock for bonus points</p>
           </div>
-          <div class="mode-card" onclick="Game.startGame('bossrush'); UI.hideOverlay();">
+          <div class="mode-card" data-mode="bossrush">
             <h3>Boss Rush</h3>
             <p>5 bosses. Each stronger and faster than the last</p>
           </div>
-          <div class="mode-card" onclick="Game.startGame('daily'); UI.hideOverlay();">
+          <div class="mode-card" data-mode="daily">
             <h3>Challenge</h3>
             <p>5 bosses at once. Extreme difficulty for experts</p>
           </div>
-          <div class="mode-card" onclick="Game.startGame('zen'); UI.hideOverlay();">
+          <div class="mode-card" data-mode="zen">
             <h3>Zen Mode</h3>
             <p>Slow enemies, no bosses. Infinite HP. Pure relaxation</p>
           </div>
@@ -91,6 +91,20 @@ const UI = {
         <button class="btn" onclick="UI.showMenu()">Back</button>
       </div>
     `;
+
+    // Add touch/click handlers for iOS compatibility (onclick on divs is unreliable on iPad)
+    menuContent.querySelectorAll('.mode-card[data-mode]').forEach(card => {
+      const mode = card.dataset.mode;
+      const startGame = () => {
+        Game.startGame(mode);
+        UI.hideOverlay();
+      };
+      card.addEventListener('click', startGame);
+      card.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        startGame();
+      });
+    });
   },
 
   hideOverlay() {

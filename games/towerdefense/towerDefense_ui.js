@@ -37,13 +37,17 @@ class GameUI {
       pauseOverlay: document.getElementById('pause-overlay'),
       volumeSlider: document.getElementById('volume-slider'),
       volumeRange: document.getElementById('volume-range'),
-      volumeValue: document.getElementById('volume-value')
+      volumeValue: document.getElementById('volume-value'),
+      orientationHint: document.getElementById('orientationHint'),
+      dismissOrientation: document.getElementById('dismissOrientation')
     };
 
     this.waveAnnouncementTimeout = null;
     this.waveCompleteTimeout = null;
     this.volumeSliderVisible = false;
+    this.orientationDismissed = false;
     this.setupEventListeners();
+    this.setupOrientationHint();
   }
 
   setupEventListeners() {
@@ -337,5 +341,43 @@ class GameUI {
   hideVolumeSlider() {
     this.volumeSliderVisible = false;
     this.elements.volumeSlider.classList.add('hidden');
+  }
+
+  setupOrientationHint() {
+    // Only show on touch devices
+    const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    if (!isTouchDevice || !this.elements.orientationHint) return;
+
+    // Check orientation and show hint if portrait
+    const checkOrientation = () => {
+      if (this.orientationDismissed) return;
+
+      const isPortrait = window.innerHeight > window.innerWidth;
+      if (isPortrait) {
+        this.elements.orientationHint.classList.add('show');
+      } else {
+        this.elements.orientationHint.classList.remove('show');
+      }
+    };
+
+    // Dismiss button handler
+    if (this.elements.dismissOrientation) {
+      this.elements.dismissOrientation.addEventListener('click', () => {
+        this.orientationDismissed = true;
+        this.elements.orientationHint.classList.remove('show');
+      });
+      this.elements.dismissOrientation.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        this.orientationDismissed = true;
+        this.elements.orientationHint.classList.remove('show');
+      }, { passive: false });
+    }
+
+    // Check on load and orientation change
+    checkOrientation();
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(checkOrientation, 100);
+    });
   }
 }

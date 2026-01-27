@@ -24,15 +24,28 @@ const Background = {
   solarFlare: null,
   energyWaves: [],
 
+  // Performance settings - will be set by Game
+  lowQuality: false,
+
   init(width, height) {
     this.width = width;
     this.height = height;
 
-    this.generateStars('far', 100, 1, 0.4, 0.3);
-    this.generateStars('mid', 60, 1.5, 0.6, 0.8);
-    this.generateStars('near', 30, 2, 0.9, 1.5);
+    // Check if we're on mobile/tablet/low quality - all touch devices get low quality
+    const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    this.lowQuality = isTouchDevice || window.innerWidth < 768;
 
-    for (let i = 0; i < 80; i++) {
+    // Reduced counts for mobile
+    const starMultiplier = this.lowQuality ? 0.3 : 1;
+    const dustCount = this.lowQuality ? 20 : 80;
+    const nebulaeCount = this.lowQuality ? 2 : 5;
+    const asteroidCount = this.lowQuality ? 5 : 15;
+
+    this.generateStars('far', Math.floor(100 * starMultiplier), 1, 0.4, 0.3);
+    this.generateStars('mid', Math.floor(60 * starMultiplier), 1.5, 0.6, 0.8);
+    this.generateStars('near', Math.floor(30 * starMultiplier), 2, 0.9, 1.5);
+
+    for (let i = 0; i < dustCount; i++) {
       this.dust.push({
         x: Math.random() * this.width,
         y: Math.random() * this.height,
@@ -43,7 +56,7 @@ const Background = {
       });
     }
 
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < nebulaeCount; i++) {
       this.nebulae.push({
         x: Math.random() * this.width,
         y: Math.random() * this.height,
@@ -55,7 +68,7 @@ const Background = {
       });
     }
 
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < asteroidCount; i++) {
       this.asteroids.push({
         x: Math.random() * this.width,
         y: Math.random() * this.height,
@@ -66,7 +79,8 @@ const Background = {
       });
     }
 
-    if (Math.random() < 0.5) {
+    // Skip stations on mobile
+    if (!this.lowQuality && Math.random() < 0.5) {
       this.stations.push({
         x: Math.random() * this.width,
         y: Math.random() * this.height * 0.5,
@@ -119,12 +133,15 @@ const Background = {
   update(dt) {
     const scrollMultiplier = this.scrollSpeed;
 
+    // Stars - simplified alpha on mobile (no twinkle)
     ['far', 'mid', 'near'].forEach(layer => {
       this.stars[layer].forEach(star => {
         star.y += star.speed * scrollMultiplier * dt * 60;
-        star.twinkle += star.twinkleSpeed * dt;
 
-        star.alpha = star.baseAlpha * (0.7 + 0.3 * Math.sin(star.twinkle));
+        if (!this.lowQuality) {
+          star.twinkle += star.twinkleSpeed * dt;
+          star.alpha = star.baseAlpha * (0.7 + 0.3 * Math.sin(star.twinkle));
+        }
 
         if (star.y > this.height) {
           star.y = 0;
@@ -133,9 +150,12 @@ const Background = {
       });
     });
 
+    // Dust - simplified movement on mobile
     this.dust.forEach(particle => {
       particle.y += particle.speed * scrollMultiplier * dt * 30;
-      particle.x += Math.sin(particle.y * 0.01) * particle.drift * dt;
+      if (!this.lowQuality) {
+        particle.x += Math.sin(particle.y * 0.01) * particle.drift * dt;
+      }
 
       if (particle.y > this.height) {
         particle.y = 0;
@@ -145,12 +165,17 @@ const Background = {
       if (particle.x > this.width) particle.x = 0;
     });
 
-    this.nebulae.forEach(nebula => {
-      nebula.pulsePhase += nebula.pulseSpeed * dt;
-    });
+    // Nebulae pulse - skip on mobile
+    if (!this.lowQuality) {
+      this.nebulae.forEach(nebula => {
+        nebula.pulsePhase += nebula.pulseSpeed * dt;
+      });
+    }
 
+    // Meteors - reduced on mobile
+    const meteorInterval = this.lowQuality ? 6 : 3;
     this.meteorSpawnTimer += dt;
-    if (this.meteorSpawnTimer >= this.meteorSpawnInterval) {
+    if (this.meteorSpawnTimer >= meteorInterval && this.meteors.length < (this.lowQuality ? 2 : 5)) {
       this.meteorSpawnTimer = 0;
       this.meteors.push({
         x: Math.random() * this.width * 0.4,
@@ -173,11 +198,13 @@ const Background = {
       m.rotation += m.rotationSpeed * dt;
       m.life += dt;
 
-      m.trail.push({ x: m.x, y: m.y, alpha: 1 });
-      if (m.trail.length > 15) m.trail.shift();
-
-      m.trail.forEach(t => { t.alpha -= dt * 1.5; });
-      m.trail = m.trail.filter(t => t.alpha > 0);
+      // Trail - reduced on mobile
+      if (!this.lowQuality) {
+        m.trail.push({ x: m.x, y: m.y, alpha: 1 });
+        if (m.trail.length > 15) m.trail.shift();
+        m.trail.forEach(t => { t.alpha -= dt * 1.5; });
+        m.trail = m.trail.filter(t => t.alpha > 0);
+      }
 
       if (m.life > m.maxLife || m.x > this.width + 50 || m.y > this.height + 50) {
         this.meteors.splice(i, 1);
@@ -200,57 +227,60 @@ const Background = {
       });
     });
 
-    if (Math.random() < 0.005) {
-      const startX = Math.random() * this.width;
-      const startY = 0;
-      const endX = startX + (Math.random() - 0.5) * 200;
-      const endY = Math.random() * this.height * 0.4;
+    // Skip lightning and solar flares on mobile
+    if (!this.lowQuality) {
+      if (Math.random() < 0.005) {
+        const startX = Math.random() * this.width;
+        const startY = 0;
+        const endX = startX + (Math.random() - 0.5) * 200;
+        const endY = Math.random() * this.height * 0.4;
 
-      this.lightningBolts.push({
-        points: this.generateLightningPath(startX, startY, endX, endY, 5),
-        life: 0.2,
-        color: '#38bdf8'
-      });
-    }
-
-    this.lightningBolts = this.lightningBolts.filter(bolt => {
-      bolt.life -= dt;
-      return bolt.life > 0;
-    });
-
-    if (!this.solarFlare && Math.random() < 0.002) {
-      this.solarFlare = {
-        x: Math.random() < 0.5 ? -100 : this.width + 100,
-        y: Math.random() * this.height,
-        life: 3,
-        maxLife: 3,
-        direction: Math.random() < 0.5 ? 1 : -1
-      };
-    }
-
-    if (this.solarFlare) {
-      this.solarFlare.life -= dt;
-      if (this.solarFlare.life <= 0) {
-        this.solarFlare = null;
+        this.lightningBolts.push({
+          points: this.generateLightningPath(startX, startY, endX, endY, 5),
+          life: 0.2,
+          color: '#38bdf8'
+        });
       }
-    }
 
-    if (Math.random() < 0.003) {
-      this.energyWaves.push({
-        y: -50,
-        speed: 150,
-        amplitude: 10 + Math.random() * 15,
-        frequency: 0.015 + Math.random() * 0.02,
-        color: ['#38bdf8', '#8b5cf6', '#22c55e'][Math.floor(Math.random() * 3)],
-        life: 2
+      this.lightningBolts = this.lightningBolts.filter(bolt => {
+        bolt.life -= dt;
+        return bolt.life > 0;
+      });
+
+      if (!this.solarFlare && Math.random() < 0.002) {
+        this.solarFlare = {
+          x: Math.random() < 0.5 ? -100 : this.width + 100,
+          y: Math.random() * this.height,
+          life: 3,
+          maxLife: 3,
+          direction: Math.random() < 0.5 ? 1 : -1
+        };
+      }
+
+      if (this.solarFlare) {
+        this.solarFlare.life -= dt;
+        if (this.solarFlare.life <= 0) {
+          this.solarFlare = null;
+        }
+      }
+
+      if (Math.random() < 0.003) {
+        this.energyWaves.push({
+          y: -50,
+          speed: 150,
+          amplitude: 10 + Math.random() * 15,
+          frequency: 0.015 + Math.random() * 0.02,
+          color: ['#38bdf8', '#8b5cf6', '#22c55e'][Math.floor(Math.random() * 3)],
+          life: 2
+        });
+      }
+
+      this.energyWaves = this.energyWaves.filter(wave => {
+        wave.y += wave.speed * dt;
+        wave.life -= dt;
+        return wave.y < this.height + 50 && wave.life > 0;
       });
     }
-
-    this.energyWaves = this.energyWaves.filter(wave => {
-      wave.y += wave.speed * dt;
-      wave.life -= dt;
-      return wave.y < this.height + 50 && wave.life > 0;
-    });
   },
 
   draw(ctx) {

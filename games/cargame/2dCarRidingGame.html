@@ -50,7 +50,20 @@
     #pauseHint { position:absolute; left:50%; bottom:16px; transform:translateX(-50%); background:rgba(0,0,0,.35); padding:6px 10px; border-radius:10px; pointer-events:none; opacity:.85; font-size:12px; }
 
   
-  #rotateHint { position:absolute; left:50%; top:14px; transform:translateX(-50%); background: rgba(0,0,0,.65); padding:8px 12px; border-radius:10px; font-weight:700; pointer-events:none; display:none; z-index:3; }
+  #rotateHint {
+      position:fixed; inset:0; z-index:100;
+      display:none; align-items:center; justify-content:center;
+      background:rgba(0,0,0,.92); backdrop-filter:blur(8px);
+      flex-direction:column; gap:20px; text-align:center; padding:20px;
+    }
+    #rotateHint.show { display:flex; }
+    #rotateHint .rotate-icon { font-size:4rem; animation:rotatePhone 2s ease-in-out infinite; }
+    #rotateHint h2 { margin:0; font-size:1.4rem; color:#4ade80; }
+    #rotateHint p { margin:0; opacity:.8; font-size:.95rem; max-width:280px; }
+    #rotateHint .dismiss-btn { background:rgba(74,222,128,.15); border:2px solid rgba(74,222,128,.4); color:#4ade80; padding:12px 28px; border-radius:10px; cursor:pointer; font-size:14px; font-weight:600; pointer-events:auto; }
+    @keyframes rotatePhone { 0%,100%{transform:rotate(0deg);} 50%{transform:rotate(90deg);} }
+    @media (orientation:landscape) { #rotateHint { display:none !important; } }
+    @media (hover:hover) and (pointer:fine) { #rotateHint { display:none !important; } }
 
     
   #touchControls { display:none; position:absolute; inset:0; pointer-events:none; z-index: 0; }
@@ -94,6 +107,9 @@
       #touchControls .tc-btn { width: 72px; height: 72px; }
     }
   </style>
+<!-- Mobile console debugger - remove after testing -->
+<script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script>
 </head>
 <body>
   <canvas id="game"></canvas>
@@ -125,7 +141,12 @@
 
     <div id="toast"></div>
     <div id="pauseHint">ESC to Pause/Resume</div>
-  <div id="rotateHint">Rotate your device for a better view</div>
+  <div id="rotateHint" aria-hidden="true">
+    <div class="rotate-icon">📱</div>
+    <h2>Rotate Your Device</h2>
+    <p>This game plays best in landscape mode. Please rotate your phone for the best experience!</p>
+    <button class="dismiss-btn" id="dismissRotate">Play Anyway</button>
+  </div>
 
 
     <div id="touchControls" aria-hidden="true">
@@ -245,10 +266,14 @@
       bush:      { w:120, h:110, hb:[0.2,0.3,0.6,0.5],  src:'drive_assets/bush.png' },
       billboard: { w:260, h:160, hb:[0.1,0.2,0.8,0.6],  src:'drive_assets/billboard.png' },
   
-  usercar:   { w:120, h:220, hb:[0.18,0.18,0.64,0.68], src:'drive_assets/usercar.png' }
+  usercar:   { w:120, h:220, hb:[0.18,0.18,0.64,0.68], src:'drive_assets/bluecar.png' }
     };
     const IMAGES = {};
     let spritesReady = false;
+    // Helper to check if image is valid (not broken)
+    function isImageValid(img) {
+      return img && img.complete && img.naturalWidth > 0 && img.naturalHeight > 0;
+    }
   (function loadSprites(){
       let left=0;
       for (const k in SPRITES_META){
@@ -256,7 +281,7 @@
         img.decoding = 'async';
         img.src = SPRITES_META[k].src;
         img.onload = ()=>{ if(--left<=0) spritesReady=true; };
-        img.onerror = ()=>{ if(--left<=0) spritesReady=true; };
+        img.onerror = ()=>{ console.warn('Failed to load sprite:', k); if(--left<=0) spritesReady=true; };
         IMAGES[k]=img; left++;
       }
       if(left===0) spritesReady=true;
@@ -450,20 +475,8 @@
         osc.connect(g).connect(ac.destination); osc.start(); osc.stop(ac.currentTime+0.2);
       }catch{}
     }
-    function playCoin(){
-      
-      try{
-        const ac=getAudio(); const osc=ac.createOscillator(); const g=ac.createGain();
-        osc.type='sine'; osc.frequency.setValueAtTime(880, ac.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(1320, ac.currentTime+0.06);
-        g.gain.setValueAtTime(0, ac.currentTime);
-        g.gain.linearRampToValueAtTime(0.18*settings.volume, ac.currentTime+0.01);
-        g.gain.exponentialRampToValueAtTime(0.0001, ac.currentTime+0.18);
-        osc.connect(g).connect(ac.destination); osc.start(); osc.stop(ac.currentTime+0.2);
-      }catch(e){}
-    }
 
-    
+
     let state='menu';
     let score=0, coins=0, coinTimer=0;
     let baseSpeed=220, speedMul=1, elapsed=0;
@@ -523,6 +536,7 @@
   function togglePause(){ if(state==='play'){ state='pause'; toast('Paused'); } else if(state==='pause'){ state='play'; toast('Resumed'); } updateTouchUI(); updateUIState(); }
     if (ui.start) {
       ui.start.addEventListener('click', () => { if(state!=='play') start(); });
+      ui.start.addEventListener('touchstart', (e) => { e.preventDefault(); if(state!=='play') start(); }, { passive: false });
       ui.start.addEventListener('keydown', (e)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); if(state!=='play') start(); }});
     }
 
@@ -534,11 +548,21 @@
       const show = isMobileLike();
       el.style.display = show ? 'block' : 'none';
     }
+    let rotateDismissed = false;
     function updateRotateHint(){
       const rh = document.getElementById('rotateHint'); if (!rh) return;
+      if (rotateDismissed) { rh.classList.remove('show'); return; }
       const show = isMobileLike() && isPortrait();
-      rh.style.display = show ? 'block' : 'none';
+      if (show) rh.classList.add('show'); else rh.classList.remove('show');
     }
+    // Setup dismiss button
+    document.addEventListener('DOMContentLoaded', () => {
+      const dismissBtn = document.getElementById('dismissRotate');
+      if (dismissBtn) {
+        dismissBtn.addEventListener('click', () => { rotateDismissed = true; updateRotateHint(); });
+        dismissBtn.addEventListener('touchstart', (e) => { e.preventDefault(); rotateDismissed = true; updateRotateHint(); }, { passive: false });
+      }
+    });
 
     
     function getScale(){
@@ -622,7 +646,7 @@
       ctx.ellipse(dr.x+dr.w/2, dr.y+dr.h*0.95, dr.w*0.55, dr.h*0.18, 0,0,Math.PI*2);
       ctx.fill();
       
-      if (spritesReady && IMAGES[o.type] && IMAGES[o.type].complete) {
+      if (spritesReady && isImageValid(IMAGES[o.type])) {
         ctx.drawImage(IMAGES[o.type], dr.x, dr.y, dr.w, dr.h);
       } else {
         ctx.save();
@@ -648,7 +672,7 @@
       
       ctx.fillStyle='rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(dr.x+dr.w/2, dr.y+dr.h*0.95, dr.w*0.55, dr.h*0.18, 0,0,Math.PI*2); ctx.fill();
       
-      if (spritesReady && IMAGES[c.type] && IMAGES[c.type].complete) { ctx.drawImage(IMAGES[c.type], dr.x, dr.y, dr.w, dr.h); }
+      if (spritesReady && isImageValid(IMAGES[c.type])) { ctx.drawImage(IMAGES[c.type], dr.x, dr.y, dr.w, dr.h); }
       else {
         
         ctx.save(); ctx.translate(dr.x+dr.w/2, dr.y+dr.h*0.55); ctx.scale(dr.w/100, dr.h/160);
@@ -671,7 +695,7 @@
       
       const dr = spriteDrawRect(d.type, d.x, d.z, d.base);
       const im = IMAGES[d.type];
-      if (im && im.complete) {
+      if (isImageValid(im)) {
         ctx.drawImage(im, dr.x, dr.y, dr.w, dr.h);
       } else {
         
@@ -760,7 +784,7 @@
       }
       
       const pseudo = { w: carWidth*0.9, h: carHeight*0.9 };
-      if (spritesReady && IMAGES['usercar'] && IMAGES['usercar'].complete) {
+      if (spritesReady && isImageValid(IMAGES['usercar'])) {
         
         if (!flash){
           ctx.drawImage(IMAGES['usercar'], -pseudo.w/2, -pseudo.h, pseudo.w, pseudo.h);
@@ -1183,27 +1207,24 @@
       }catch(e){ console.error('TEST ERROR:', e); }
     }
 
-    function togglePause(){ if (state==='play'){ state='pause'; toast('Paused'); } else if (state==='pause'){ state='play'; toast('Resumed'); } }
 
-    function start(){
-      score=0; coins=0; coinTimer=0; speedMul=1; baseSpeed=220; elapsed=0;
-      player.x=0; player.vx=0; player.tilt=0; player.flyTime=0; player.invuln=1.0;
-      obstacles.length=0; decors.length=0; traffic.length=0; pickups.length=0;
-      spawnTimer=0; decorTimer=0; trafficTimer=0; pickupTimer=0;
-      fewerTimer=0; spawnRateMul=1; coinRushTimer=0;
-      shakeTime=0; shakeAmt=0;
-      state='play'; ui.overlay.style.display='none';
-  ui.title.textContent = '2D Car Dodging Game';
-      refreshShop(); toast('Good luck! Best: '+bestScore);
-    }
-
-    
   resize();
   setupTouchControls();
   loadCoinAudio();
     requestAnimationFrame(frame);
   updateUIState();
   setTimeout(runTests, 10);
+
+  // Fix for mobile: ensure resize runs properly after DOM is ready
+  setTimeout(resize, 50);
+  setTimeout(resize, 200);
+  window.addEventListener('orientationchange', () => {
+    setTimeout(resize, 100);
+    setTimeout(resize, 300);
+  });
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) setTimeout(resize, 100);
+  });
 
 
   

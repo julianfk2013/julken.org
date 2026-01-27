@@ -665,6 +665,85 @@ html, body {
   }
 }
 
+/* Very Small Phones (375px) */
+@media (max-width: 375px) {
+  .menu, .gameover, .stats-view {
+    padding: 16px;
+    margin: 8px;
+    border-radius: 14px;
+  }
+
+  .menu h1, .gameover h2, .stats-view h2 {
+    font-size: 22px;
+    margin-bottom: 12px;
+  }
+
+  .subtitle {
+    font-size: 12px;
+    margin-bottom: 16px;
+  }
+
+  .btn {
+    padding: 12px 16px;
+    font-size: 13px;
+    min-height: 48px;
+  }
+
+  .menu-buttons {
+    gap: 8px;
+  }
+
+  .hud {
+    height: 50px;
+    padding: 0 12px;
+  }
+
+  .hud-item {
+    font-size: 14px;
+  }
+
+  .stats, .stats-grid {
+    gap: 8px;
+  }
+
+  .stat-card {
+    padding: 12px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+  }
+
+  .stat-value {
+    font-size: 22px;
+  }
+
+  .reset-confirmation {
+    padding: 24px;
+  }
+
+  .reset-confirmation h2 {
+    font-size: 22px;
+  }
+
+  .homeBtn {
+    left: max(8px, var(--sai-left));
+    top: max(8px, var(--sai-top));
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  .volumeBtn {
+    right: max(8px, var(--sai-right));
+    top: max(8px, var(--sai-top));
+  }
+
+  .volume-menu {
+    min-width: 160px;
+    padding: 12px;
+  }
+}
+
 @media (orientation: landscape) and (max-height: 600px) {
   .menu, .gameover, .stats-view {
     max-height: 90vh;

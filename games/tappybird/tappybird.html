@@ -89,6 +89,37 @@
       birdImg.onerror = () => console.error('Failed to load bird image');
       pipeImg.onerror = () => console.error('Failed to load pipe image');
       cloudImg.onerror = () => console.error('Failed to load cloud image');
+
+      // Mobile audio unlock - needs user interaction to enable audio
+      function unlockAudio() {
+        // Try to play and immediately pause to unlock audio context
+        Object.values(AudioManager.sounds).forEach(sound => {
+          if (sound) {
+            try {
+              sound.muted = true;
+              const p = sound.play();
+              if (p && p.then) {
+                p.then(() => { sound.pause(); sound.currentTime = 0; sound.muted = AudioManager.settings?.muted || false; })
+                  .catch(() => {});
+              }
+            } catch(e) {}
+          }
+        });
+        // Also create and resume an AudioContext if needed
+        try {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) {
+            const ctx = new AudioContext();
+            if (ctx.state === 'suspended') ctx.resume();
+          }
+        } catch(e) {}
+        console.log('Audio unlocked via user interaction');
+      }
+
+      // Add unlock listeners
+      ['click', 'touchstart', 'keydown'].forEach(eventType => {
+        document.addEventListener(eventType, unlockAudio, { once: true });
+      });
     });
   </script>
 </body>

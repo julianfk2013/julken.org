@@ -4,6 +4,19 @@ const Game = {
   state: 'menu',
   mode: 'classic',
 
+  // Performance/Graphics settings - auto-detected
+  performance: {
+    quality: 'high', // 'low', 'medium', 'high'
+    isMobile: false,
+    targetFPS: 60,
+    lastFPSCheck: 0,
+    frameTimeSamples: [],
+    particleMultiplier: 1,
+    effectsEnabled: true,
+    chromaticAberration: true,
+    shadowsEnabled: true
+  },
+
   player: null,
   bullets: [],
   enemies: [],
@@ -39,6 +52,21 @@ const Game = {
     touchmove: null
   },
 
+  // Flag to prevent duplicate mobile control setup
+  mobileControlsInitialized: false,
+
+  // Joystick controls state
+  joystick: {
+    active: false,
+    touchId: null,
+    centerX: 0,
+    centerY: 0,
+    knobX: 0,
+    knobY: 0,
+    maxRadius: 26,  // (base radius 45 - knob radius 19) to keep knob inside base
+    inputX: 0  // -1 to 1, analog input for smooth movement
+  },
+
   score: 0,
   combo: 1.0,
   killStreak: 0,
@@ -67,6 +95,12 @@ const Game = {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
 
+    // Auto-detect performance settings
+    this.detectPerformance();
+
+    // Set game dimensions based on device type
+    this.setupDimensions();
+
     this.resizeCanvas();
     this.listeners.resize = () => this.resizeCanvas();
     window.addEventListener('resize', this.listeners.resize);
@@ -76,6 +110,102 @@ const Game = {
     this.setupInput();
 
     this.loadAssets();
+  },
+
+  setupDimensions() {
+    // Detect tablet vs phone
+    const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    const screenWidth = Math.max(window.innerWidth, window.innerHeight);
+    const screenHeight = Math.min(window.innerWidth, window.innerHeight);
+
+    // Tablet: touch device with larger screen (iPad, Android tablets)
+    const isTablet = isTouchDevice && screenWidth >= 768 && screenHeight >= 600;
+
+    if (isTablet) {
+      // Use landscape dimensions for tablets
+      CONFIG.WIDTH = CONFIG.TABLET_WIDTH;
+      CONFIG.HEIGHT = CONFIG.TABLET_HEIGHT;
+      this.isTabletLayout = true;
+      console.log('📱 Tablet detected - using landscape layout:', CONFIG.WIDTH + 'x' + CONFIG.HEIGHT);
+    } else {
+      // Keep portrait dimensions for phones (already set as defaults)
+      this.isTabletLayout = false;
+      console.log('📱 Phone/Desktop detected - using portrait layout:', CONFIG.WIDTH + 'x' + CONFIG.HEIGHT);
+    }
+  },
+
+  detectPerformance() {
+    // Detect device type
+    const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    const screenWidth = Math.max(window.innerWidth, window.innerHeight);
+    const screenHeight = Math.min(window.innerWidth, window.innerHeight);
+
+    // Tablet detection: touch device with larger screen (iPad, Android tablets)
+    const isTablet = isTouchDevice && screenWidth >= 768 && screenHeight >= 600;
+    const isPhone = isTouchDevice && !isTablet;
+    const isSmallScreen = screenWidth < 768 || screenHeight < 500;
+    const hasLowMemory = navigator.deviceMemory && navigator.deviceMemory < 4;
+    const hasFewCores = navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4;
+
+    this.performance.isMobile = isTouchDevice;
+    this.performance.isTablet = isTablet;
+
+    // Determine quality level
+    if (isPhone || isTablet || isSmallScreen || hasLowMemory) {
+      // Phones and tablets get low quality for best performance
+      this.performance.quality = 'low';
+      this.performance.particleMultiplier = 0.3;
+      this.performance.effectsEnabled = false;
+      this.performance.chromaticAberration = false;
+      this.performance.shadowsEnabled = false;
+    } else if (hasFewCores) {
+      this.performance.quality = 'medium';
+      this.performance.particleMultiplier = 0.6;
+      this.performance.effectsEnabled = true;
+      this.performance.chromaticAberration = false;
+      this.performance.shadowsEnabled = false;
+    } else {
+      this.performance.quality = 'high';
+      this.performance.particleMultiplier = 1;
+      this.performance.effectsEnabled = true;
+      this.performance.chromaticAberration = true;
+      this.performance.shadowsEnabled = true;
+    }
+
+    console.log(`🎮 Performance: ${this.performance.quality} (tablet: ${isTablet}, phone: ${isPhone})`);
+  },
+
+  // Called during gameplay to adjust quality if FPS drops
+  adaptiveQuality(dt) {
+    if (this.performance.quality === 'low') return; // Already at lowest
+
+    this.performance.frameTimeSamples.push(dt);
+    if (this.performance.frameTimeSamples.length > 30) {
+      this.performance.frameTimeSamples.shift();
+    }
+
+    // Check FPS every 2 seconds
+    this.performance.lastFPSCheck += dt;
+    if (this.performance.lastFPSCheck > 2) {
+      this.performance.lastFPSCheck = 0;
+
+      const avgFrameTime = this.performance.frameTimeSamples.reduce((a, b) => a + b, 0) / this.performance.frameTimeSamples.length;
+      const avgFPS = 1 / avgFrameTime;
+
+      // If FPS drops below 40, reduce quality
+      if (avgFPS < 40 && this.performance.quality !== 'low') {
+        if (this.performance.quality === 'high') {
+          this.performance.quality = 'medium';
+          this.performance.chromaticAberration = false;
+          this.performance.particleMultiplier = 0.6;
+        } else {
+          this.performance.quality = 'low';
+          this.performance.effectsEnabled = false;
+          this.performance.particleMultiplier = 0.3;
+        }
+        console.log(`📉 Quality reduced to ${this.performance.quality} (FPS: ${avgFPS.toFixed(1)})`);
+      }
+    }
   },
 
   cleanup() {
@@ -111,19 +241,36 @@ const Game = {
     const container = document.getElementById('gameContainer');
     const aspectRatio = CONFIG.WIDTH / CONFIG.HEIGHT;
 
-    let width = container.clientWidth;
-    let height = container.clientHeight;
+    // Account for HUD height (50px) and minimal padding
+    const hudHeight = 55;
+    let availableWidth = container.clientWidth;
+    let availableHeight = container.clientHeight;
 
+    // On mobile, use nearly full height
+    if (window.innerHeight < 700) {
+      availableHeight = container.clientHeight;
+    }
+
+    let width = availableWidth;
+    let height = availableHeight;
+
+    // Maintain aspect ratio
     if (width / height > aspectRatio) {
       width = height * aspectRatio;
     } else {
       height = width / aspectRatio;
     }
 
+    // Cap at container size
+    width = Math.min(width, availableWidth);
+    height = Math.min(height, availableHeight);
+
     this.canvas.width = CONFIG.WIDTH;
     this.canvas.height = CONFIG.HEIGHT;
     this.canvas.style.width = width + 'px';
     this.canvas.style.height = height + 'px';
+
+    console.log('📐 Canvas resized:', { width, height, availableWidth, availableHeight });
   },
 
   loadAssets() {
@@ -209,47 +356,134 @@ const Game = {
     };
     this.canvas.addEventListener('mouseup', this.listeners.mouseup);
 
-    this.listeners.touchstart = e => {
-      if (this.state === 'playing' || this.state === 'boss') {
-        this.isShooting = true;
+    // Setup visible mobile controls (joystick + shoot button)
+    this.setupMobileControls();
+  },
 
-        const rect = this.canvas.getBoundingClientRect();
-        const scaleX = CONFIG.WIDTH / rect.width;
-        const scaleY = CONFIG.HEIGHT / rect.height;
-        const touch = e.touches[0];
+  setupMobileControls() {
+    const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
+    if (!isTouchDevice) {
+      console.log('👆 Not a touch device, skipping mobile controls setup');
+      return;
+    }
 
-        this.mouseX = (touch.clientX - rect.left) * scaleX;
-        this.mouseY = (touch.clientY - rect.top) * scaleY;
+    // Prevent duplicate setup
+    if (this.mobileControlsInitialized) {
+      return;
+    }
 
-        e.preventDefault();
-      }
-    };
-    this.canvas.addEventListener('touchstart', this.listeners.touchstart, { passive: false });
+    const mobileControls = document.getElementById('mobileControls');
+    const joystickBase = document.getElementById('joystickBase');
+    const joystickKnob = document.getElementById('joystickKnob');
+    const shootBtn = document.getElementById('shootBtn');
 
-    this.listeners.touchmove = e => {
-      const rect = this.canvas.getBoundingClientRect();
-      const scaleX = CONFIG.WIDTH / rect.width;
-      const scaleY = CONFIG.HEIGHT / rect.height;
+    if (!mobileControls || !joystickBase || !joystickKnob || !shootBtn) {
+      return;
+    }
+
+    this.mobileControlsInitialized = true;
+
+    // Show mobile controls
+    mobileControls.style.display = 'block';
+
+    // Joystick handling - optimized for performance
+    const handleJoystickStart = (e) => {
+      e.preventDefault();
       const touch = e.touches[0];
+      const rect = joystickBase.getBoundingClientRect();
 
-      this.mouseX = (touch.clientX - rect.left) * scaleX;
-      this.mouseY = (touch.clientY - rect.top) * scaleY;
-      e.preventDefault();
+      this.joystick.active = true;
+      this.joystick.touchId = touch.identifier;
+      this.joystick.centerX = rect.left + rect.width / 2;
+      this.joystick.centerY = rect.top + rect.height / 2;
+
+      this.updateJoystickPosition(touch.clientX, touch.clientY);
     };
-    this.canvas.addEventListener('touchmove', this.listeners.touchmove, { passive: false });
 
-    this.listeners.touchend = e => {
-      this.isShooting = false;
-      e.preventDefault();
-    };
-    this.canvas.addEventListener('touchend', this.listeners.touchend, { passive: false });
+    const handleJoystickMove = (e) => {
+      if (!this.joystick.active) return;
 
-    this.listeners.orientationchange = () => {
-      if (this.state === 'playing' || this.state === 'boss') {
-        this.pause();
+      // Fast path - check changedTouches first
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        if (e.changedTouches[i].identifier === this.joystick.touchId) {
+          e.preventDefault(); // Only prevent default when we're handling this touch
+          this.updateJoystickPosition(e.changedTouches[i].clientX, e.changedTouches[i].clientY);
+          return;
+        }
       }
     };
-    window.addEventListener('orientationchange', this.listeners.orientationchange);
+
+    const handleJoystickEnd = (e) => {
+      // Check if this is our joystick touch ending
+      for (let i = 0; i < e.changedTouches.length; i++) {
+        if (e.changedTouches[i].identifier === this.joystick.touchId) {
+          e.preventDefault();
+          this.joystick.active = false;
+          this.joystick.touchId = null;
+          this.joystick.inputX = 0;
+          this.keys['a'] = false;
+          this.keys['d'] = false;
+          joystickKnob.style.transform = 'translate(0,0)';
+          return;
+        }
+      }
+    };
+
+    joystickBase.addEventListener('touchstart', handleJoystickStart, { passive: false });
+    // Listen on document for move/end so dragging outside the base still works
+    document.addEventListener('touchmove', handleJoystickMove, { passive: false });
+    document.addEventListener('touchend', handleJoystickEnd, { passive: false });
+    document.addEventListener('touchcancel', handleJoystickEnd, { passive: false });
+
+    // Shoot button handling - instant response, no delay
+    shootBtn.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      this.isShooting = true;
+    }, { passive: false });
+
+    shootBtn.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      this.isShooting = false;
+    }, { passive: false });
+
+    shootBtn.addEventListener('touchcancel', (e) => {
+      e.preventDefault();
+      this.isShooting = false;
+    }, { passive: false });
+
+    // Store references for cleanup
+    this.mobileControlElements = { joystickBase, joystickKnob, shootBtn };
+  },
+
+  updateJoystickPosition(touchX, touchY) {
+    const joystickKnob = document.getElementById('joystickKnob');
+    if (!joystickKnob) return;
+
+    let dx = touchX - this.joystick.centerX;
+    let dy = touchY - this.joystick.centerY;
+
+    // Clamp to max radius
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    if (distance > this.joystick.maxRadius) {
+      dx = (dx / distance) * this.joystick.maxRadius;
+      dy = (dy / distance) * this.joystick.maxRadius;
+    }
+
+    // Update knob visual position
+    joystickKnob.style.transform = `translate(${dx}px, ${dy}px)`;
+
+    // Calculate analog input (-1 to 1) for smooth movement
+    const deadzone = 5; // Small deadzone to prevent drift
+    if (Math.abs(dx) < deadzone) {
+      this.joystick.inputX = 0;
+    } else {
+      // Normalize to -1 to 1 range, accounting for deadzone
+      this.joystick.inputX = (dx - Math.sign(dx) * deadzone) / (this.joystick.maxRadius - deadzone);
+    }
+
+    // Still set keys for compatibility, but use inputX for actual movement
+    this.keys['a'] = this.joystick.inputX < -0.1;
+    this.keys['d'] = this.joystick.inputX > 0.1;
   },
 
   createSeededRandom(seed) {
@@ -261,10 +495,10 @@ const Game = {
   },
 
   startGame(mode = 'classic', bossRushDifficulty = 1) {
-    this.setupInput();
+    // setupInput() is already called in init(), no need to call again
 
     this.mode = mode;
-    this.state = 'playing';
+    // Don't set state to 'playing' until player is created (prevents race condition)
 
     this.wave = 1;
     this.score = 0;
@@ -310,6 +544,8 @@ const Game = {
     this.isShooting = false;
     this.screenShake = 0;
 
+    // Create player BEFORE setting state to 'playing' to prevent race condition
+    // (game loop would call gameOver() if player is null while state is 'playing')
     this.player = new Player(CONFIG.WIDTH / 2, CONFIG.HEIGHT - 100);
 
     if (mode === 'zen') {
@@ -326,14 +562,33 @@ const Game = {
     stats.gamesPlayed = (stats.gamesPlayed || 0) + 1;
     Storage.updateStats(stats);
 
+    // Set state to 'playing' AFTER player is fully initialized
+    this.state = 'playing';
+
     AudioManager.playMusic();
   },
 
   applyUpgrades() {
   },
 
+  // Get max enemies per formation based on game mode
+  getMaxEnemiesPerFormation() {
+    switch (this.mode) {
+      case 'zen': return 3;
+      case 'classic': return 4;
+      case 'survival': return 6;
+      case 'timeattack': return 5;
+      default: return 4;
+    }
+  },
+
   generateFormation(formationKey) {
-    const pattern = FORMATION_PATTERNS[formationKey];
+    // Use tablet formations if on tablet, otherwise use portrait formations
+    const formationPatterns = this.isTabletLayout && typeof TABLET_FORMATION_PATTERNS !== 'undefined'
+      ? TABLET_FORMATION_PATTERNS
+      : FORMATION_PATTERNS;
+
+    const pattern = formationPatterns[formationKey];
     if (!pattern || !pattern.positions) {
       console.warn('Formation pattern not found:', formationKey);
       return [
@@ -343,9 +598,17 @@ const Game = {
       ];
     }
 
-    return pattern.positions.map(pos => ({
+    // Limit positions based on game mode
+    const maxEnemies = this.getMaxEnemiesPerFormation();
+    const positions = pattern.positions.slice(0, maxEnemies);
+
+    // Tablet uses more vertical space for formations
+    const yMultiplier = this.isTabletLayout ? 200 : 140;
+    const yOffset = this.isTabletLayout ? 60 : 80;
+
+    return positions.map(pos => ({
       x: pos.x * CONFIG.WIDTH,
-      y: 80 + (pos.y * 140),
+      y: yOffset + (pos.y * yMultiplier),
     }));
   },
 
@@ -676,7 +939,14 @@ const Game = {
       if (this.screenShake < 0.1) this.screenShake = 0;
     }
 
-    if (this.frameCount % 5 === 0 && this.uiParticles.length < 100) {
+    // Adaptive quality check
+    this.adaptiveQuality(dt);
+
+    // Particle effects - scaled by performance settings
+    const maxParticles = Math.floor(30 * this.performance.particleMultiplier);
+    const spawnRate = this.performance.quality === 'low' ? 30 : 15;
+
+    if (this.performance.effectsEnabled && this.frameCount % spawnRate === 0 && this.uiParticles.length < maxParticles) {
       this.uiParticles.push({
         x: Math.random() < 0.5 ? Math.random() * 100 : CONFIG.WIDTH - Math.random() * 100,
         y: Math.random() * 100,
@@ -697,7 +967,8 @@ const Game = {
       return p.life > 0 && p.y < CONFIG.HEIGHT + 50;
     });
 
-    if (Math.random() < 0.01 && this.energyStreams.length < 5) {
+    // Energy streams - only on medium/high quality
+    if (this.performance.effectsEnabled && Math.random() < 0.003 && this.energyStreams.length < 2) {
       this.energyStreams.push({
         x: Math.random() < 0.5 ? -50 : CONFIG.WIDTH + 50,
         y: Math.random() * CONFIG.HEIGHT,
@@ -728,23 +999,29 @@ const Game = {
       }
     }
 
-    if (this.glitchEffect && this.glitchEffect.active) {
-      this.glitchEffect.timer += dt;
-      if (this.glitchEffect.timer >= this.glitchEffect.duration) {
-        this.glitchEffect.active = false;
+    // Glitch effect - only on high quality
+    if (this.performance.quality === 'high') {
+      if (this.glitchEffect && this.glitchEffect.active) {
+        this.glitchEffect.timer += dt;
+        if (this.glitchEffect.timer >= this.glitchEffect.duration) {
+          this.glitchEffect.active = false;
+        }
+      }
+
+      if (Math.random() < 0.005) {
+        this.glitchEffect = {
+          active: true,
+          duration: 0.1,
+          timer: 0,
+          offset: Math.random() * 20 - 10
+        };
       }
     }
 
-    if (Math.random() < 0.02) {
-      this.glitchEffect = {
-        active: true,
-        duration: 0.1,
-        timer: 0,
-        offset: Math.random() * 20 - 10
-      };
+    // Throttle HUD updates on mobile (every 3rd frame) for better performance
+    if (!this.performance.isMobile || this.frameCount % 3 === 0) {
+      UI.updateHUD(this);
     }
-
-    UI.updateHUD(this);
   },
 
   createPlayerBullet() {
@@ -1588,17 +1865,13 @@ const Game = {
           this.ctx.restore();
         }
 
-        this.uiParticles.forEach(p => {
-          const alpha = (p.life / p.maxLife) * p.alpha;
-          this.ctx.fillStyle = p.color;
-          this.ctx.globalAlpha = alpha;
+        // Optimized particle rendering - no shadows for performance
+        this.ctx.fillStyle = '#38bdf8';
+        for (let i = 0; i < this.uiParticles.length; i++) {
+          const p = this.uiParticles[i];
+          this.ctx.globalAlpha = (p.life / p.maxLife) * p.alpha;
           this.ctx.fillRect(p.x, p.y, p.size, p.size);
-
-          this.ctx.shadowBlur = 5;
-          this.ctx.shadowColor = p.color;
-          this.ctx.fillRect(p.x, p.y, p.size, p.size);
-          this.ctx.shadowBlur = 0;
-        });
+        }
         this.ctx.globalAlpha = 1;
 
         this.energyStreams.forEach(s => {
@@ -1612,14 +1885,17 @@ const Game = {
           }
         });
 
-        if (this.shockwaves) {
+        if (this.shockwaves && this.shockwaves.length > 0) {
           this.shockwaves.forEach(wave => {
             this.ctx.save();
             this.ctx.strokeStyle = wave.color;
             this.ctx.lineWidth = 3;
             this.ctx.globalAlpha = wave.life / 0.5;
-            this.ctx.shadowBlur = 20;
-            this.ctx.shadowColor = wave.color;
+            // Only use shadows on high quality
+            if (this.performance.shadowsEnabled) {
+              this.ctx.shadowBlur = 20;
+              this.ctx.shadowColor = wave.color;
+            }
             this.ctx.beginPath();
             this.ctx.arc(wave.x, wave.y, wave.radius, 0, Math.PI * 2);
             this.ctx.stroke();
@@ -1644,7 +1920,8 @@ const Game = {
         }
       }
 
-      if (this.state === 'boss' || this.screenShake > 25) {
+      // Chromatic aberration - only on high quality (very expensive effect)
+      if (this.performance.chromaticAberration && (this.state === 'boss' || this.screenShake > 25)) {
         const intensity = Math.min(this.screenShake / 50, 0.3);
 
         this.ctx.save();

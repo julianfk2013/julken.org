@@ -42,8 +42,16 @@ class Player {
 
   update(dt, keys, mouseX, canvasWidth, canvasHeight) {
     this.targetVx = 0;
-    if (keys['ArrowLeft'] || keys['a']) this.targetVx = -this.maxSpeed;
-    if (keys['ArrowRight'] || keys['d']) this.targetVx = this.maxSpeed;
+
+    // Check for analog joystick input first (smoother mobile controls)
+    if (typeof Game !== 'undefined' && Game.joystick && Game.joystick.active) {
+      // Use analog input for proportional speed
+      this.targetVx = Game.joystick.inputX * this.maxSpeed;
+    } else {
+      // Fallback to binary keyboard input
+      if (keys['ArrowLeft'] || keys['a']) this.targetVx = -this.maxSpeed;
+      if (keys['ArrowRight'] || keys['d']) this.targetVx = this.maxSpeed;
+    }
 
     const isMoving = this.targetVx !== 0;
 
@@ -178,19 +186,26 @@ class Player {
   }
 
   draw(ctx) {
-    this.trail.forEach((t, i) => {
-      const size = 4 * (i / this.trail.length);
-      ctx.fillStyle = `rgba(56, 189, 248, ${t.alpha * 0.6})`;
-      ctx.beginPath();
-      ctx.arc(t.x, t.y, size, 0, Math.PI * 2);
-      ctx.fill();
-    });
+    // Check if effects are enabled
+    const effectsEnabled = typeof Game !== 'undefined' && Game.performance ? Game.performance.effectsEnabled : true;
+    const shadowsEnabled = typeof Game !== 'undefined' && Game.performance ? Game.performance.shadowsEnabled : true;
+
+    // Only draw trail if effects are enabled
+    if (effectsEnabled) {
+      this.trail.forEach((t, i) => {
+        const size = 4 * (i / this.trail.length);
+        ctx.fillStyle = `rgba(56, 189, 248, ${t.alpha * 0.6})`;
+        ctx.beginPath();
+        ctx.arc(t.x, t.y, size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
 
     if (this.invulnerable && Math.floor(this.flashTimer * 10) % 2 === 0) {
       ctx.globalAlpha = 0.5;
     }
 
-    if (this.glowIntensity > 0) {
+    if (this.glowIntensity > 0 && shadowsEnabled) {
       ctx.shadowBlur = 25 * this.glowIntensity;
       ctx.shadowColor = '#ef4444';
     }
@@ -245,40 +260,43 @@ class Player {
       ctx.fillRect(this.x + this.width - 20, this.y + this.height - 20, 15, 8);
     }
 
-    const engineY = this.y + this.height;
-    const engineGradient = ctx.createRadialGradient(
-      this.x + this.width / 2, engineY,
-      0,
-      this.x + this.width / 2, engineY,
-      15
-    );
-    engineGradient.addColorStop(0, `rgba(251, 146, 60, ${this.engineGlow})`);
-    engineGradient.addColorStop(0.5, `rgba(249, 115, 22, ${this.engineGlow * 0.6})`);
-    engineGradient.addColorStop(1, 'rgba(249, 115, 22, 0)');
-
-    ctx.fillStyle = engineGradient;
-    ctx.beginPath();
-    ctx.arc(this.x + this.width / 2, engineY, 15, 0, Math.PI * 2);
-    ctx.fill();
-
-    if (this.directionChangeEffect > 0) {
-      ctx.save();
-      ctx.globalAlpha = this.directionChangeEffect;
-      const burstGradient = ctx.createRadialGradient(
-        this.x + this.width / 2,
-        this.y + this.height,
+    // Only draw engine glow if effects are enabled
+    if (effectsEnabled) {
+      const engineY = this.y + this.height;
+      const engineGradient = ctx.createRadialGradient(
+        this.x + this.width / 2, engineY,
         0,
-        this.x + this.width / 2,
-        this.y + this.height,
-        30
+        this.x + this.width / 2, engineY,
+        15
       );
-      burstGradient.addColorStop(0, 'rgba(56, 189, 248, 0.8)');
-      burstGradient.addColorStop(1, 'rgba(56, 189, 248, 0)');
-      ctx.fillStyle = burstGradient;
+      engineGradient.addColorStop(0, `rgba(251, 146, 60, ${this.engineGlow})`);
+      engineGradient.addColorStop(0.5, `rgba(249, 115, 22, ${this.engineGlow * 0.6})`);
+      engineGradient.addColorStop(1, 'rgba(249, 115, 22, 0)');
+
+      ctx.fillStyle = engineGradient;
       ctx.beginPath();
-      ctx.arc(this.x + this.width / 2, this.y + this.height, 30, 0, Math.PI * 2);
+      ctx.arc(this.x + this.width / 2, engineY, 15, 0, Math.PI * 2);
       ctx.fill();
-      ctx.restore();
+
+      if (this.directionChangeEffect > 0) {
+        ctx.save();
+        ctx.globalAlpha = this.directionChangeEffect;
+        const burstGradient = ctx.createRadialGradient(
+          this.x + this.width / 2,
+          this.y + this.height,
+          0,
+          this.x + this.width / 2,
+          this.y + this.height,
+          30
+        );
+        burstGradient.addColorStop(0, 'rgba(56, 189, 248, 0.8)');
+        burstGradient.addColorStop(1, 'rgba(56, 189, 248, 0)');
+        ctx.fillStyle = burstGradient;
+        ctx.beginPath();
+        ctx.arc(this.x + this.width / 2, this.y + this.height, 30, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
     }
 
     ctx.shadowBlur = 0;
@@ -288,32 +306,38 @@ class Player {
       ctx.save();
 
       const hexRadius = this.width * 0.8;
-      const hexCount = 12;
-      for (let i = 0; i < hexCount; i++) {
-        const angle = (i / hexCount) * Math.PI * 2;
-        const hx = this.x + this.width / 2 + Math.cos(angle) * hexRadius * 0.5;
-        const hy = this.y + this.height / 2 + Math.sin(angle) * hexRadius * 0.5;
 
-        ctx.beginPath();
-        for (let j = 0; j < 6; j++) {
-          const a = (j / 6) * Math.PI * 2 + angle;
-          const px = hx + Math.cos(a) * 8;
-          const py = hy + Math.sin(a) * 8;
-          if (j === 0) ctx.moveTo(px, py);
-          else ctx.lineTo(px, py);
+      // Skip complex hex pattern on mobile, just draw simple circle
+      if (effectsEnabled) {
+        const hexCount = 12;
+        for (let i = 0; i < hexCount; i++) {
+          const angle = (i / hexCount) * Math.PI * 2;
+          const hx = this.x + this.width / 2 + Math.cos(angle) * hexRadius * 0.5;
+          const hy = this.y + this.height / 2 + Math.sin(angle) * hexRadius * 0.5;
+
+          ctx.beginPath();
+          for (let j = 0; j < 6; j++) {
+            const a = (j / 6) * Math.PI * 2 + angle;
+            const px = hx + Math.cos(a) * 8;
+            const py = hy + Math.sin(a) * 8;
+            if (j === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+
+          const shimmer = Math.sin(Date.now() / 150 + i) * 0.3 + 0.5;
+          ctx.strokeStyle = `rgba(34, 197, 94, ${(this.shields / 100) * shimmer})`;
+          ctx.lineWidth = 2;
+          ctx.stroke();
         }
-        ctx.closePath();
-
-        const shimmer = Math.sin(Date.now() / 150 + i) * 0.3 + 0.5;
-        ctx.strokeStyle = `rgba(34, 197, 94, ${(this.shields / 100) * shimmer})`;
-        ctx.lineWidth = 2;
-        ctx.stroke();
       }
 
       ctx.strokeStyle = `rgba(34, 197, 94, ${this.shields / 100 * 0.6})`;
       ctx.lineWidth = 3;
-      ctx.shadowBlur = 15;
-      ctx.shadowColor = '#22c55e';
+      if (shadowsEnabled) {
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#22c55e';
+      }
       ctx.beginPath();
       ctx.arc(this.x + this.width / 2, this.y + this.height / 2, hexRadius, 0, Math.PI * 2);
       ctx.stroke();
@@ -436,19 +460,24 @@ class Bullet {
   }
 
   draw(ctx) {
-    this.trail.forEach((t, i) => {
-      if (t.life <= 0) return;
-      const alpha = (i / this.trail.length) * Math.min(t.life / 0.2, 1);
-      const size = this.width * 0.7 * (i / this.trail.length);
+    // Check if effects are enabled (skip trails on mobile)
+    const effectsEnabled = typeof Game !== 'undefined' && Game.performance ? Game.performance.effectsEnabled : true;
 
-      let color = '56, 189, 248';
-      if (this.type === 'laser') color = '34, 197, 94';
-      else if (this.type === 'homing') color = '249, 115, 22';
-      else if (this.type === 'wave') color = '139, 92, 246';
+    if (effectsEnabled) {
+      this.trail.forEach((t, i) => {
+        if (t.life <= 0) return;
+        const alpha = (i / this.trail.length) * Math.min(t.life / 0.2, 1);
+        const size = this.width * 0.7 * (i / this.trail.length);
 
-      ctx.fillStyle = `rgba(${color}, ${alpha * 0.6})`;
-      ctx.fillRect(t.x - size / 2, t.y, size, this.height * 0.5);
-    });
+        let color = '56, 189, 248';
+        if (this.type === 'laser') color = '34, 197, 94';
+        else if (this.type === 'homing') color = '249, 115, 22';
+        else if (this.type === 'wave') color = '139, 92, 246';
+
+        ctx.fillStyle = `rgba(${color}, ${alpha * 0.6})`;
+        ctx.fillRect(t.x - size / 2, t.y, size, this.height * 0.5);
+      });
+    }
 
     const bulletImg = AssetLoader.getBullet(this.type, false);
 
@@ -495,7 +524,9 @@ class Bullet {
       }
     }
 
-    if (this.type !== 'normal') {
+    // Only use shadowBlur for special bullets if shadows are enabled
+    const shadowsEnabled = typeof Game !== 'undefined' && Game.performance ? Game.performance.shadowsEnabled : true;
+    if (this.type !== 'normal' && shadowsEnabled) {
       ctx.save();
       try {
         ctx.shadowBlur = 12;
@@ -668,21 +699,28 @@ class Enemy {
   draw(ctx) {
     if (this.destroyed) return;
 
-    const engineGlow = Math.sin(this.enginePulse) * 0.3 + 0.7;
-    const engineGradient = ctx.createRadialGradient(
-      this.x + this.width / 2, this.y,
-      0,
-      this.x + this.width / 2, this.y,
-      12
-    );
-    engineGradient.addColorStop(0, `rgba(239, 68, 68, ${engineGlow * 0.8})`);
-    engineGradient.addColorStop(1, 'rgba(239, 68, 68, 0)');
-    ctx.fillStyle = engineGradient;
-    ctx.beginPath();
-    ctx.arc(this.x + this.width / 2, this.y, 12, 0, Math.PI * 2);
-    ctx.fill();
+    // Check if effects are enabled (skip expensive rendering on mobile)
+    const effectsEnabled = typeof Game !== 'undefined' && Game.performance ? Game.performance.effectsEnabled : true;
+    const shadowsEnabled = typeof Game !== 'undefined' && Game.performance ? Game.performance.shadowsEnabled : true;
 
-    if (this.flashIntensity > 0) {
+    // Skip engine glow gradient on mobile - expensive
+    if (effectsEnabled) {
+      const engineGlow = Math.sin(this.enginePulse) * 0.3 + 0.7;
+      const engineGradient = ctx.createRadialGradient(
+        this.x + this.width / 2, this.y,
+        0,
+        this.x + this.width / 2, this.y,
+        12
+      );
+      engineGradient.addColorStop(0, `rgba(239, 68, 68, ${engineGlow * 0.8})`);
+      engineGradient.addColorStop(1, 'rgba(239, 68, 68, 0)');
+      ctx.fillStyle = engineGradient;
+      ctx.beginPath();
+      ctx.arc(this.x + this.width / 2, this.y, 12, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    if (this.flashIntensity > 0 && shadowsEnabled) {
       ctx.shadowBlur = 15 * this.flashIntensity;
       ctx.shadowColor = '#ffffff';
     }
@@ -806,12 +844,19 @@ class EnemyBullet {
   }
 
   draw(ctx) {
-    this.trail.forEach((t, i) => {
-      const alpha = i / this.trail.length;
-      ctx.fillStyle = `rgba(239, 68, 68, ${alpha * 0.5})`;
-      const size = this.width * 0.6 * (i / this.trail.length);
-      ctx.fillRect(t.x - size / 2, t.y, size, this.height * 0.6);
-    });
+    // Check if effects are enabled (skip trails on mobile)
+    const effectsEnabled = typeof Game !== 'undefined' && Game.performance ? Game.performance.effectsEnabled : true;
+    const shadowsEnabled = typeof Game !== 'undefined' && Game.performance ? Game.performance.shadowsEnabled : true;
+
+    // Only draw trails if effects are enabled
+    if (effectsEnabled) {
+      this.trail.forEach((t, i) => {
+        const alpha = i / this.trail.length;
+        ctx.fillStyle = `rgba(239, 68, 68, ${alpha * 0.5})`;
+        const size = this.width * 0.6 * (i / this.trail.length);
+        ctx.fillRect(t.x - size / 2, t.y, size, this.height * 0.6);
+      });
+    }
 
     ctx.fillStyle = this.aimed ? '#f97316' : '#ef4444';
     ctx.fillRect(
@@ -821,15 +866,18 @@ class EnemyBullet {
       this.height
     );
 
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = this.aimed ? '#f97316' : '#ef4444';
-    ctx.fillRect(
-      this.x - this.width / 2,
-      this.y,
-      this.width,
-      this.height
-    );
-    ctx.shadowBlur = 0;
+    // Only use shadowBlur if shadows are enabled (expensive on mobile)
+    if (shadowsEnabled) {
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = this.aimed ? '#f97316' : '#ef4444';
+      ctx.fillRect(
+        this.x - this.width / 2,
+        this.y,
+        this.width,
+        this.height
+      );
+      ctx.shadowBlur = 0;
+    }
   }
 
   getBounds() {
@@ -1024,6 +1072,9 @@ class HealthBonus {
   }
 
   draw(ctx) {
+    // Check if shadows are enabled
+    const shadowsEnabled = typeof Game !== 'undefined' && Game.performance ? Game.performance.shadowsEnabled : true;
+
     ctx.save();
     ctx.translate(this.x + this.width / 2, this.y + this.height / 2);
 
@@ -1031,8 +1082,10 @@ class HealthBonus {
     ctx.scale(scale, scale);
     ctx.rotate(this.rotation);
 
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = '#fbbf24';
+    if (shadowsEnabled) {
+      ctx.shadowBlur = 15;
+      ctx.shadowColor = '#fbbf24';
+    }
 
     const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, this.width / 2);
     gradient.addColorStop(0, '#fef3c7');
@@ -1049,8 +1102,10 @@ class HealthBonus {
     ctx.stroke();
 
     ctx.fillStyle = '#dc2626';
-    ctx.shadowBlur = 3;
-    ctx.shadowColor = '#dc2626';
+    if (shadowsEnabled) {
+      ctx.shadowBlur = 3;
+      ctx.shadowColor = '#dc2626';
+    }
 
     ctx.fillRect(-10, -3, 20, 6);
     ctx.fillRect(-3, -10, 6, 20);
@@ -1276,7 +1331,10 @@ class Boss {
   }
 
   draw(ctx) {
-    if (this.flashIntensity > 0) {
+    // Check if shadows are enabled
+    const shadowsEnabled = typeof Game !== 'undefined' && Game.performance ? Game.performance.shadowsEnabled : true;
+
+    if (this.flashIntensity > 0 && shadowsEnabled) {
       ctx.shadowBlur = 30 * this.flashIntensity;
       ctx.shadowColor = '#ffffff';
     }
@@ -1313,8 +1371,10 @@ class Boss {
       ctx.ellipse(0, -this.height / 4, this.width / 4, this.height / 3, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.shadowBlur = 20;
-      ctx.shadowColor = '#8b5cf6';
+      if (shadowsEnabled) {
+        ctx.shadowBlur = 20;
+        ctx.shadowColor = '#8b5cf6';
+      }
       ctx.fillStyle = '#c4b5fd';
       ctx.beginPath();
       ctx.ellipse(0, this.height / 3, this.width / 3, this.height / 6, 0, 0, Math.PI * 2);
@@ -1352,9 +1412,12 @@ class Boss {
 
     ctx.globalAlpha = 1;
 
+    // shadowsEnabled already declared above
     this.projectiles.forEach(proj => {
-      ctx.shadowBlur = 15;
-      ctx.shadowColor = '#ef4444';
+      if (shadowsEnabled) {
+        ctx.shadowBlur = 15;
+        ctx.shadowColor = '#ef4444';
+      }
       ctx.fillStyle = '#ff0000';
       ctx.fillRect(
         proj.x - proj.width / 2,
@@ -1371,7 +1434,9 @@ class Boss {
         proj.height - 8
       );
 
-      ctx.shadowBlur = 0;
+      if (shadowsEnabled) {
+        ctx.shadowBlur = 0;
+      }
     });
   }
 

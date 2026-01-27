@@ -457,24 +457,24 @@
 			}catch{}
 		}
 
-			
+	
 			let autoEmitAcc = 0; let lastEmit = performance.now();
-			setInterval(()=>{
-				
+			const autoInterval = setInterval(()=>{
+
 				if(state.auto>0){
 					state.carry += state.auto/10;
 					let gained = 0;
 					while(state.carry>=1){ state.total += 1; state.carry -= 1; gained += 1; }
 					if(gained>0){ autoEmitAcc += gained; }
 				}
-				
+
 				const now = performance.now();
 				if(autoEmitAcc>0 && now - lastEmit > 350){
 					const txt = state.infinite ? '∞' : '+' + abbr(autoEmitAcc);
 					if(state.numberRain){ spawnRainLabel(txt); }
 					else {
-						
-						const rect=els.space.getBoundingClientRect(); const cx=rect.left+rect.width/2; const cy=rect.top+8; 
+
+						const rect=els.space.getBoundingClientRect(); const cx=rect.left+rect.width/2; const cy=rect.top+8;
 						const f=document.createElement('div'); f.className='floatAdd'; f.textContent = txt;
 						f.style.left=(cx+ (Math.random()*40-20))+'px'; f.style.top=(cy+(Math.random()*10-5))+'px';
 						const ang = -Math.PI/2 + (Math.random()*0.6-0.3); const dist = 50 + Math.random()*40; const x1 = Math.cos(ang)*dist; const y1 = Math.sin(ang)*dist;
@@ -489,9 +489,15 @@
 				renderHUD();
 			}, 100);
 
-		
+
 		function save(){ store.set('sb_v2', state); }
-		setInterval(save, 5000);
+		const saveInterval = setInterval(save, 5000);
+
+		// Cleanup intervals on page unload to prevent memory leaks
+		window.addEventListener('beforeunload', ()=>{
+			clearInterval(autoInterval);
+			clearInterval(saveInterval);
+		});
 
 		
 		els.tap.addEventListener('click', (e)=> { tap(e.clientX, e.clientY); pressVisual(); });
