@@ -368,24 +368,33 @@
         });
       });
 
+      // Track all active hold handlers for global release
+      const holdHandlers = [];
+
       function bindHold(el, down, up){
         let active = false;
         const end = () => { if (!active) return; active=false; up(); };
+
+        // Store end handler for global window events
+        holdHandlers.push(end);
+
         el.addEventListener('pointerdown', e=>{ e.preventDefault(); active=true; try{ el.setPointerCapture(e.pointerId); }catch{} down(); });
         el.addEventListener('pointerup',   e=>{ e.preventDefault(); end(); });
         el.addEventListener('pointercancel', end);
         el.addEventListener('pointerleave',  end);
-        
+
         el.addEventListener('mousedown', e=>{ e.preventDefault(); active=true; down(); });
-        window.addEventListener('mouseup', ()=> end());
         el.addEventListener('touchstart', e=>{ e.preventDefault(); active=true; down(); }, {passive:false});
-        window.addEventListener('touchend', ()=> end(), {passive:false});
       }
 
       bindHold(left,  ()=>{ keys.a=true; triggerSwerve(-1); }, ()=>{ keys.a=false; });
       bindHold(right, ()=>{ keys.d=true; triggerSwerve( 1); }, ()=>{ keys.d=false; });
       bindHold(accel, ()=>{ keys.w=true; }, ()=>{ keys.w=false; });
       bindHold(brake, ()=>{ keys.s=true; }, ()=>{ keys.s=false; });
+
+      // Single global handlers for all buttons (added only once, not per-button)
+      window.addEventListener('mouseup', ()=> holdHandlers.forEach(h => h()));
+      window.addEventListener('touchend', ()=> holdHandlers.forEach(h => h()), {passive:false});
       pause.addEventListener('click', ()=> togglePause());
     }
 

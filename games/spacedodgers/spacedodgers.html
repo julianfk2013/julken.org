@@ -1803,14 +1803,18 @@ function closeLagNotice(){
   try { localStorage.setItem('sd_lag_dismissed', '1'); } catch{}
 }
 
-// Only show lag notice on mobile devices, not desktop
+// Only show lag notice on actual mobile devices, not desktop
 function shouldShowLagNotice() {
-  // Don't show on desktop (no touch support)
-  if (!('ontouchstart' in window) && !navigator.maxTouchPoints) return false;
+  // Must have touch support (mobile/tablet)
+  const hasTouchSupport = ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
+  if (!hasTouchSupport) return false;
+
   // Don't show if already dismissed
   try { if (localStorage.getItem('sd_lag_dismissed')) return false; } catch{}
-  // Only show on mobile-sized screens
-  return window.innerWidth < 768;
+
+  // Only show on mobile-sized screens with coarse pointer (rules out touchscreen laptops)
+  const isCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
+  return window.innerWidth < 768 && isCoarsePointer;
 }
 
 if (lagNotice) lagNotice.addEventListener('click', (e)=>{ if(e.target && e.target.dataset.close==='lag') closeLagNotice(); });

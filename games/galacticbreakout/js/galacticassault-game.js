@@ -222,6 +222,23 @@ const Game = {
     if (this.listeners.touchmove) this.canvas.removeEventListener('touchmove', this.listeners.touchmove);
     if (this.listeners.orientationchange) window.removeEventListener('orientationchange', this.listeners.orientationchange);
 
+    // Cleanup mobile control listeners (document-level)
+    if (this.mobileHandlers) {
+      document.removeEventListener('touchmove', this.mobileHandlers.joystickMove);
+      document.removeEventListener('touchend', this.mobileHandlers.joystickEnd);
+      document.removeEventListener('touchcancel', this.mobileHandlers.joystickEnd);
+      if (this.mobileControlElements) {
+        const { joystickBase, shootBtn } = this.mobileControlElements;
+        if (joystickBase) joystickBase.removeEventListener('touchstart', this.mobileHandlers.joystickStart);
+        if (shootBtn) {
+          shootBtn.removeEventListener('touchstart', this.mobileHandlers.shootStart);
+          shootBtn.removeEventListener('touchend', this.mobileHandlers.shootEnd);
+          shootBtn.removeEventListener('touchcancel', this.mobileHandlers.shootEnd);
+        }
+      }
+      this.mobileHandlers = null;
+    }
+
     this.listeners = {
       resize: null,
       keydown: null,
@@ -429,27 +446,25 @@ const Game = {
       }
     };
 
-    joystickBase.addEventListener('touchstart', handleJoystickStart, { passive: false });
+    // Store handler references for cleanup
+    this.mobileHandlers = {
+      joystickStart: handleJoystickStart,
+      joystickMove: handleJoystickMove,
+      joystickEnd: handleJoystickEnd,
+      shootStart: (e) => { e.preventDefault(); this.isShooting = true; },
+      shootEnd: (e) => { e.preventDefault(); this.isShooting = false; }
+    };
+
+    joystickBase.addEventListener('touchstart', this.mobileHandlers.joystickStart, { passive: false });
     // Listen on document for move/end so dragging outside the base still works
-    document.addEventListener('touchmove', handleJoystickMove, { passive: false });
-    document.addEventListener('touchend', handleJoystickEnd, { passive: false });
-    document.addEventListener('touchcancel', handleJoystickEnd, { passive: false });
+    document.addEventListener('touchmove', this.mobileHandlers.joystickMove, { passive: false });
+    document.addEventListener('touchend', this.mobileHandlers.joystickEnd, { passive: false });
+    document.addEventListener('touchcancel', this.mobileHandlers.joystickEnd, { passive: false });
 
     // Shoot button handling - instant response, no delay
-    shootBtn.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      this.isShooting = true;
-    }, { passive: false });
-
-    shootBtn.addEventListener('touchend', (e) => {
-      e.preventDefault();
-      this.isShooting = false;
-    }, { passive: false });
-
-    shootBtn.addEventListener('touchcancel', (e) => {
-      e.preventDefault();
-      this.isShooting = false;
-    }, { passive: false });
+    shootBtn.addEventListener('touchstart', this.mobileHandlers.shootStart, { passive: false });
+    shootBtn.addEventListener('touchend', this.mobileHandlers.shootEnd, { passive: false });
+    shootBtn.addEventListener('touchcancel', this.mobileHandlers.shootEnd, { passive: false });
 
     // Store references for cleanup
     this.mobileControlElements = { joystickBase, joystickKnob, shootBtn };

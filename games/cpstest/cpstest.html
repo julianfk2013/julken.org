@@ -230,14 +230,14 @@
         modalContent.innerHTML = `${imgTag}
           <div style="font-size:18px; margin-bottom:8px"><b>${fmt(cps)} CPS</b> — ${animal}</div>
           <div class="muted">You made <b>${clicks}</b> clicks in <b>${total}</b> second${total===1?'':'s'}.</div>
-          <div class="muted" style="margin-top:8px">Best all-time: <b>${fmt((JSON.parse(localStorage.getItem('cps_best')||'{\"all\":0}').all)||0)}</b> CPS</div>`;
+          <div class="muted" style="margin-top:8px">Best all-time: <b>${fmt(best.all||0)}</b> CPS</div>`;
         modal.classList.add('show');
       }
     }
 
-    
-    if(modalClose){ modalClose.addEventListener('click', ()=>{ modal.classList.remove('show'); }); }
-    if(modalRestart){ modalRestart.addEventListener('click', ()=>{ modal.classList.remove('show'); start(); }); }
+
+    if(modalClose){ modalClose.addEventListener('click', ()=>{ if(modal) modal.classList.remove('show'); }); }
+    if(modalRestart){ modalRestart.addEventListener('click', ()=>{ if(modal) modal.classList.remove('show'); start(); }); }
 
     function clickTarget(ev){ const rect=target.getBoundingClientRect(); const x=ev.clientX-rect.left, y=ev.clientY-rect.top; const r=document.createElement('span'); r.className='ripple'; r.style.left=x+'px'; r.style.top=y+'px'; target.appendChild(r); setTimeout(()=>r.remove(), 650); if(!running&&!countingDown){ start(); return; } if(!running) return; clicks++; clicksEl.textContent = String(clicks); SFX.click(); }
     target.addEventListener('pointerdown', clickTarget);
